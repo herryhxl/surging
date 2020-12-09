@@ -1,0 +1,148 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="FileLoder.TemplateModel" #>
+
+package <#=_pcckage#>.Service;
+import android.content.Context;
+import <#=_pcckage#>.Base.*;
+import java.util.List;
+import <#=_pcckage#>.Common.LoadUtil;
+import <#=_pcckage#>.IService.I<#=_entityName#>Service;
+import com.example.yunjoy.Base.PageList;
+import <#=_pcckage#>.Model.<#=_entityName#>Model;
+import com.google.gson.Gson;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import <#=_pcckage#>.Response.MsgResponse;
+import <#=_pcckage#>.Response.NoneDataResponse;
+
+import retrofit2.Response;
+import rx.Observable;
+
+<# var PKData=_models.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+#>
+
+<# var sqData=_models.ColumnsList.Where(r=>r.Search != EnumSearchType.Null&&r.Virtual==false).ToList();
+		var sum=4+sqData.Count+sqData.Where(r=>r.Search == EnumSearchType.Range).ToList().Count;
+		int p=0;
+		var Pa=new  StringBuilder();
+		var Pa2=new  StringBuilder();
+
+
+		var para=new StringBuilder();
+var para2=new StringBuilder();
+foreach(var model in _models.ColumnsList.Where(t=>t.Virtual==false)){
+	var CodeType = model.CodeType.Replace("?","");
+	var Code=model.Code.Replace("?","");
+		var type="String";
+			if(CodeType=="string"||CodeType=="Guid"||CodeType=="datetime") 
+				type="String";
+			else if(CodeType=="int") 
+				type="int";
+			else if(CodeType=="bigint") 
+				type="long";
+			else if(CodeType=="decimal") 
+				type="double";
+			else if(CodeType=="bool") 
+				type="Boolean";
+		para.Append(","+type+" "+ Code);
+		para2.Append(","+Code);
+		}
+		
+		var ParaStr=para.ToString().Substring(1);
+		var ParaStr2=para2.ToString().Substring(1);
+
+
+
+
+
+		Pa.Append("Boolean IsDescending,int OrderBy,int  Page,int  PageCount");
+		Pa2.Append("IsDescending,OrderBy,Page,PageCount");
+		foreach(var model in sqData)
+		{ 
+			var CodeType = model.CodeType.Replace("?","");
+			var Code=model.Code.Replace("?","");
+			var type="String";
+			if(CodeType=="string"||CodeType=="Guid"||CodeType=="datetime") 
+				type="String";
+			else if(CodeType=="int") 
+				type="int";
+			else if(CodeType=="bigint") 
+				type="long";
+			else if(CodeType=="decimal") 
+				type="double";
+			else if(CodeType=="bool") 
+				type="Boolean";
+
+			if(model.Search==EnumSearchType.In)
+			{
+				Pa.Append(",String "+Code+"s");
+				Pa2.Append(","+Code+"s");
+			}
+			else if (model.Search == EnumSearchType.Like)
+			{
+				Pa.Append(","+type+" "+Code);
+				Pa2.Append(","+Code);
+			}
+			else if (model.Search == EnumSearchType.Equal)
+			{
+				Pa.Append(","+type+" "+Code);
+				Pa2.Append(","+Code);
+			}
+			else if (model.Search == EnumSearchType.Range)
+			{
+				Pa.Append(","+type+" "+Code+"Begin");
+				Pa.Append(","+type+" "+Code+"End");
+
+				Pa2.Append(","+Code+"Begin");
+				Pa2.Append(","+Code+"End");
+			}
+		}
+		var PaStr=Pa.ToString();
+		var PaStr2=Pa2.ToString();
+#>
+
+public class <#=_entityName#>Service
+{
+    private Context _context;
+	private LoadUtil _loading;
+    public <#=_entityName#>Service(Context context,LoadUtil loading){
+        this._context=context;
+		this._loading=loading;
+    }
+	public Observable<Msg<Object>> CreateOrModify(<#=_entityName#>Model <#=_entityName#>)//<#=ParaStr#>
+	{
+		Gson gson = new Gson();
+        String post<#=_entityName#> = gson.toJson(<#=_entityName#>);
+        RequestBody <#=_entityName#>Body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"),post<#=_entityName#>);
+		return ServiceFactory.createService(I<#=_entityName#>Service.class).CreateOrModify(<#=_entityName#>Body)
+                .compose(new DefaultTransformer<Response<MsgResponse<Object>>, MsgResponse<Object>,Msg<Object>>(_context,_loading));
+	}
+	public Observable<Msg<Object>> RemoveList(List<<#=PKData.CodeType=="string"?"String":"Integer"#>> <#=PKData.Code#>)
+	{
+		return ServiceFactory.createService(I<#=_entityName#>Service.class).RemoveList(<#=PKData.Code#>)
+                .compose(new DefaultTransformer<Response<MsgResponse<Object>>, MsgResponse<Object>,Msg<Object>>(_context,_loading));
+	}
+	public Observable<Msg<<#=_entityName#>Model>> GetById(<#=PKData.CodeType=="string"?"String":PKData.CodeType#> <#=PKData.Code#>)
+	{
+        return ServiceFactory.createService(I<#=_entityName#>Service.class).GetById(<#=PKData.Code#>)
+                .compose(new DefaultTransformer<Response<MsgResponse<<#=_entityName#>Model>>, MsgResponse<<#=_entityName#>Model>,Msg<<#=_entityName#>Model>>(_context,_loading));
+    }
+    public Observable<Msg<PageList<<#=_entityName#>Model>>> GetList(Boolean IsDescending,int OrderBy,int  Page,int  PageCount)
+	{
+        return ServiceFactory.createService(I<#=_entityName#>Service.class).GetList(IsDescending,OrderBy,Page,PageCount)//<#=PaStr2#>
+                .compose(new DefaultTransformer<Response<MsgResponse<PageList<<#=_entityName#>Model>>>, MsgResponse<PageList<<#=_entityName#>Model>>,Msg<PageList<<#=_entityName#>Model>>>(_context,_loading));
+    }
+<# if(_models.Code=="Action") {#>
+	public Observable<Msg<Object>> Init()
+	{
+		return ServiceFactory.createService(IActionService.class).Init()
+				.compose(new DefaultTransformer<Response<MsgResponse<Object>>, MsgResponse<Object>,Msg<Object>>(_context,_loading));
+	}
+<# }#>
+}
+

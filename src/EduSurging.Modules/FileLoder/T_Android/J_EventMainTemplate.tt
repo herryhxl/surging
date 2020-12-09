@@ -1,0 +1,137 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+package <#=_package#>.Event;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.GravityCompat;
+import <#=_package#>.Base.AppManager;
+import <#=_package#>.Base.Msg;
+import <#=_package#>.Base.MySubscriber;
+import <#=_package#>.Common.LoadUtil;
+import <#=_package#>.Common.ToastUtil;
+import <#=_package#>.Common.Util;
+import <#=_package#>.Dialog.MyDialog;
+import <#=_package#>.Fragment.*;
+import <#=_package#>.Service.LoginService;
+import <#=_package#>.ViewModel.*;
+import <#=_package#>.Model.*;
+import <#=_package#>.<#=_projectName#>.CustormActivity;
+import <#=_package#>.<#=_projectName#>.R;
+import <#=_package#>.Fragment.*;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
+
+import <#=_package#>.<#=_projectName#>.<#=_projectName#>.<#=_projectName.Substring(0, 1).ToUpper() + _projectName.Substring(1).ToLower()#>Binding;
+import rx.subscriptions.CompositeSubscription;
+public class <#=_projectName#>Event {
+	private FragmentManager _manage;
+	private Context _context;
+    private CompositeSubscription _subscriptions;
+    private LoginService _loginService;
+    private LoadUtil _loading;
+    private MyDialog _mydialog;
+	private Bundle _bundle;
+	private SuperUserViewModel _superUserViewModel;
+	private <#=_projectName.Substring(0, 1).ToUpper() + _projectName.Substring(1).ToLower()#>Binding _binding;
+    public <#=_projectName#>Event(<#=_projectName.Substring(0, 1).ToUpper() + _projectName.Substring(1).ToLower()#>Binding binding,Context context,CompositeSubscription subscriptions, LoadUtil loading,FragmentManager manage,Bundle bundle){
+		this._binding=binding;
+		this._context=context;
+		this._subscriptions = subscriptions;
+        this._manage=manage;
+		this._loading = loading;
+        this._loginService = new LoginService(_context, _loading);
+        this._mydialog = new MyDialog(_context, new MyDialogViewModel("提示", "确定要退出吗?", "退出", "再玩玩"), deletelistener);
+		this._superUserViewModel=new SuperUserViewModel();
+		this._bundle=bundle;
+		binding.setSuperUserViewModel(_superUserViewModel);
+        binding.setDatabindingEvent(this);
+		Init();
+    }
+	public String GetDataString() {
+        Gson gson = new Gson();
+        return gson.toJson(_superUserViewModel.getModel());
+    }
+	private void Init()
+	{	
+		String data = _bundle.getString("_superUserViewModel", "");
+		if (Util.IsNullOrEmpty(data)) 
+		{	
+			_subscriptions.add(_loginService.GetUserInfo()
+                .subscribe(new MySubscriber<Msg<SuperUserModel>>(_context, true, _loading) {
+                @Override
+                public void onNext(Msg<SuperUserModel> msg) {
+                      if (msg.Status) {
+						_superUserViewModel=msg.Object.getSuperUserViewModel();
+						_binding.setSuperUserViewModel(_superUserViewModel);
+                      } else {
+                           ToastUtil.Show(_context, msg.Msg);
+                      }
+                }
+			}));
+		}
+		else
+		{
+			Gson gson = new Gson();
+			Type type = new TypeToken<SuperUserModel>() {}.getType();
+			SuperUserModel model = gson.fromJson(data, type);
+			_superUserViewModel=model.getSuperUserViewModel();
+			_binding.setSuperUserViewModel(_superUserViewModel);
+		}
+	}
+	private View.OnClickListener deletelistener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            _mydialog.Dismiss();
+            switch (v.getId()) {
+                case R.id.MyDialog_SureText:
+                    _subscriptions.add(_loginService.Logout()
+                            .subscribe(new MySubscriber<Msg<Object>>(_context, true, _loading) {
+                                @Override
+                                public void onNext(Msg<Object> msg) {
+                                    if (msg.Status) {
+                                        ToastUtil.Show(_context, msg.Msg);
+                                        Intent intent = new Intent(_context, CustormActivity.class);
+                                        _context.startActivity(intent);
+                                    } else {
+                                        ToastUtil.Show(_context, msg.Msg);
+                                    }
+                                }
+                            }));
+                    break;
+            }
+        }
+    };
+    ///绑定点击事件
+    public void onClick(View view){
+		if (AppManager.getBinding().drawerlayou.isDrawerOpen(GravityCompat.START)) {
+            AppManager.getBinding().drawerlayou.closeDrawer(GravityCompat.START);
+        }
+        int Id=view.getId();
+		FragmentTransaction Transaction = _manage.beginTransaction();
+        switch (Id){
+<#foreach(var item in _models){#>
+             case R.id.<#=_projectName#>_<#=item.Code.Replace("?","")#>:
+				Transaction.replace(R.id.content,
+				DataViewFragment.newInstance(R.id.<#=item.Code.Replace("?","")#>_List), "<#=item.Code.Replace("?","")#>List").addToBackStack("<#=item.Code.Replace("?","")#>List").commitAllowingStateLoss();
+                break;
+<#}#>
+			case R.id.<#=_projectName#>_LoginOut:
+				_mydialog.Show();
+                break;
+			case R.id.<#=_projectName#>_Setting:
+				ToastUtil.Show(_context, "您点击了设置。");
+                break;
+        }
+ }
+}

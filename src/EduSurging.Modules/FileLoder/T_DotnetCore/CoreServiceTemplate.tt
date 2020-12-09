@@ -1,0 +1,61 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="FileLoder.TemplateModel" #>
+<#@ import namespace="FileLoder.Helper" #>
+<# var orderNames = new List<string>(); #>
+using System.Linq.Expressions;
+using System;
+using System.Linq;
+using <#=_projectName#>.Entity;
+using <#=_projectName#>.Base;
+using Edu.Core.Data;
+using AutoMapper;
+using Microsoft.Extensions.Logging;
+
+<# var PKData=models.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+	var IsFK=PKData.FK;
+	var FkData=models.ColumnsList.Where(t=>t.Virtual==false&&t.FK==true&&t.FKTable!=_entityName+"Entity").Select(t => t.FKTable).Distinct();
+#>
+
+<# var sqData=models.ColumnsList.Where(r=>r.Search != SearchType.Null&&r.Virtual==false).ToList();
+var Pa=new  StringBuilder();
+Pa.Append("condition.IsDescending,(int?)condition.OrderBy,condition.Page,condition.PageCount");
+		foreach(var model in sqData)
+		{ 
+			if(model.Search==SearchType.In)
+			{
+				Pa.Append(", (condition."+model.Code+"s==null?null:string.Join(\",\", condition."+model.Code+"s))");
+			}
+			else if (model.Search == SearchType.Like)
+			{
+				Pa.Append(", condition."+model.Code);
+			}
+			else if (model.Search ==  SearchType.Equal)
+			{
+				Pa.Append(",condition."+model.Code);
+			}
+			else if (model.Search ==  SearchType.Range)
+			{
+				Pa.Append(", condition."+model.Code+"Begin");
+				Pa.Append(", condition."+model.Code+"End");
+			}
+		}
+		var PaStr=Pa.ToString();#>
+namespace <#=_projectName#>.Repository.<#=_entityName#>
+{
+	public class <#=_entityName#>Repository: EfRepository<<#=_entityName#>Entity, <#=PKData.CodeType#>>,  I<#=_entityName#>Repository
+	{
+		public <#=_entityName#>Repository(<#=_projectName#>DbContext context,IMapper mapper,ILogger<<#=_entityName#>Repository> logger) : base(context, mapper,logger)
+		{
+		}
+		public override Expression<Func<<#=_entityName#>Entity, bool>> Express(<#=PKData.CodeType#> keyValue)
+        {
+            Expression<Func<<#=_entityName#>Entity, bool>> expression = r => r.Id == keyValue;
+            return expression;
+        }
+	}
+}

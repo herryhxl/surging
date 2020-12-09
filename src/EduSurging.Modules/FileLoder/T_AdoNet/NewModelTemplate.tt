@@ -1,0 +1,19 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+using System;
+
+namespace <#=_projectName#>.Model
+{
+	public class <#=_entityName#>Model
+    {
+<# foreach(var item in _Columns.Where(r=>r.Virtual==false)){#>
+		/// <summary>
+		/// <#=item.Name#>
+		/// </summary>
+		public <#=item.CodeType#> <#=item.Code#> { get; set; }
+<#}#>
+	}
+}

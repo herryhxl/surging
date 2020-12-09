@@ -1,0 +1,1079 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="FileLoder.TemplateModel" #>
+<#@ import namespace="FileLoder.Helper" #>
+
+<# var orderNames = new List<string>(); #>
+using System.Linq.Expressions;
+using System.Threading.Tasks;
+using System;
+using System.Data.Entity;
+using System.Linq;
+using Edu.Core.Data;
+using <#=_projectName#>.Entity;
+using <#=_projectName#>.Base;
+using <#=_projectName#>.Models;
+using System.Collections.Generic;
+using Edu.Core.Handler;
+using Newtonsoft.Json;
+using System.Data.Entity.Core.Objects;
+using Edu.Core.Site;
+using Edu.Core.Extend;
+using Edu.Core.Model;
+using System.Data;
+using <#=_projectName#>.ChangeService.<#=_entityName#>;
+using <#=_projectName#>.BaseService;
+
+<# var PKData=models.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+	var IsFK=PKData.FK;
+	var FkData=models.ColumnsList.Where(t=>t.Virtual==false&&t.FK==true&&t.FKTable!=_entityName+"Entity").Select(t => t.FKTable).Distinct();
+#>
+
+<# var sqData=models.ColumnsList.Where(r=>r.Search != EnumSearchType.Null&&r.Virtual==false).ToList();
+var Pa=new  StringBuilder();
+Pa.Append("condition.IsDescending,(int?)condition.OrderBy,condition.Page,condition.PageCount");
+		foreach(var model in sqData)
+		{ 
+			if(model.Search==EnumSearchType.In)
+			{
+				Pa.Append(", (condition."+model.Code+"s==null?null:string.Join(\",\", condition."+model.Code+"s))");
+			}
+			else if (model.Search == EnumSearchType.Like)
+			{
+				Pa.Append(", condition."+model.Code);
+			}
+			else if (model.Search ==  EnumSearchType.Equal)
+			{
+				Pa.Append(",condition."+model.Code);
+			}
+			else if (model.Search ==  EnumSearchType.Range)
+			{
+				Pa.Append(", condition."+model.Code+"Begin");
+				Pa.Append(", condition."+model.Code+"End");
+			}
+		}
+		var PaStr=Pa.ToString();#>
+namespace <#=_projectName#>.Service.<#=_entityName#>
+{
+	public class <#=_entityName#>Service : I<#=_entityName#>Service
+	{
+		private readonly <#=_repositoryText#><<#=_entityName#>Entity> _<#=_entityName.ToLower()#>Repository;
+		private readonly I<#=_entityName#>ChangeService _<#=_entityName.ToLower()#>ChangeService;
+		private readonly I<#=_entityName#>BaseService _<#=_entityName.ToLower()#>BaseService;
+        private readonly IWorkContext _workContext;
+        private readonly IValidateCode _validateCode;
+<# foreach(var model in FkData){
+	var item=_AllModels.Where(t=>t.Code==model.Replace("Entity", "")).FirstOrDefault();
+	if(item!=null){
+#>
+		private readonly I<#=item.Code#>BaseService _<#=item.Code.ToLower()#>BaseService;
+<#}}#>
+
+		public <#=_entityName#>Service(<#=_repositoryText#><<#=_entityName#>Entity> <#=_entityName.ToLower()#>Repository,I<#=_entityName#>ChangeService <#=_entityName.ToLower()#>ChangeService, IWorkContext workContext
+		,IValidateCode validateCode,I<#=_entityName#>BaseService <#=_entityName.ToLower()#>BaseService
+<# foreach(var model in FkData){
+	var item=_AllModels.Where(t=>t.Code==model.Replace("Entity", "")).FirstOrDefault();
+	if(item!=null){
+#>
+		,I<#=item.Code#>BaseService <#=item.Code.ToLower()#>BaseService
+<#}}#>
+		)
+		{
+			_<#=_entityName.ToLower()#>Repository = <#=_entityName.ToLower()#>Repository;
+			_<#=_entityName.ToLower()#>ChangeService=<#=_entityName.ToLower()#>ChangeService;
+			_workContext=workContext;
+            _validateCode = validateCode;
+			_<#=_entityName.ToLower()#>BaseService=<#=_entityName.ToLower()#>BaseService;
+<# foreach(var model in FkData){
+	var item=_AllModels.Where(t=>t.Code==model.Replace("Entity", "")).FirstOrDefault();
+#>
+		_<#=item.Code.ToLower()#>BaseService=<#=item.Code.ToLower()#>BaseService;
+<#}#>
+		}
+
+<#if(_pro){#>
+		//调用存储过程方法
+		public ObjectResult<<#=_entityName#>_DataModel> <#=_entityName#>ProSearch(<#=_entityName#>SearchCondition condition,bool IsAuth=false, MenuFieldInfo menuFieldInfo = null)
+		{
+			return ((<#=_projectName#>DbContext)_<#=_entityName.ToLower()#>Repository.Context).<#=_entityName#>ProSearch(<#=PaStr#>);
+		}
+<#}#>
+
+		private DataTable GetDefaultTable()
+        {
+            var Table= new DataTable();
+<# foreach (var model in models.ColumnsList.Where(t => t.Virtual == false)){#>
+			Table.Columns.Add(new DataColumn("<#=model.Code#>"));
+<#}#>
+            return Table;
+        }
+
+		public async Task<PageList<<#=_entityName#><#=_pro==true?"_DataModel":"Model"#>>> <#=_entityName#>PageSearch(<#=_entityName#>SearchCondition condition,Expression<Func<<#=_entityName#>Entity, bool>> expression=null,IQueryable<<#=_entityName#>Entity> Query=null,bool IsAuth=false, MenuFieldInfo _fieldInfo = null)
+		{
+<#if(_pro){#>
+			return <#=_entityName#>ProSearch(condition).ToPage(condition);
+<#}else{#>
+			var <#=_entityName#>Query=MWhere(null, Get<#=_entityName#>sByCondition(condition,expression,Query,IsAuth,_fieldInfo), IsAuth, _fieldInfo);
+			if (condition.ExportData)
+			{
+                if (IsAuth && !(_fieldInfo.ExportAble == true)) throw new ValidateException("无导出数据权限。");
+				if (!condition.IsAll && condition.Page.HasValue && condition.PageCount.HasValue && condition.Page.Value > 0 && condition.PageCount.Value > 0)
+                    <#=_entityName#>Query = <#=_entityName#>Query.Skip((condition.Page.Value - 1) * condition.PageCount.Value).Take(condition.PageCount.Value);
+				var DataTable=IsAuth? _fieldInfo.GetExportTable():GetDefaultTable();
+                var ExportData= await <#=_entityName#>Query.ToListAsync();
+                ExportData.ForEach(item =>
+                {
+                    var row = DataTable.NewRow();
+                    DataRow(item, row, IsAuth, _fieldInfo);
+                    DataTable.Rows.Add(row);
+                });
+                var Url = DataTable.ToExcel(_workContext.ExportDirectory);
+                return new PageList<<#=_entityName#>Model>
+                {
+                    DataUrl= Url,
+                    ExportData=true,
+                };
+			}
+            else
+			{
+				var Data=await <#=_entityName#>Query.ToPage(condition);
+				if (IsAuth&&_fieldInfo!=null&&_fieldInfo.IsTranslation())
+				{
+					Data.Records.ForEach(item =>
+					{
+						Translation(_fieldInfo, item);
+					});
+				}
+				return Data;
+			}
+		<#}#>	
+		}
+		
+		private IQueryable<<#=_entityName#>Entity> DynamicInclude(IQueryable<<#=_entityName#>Entity> Query = null, bool IsAuth = true, MenuFieldInfo FieldInfo = null)
+        {
+            if (Query != null)
+            {
+				if(IsAuth && FieldInfo != null)
+				{
+					if(FieldInfo.ActionType == MenuAction_ActionType.编辑操作 || FieldInfo.ActionType == MenuAction_ActionType.查看操作)
+					{
+<# foreach (var model in models.ColumnsList.Where(t => t.FK == true&&t.PK==false||(t.Virtual&&t.PK&&t.FK))){
+if(model.Virtual){#>
+						Query=Query.Include(t=>t.<#=model.Code#>);
+<#}else{#>						
+						Query=Query.Include(t=>t.<#=model.Code+"_"+model.FKTable.Replace("Entity", "")#>);
+<#}}#>
+					}
+					else
+					{
+						var IncludeList = FieldInfo.Include();
+						if (IncludeList.Any())
+						{
+							IncludeList.ForEach(item =>
+							{
+								switch(item.FieldName)
+								{
+<# foreach (var model in models.ColumnsList.Where(t => t.FK == true&&t.PK==false||(t.Virtual&&t.PK&&t.FK))){
+if(model.Virtual){#>
+					case "<#=model.Code.Split('_')[0]#>":
+								Query=Query.Include(t=>t.<#=model.Code#>);
+								break;
+<#}else{#>
+					case "<#=model.Code#>":
+								Query=Query.Include(t=>t.<#=model.Code+"_"+model.FKTable.Replace("Entity", "")#>);
+								break;
+<#}}#>
+								}
+							});
+						}
+					}
+				}
+				else
+				{
+<# foreach (var model in models.ColumnsList.Where(t => t.FK == true&&t.PK==false||(t.Virtual&&t.PK&&t.FK))){if(model.Virtual){#>
+						Query=Query.Include(t=>t.<#=model.Code#>);
+<#}else{#>						
+						Query=Query.Include(t=>t.<#=model.Code+"_"+model.FKTable.Replace("Entity", "")#>);
+<#}}#>
+				}
+            }
+            return Query;
+        }
+		
+		private void DataRow(<#=_entityName#>Model model,DataRow row, bool IsAuth = true, MenuFieldInfo FieldInfo = null)
+        {
+            if (IsAuth)
+            {
+<# foreach (var model in models.ColumnsList.Where(t => t.Virtual == false||(t.Virtual&&t.PK&&t.FK))){if(model.Virtual){#>
+
+	var <#=model.Code#>Field = FieldInfo.ValidHidden("<#=model.Code#>");
+	if(<#=model.Code#>Field!=null&&FieldInfo.IsInclude("<#=model.Code#>"))
+	{
+<#   var FCode=model.Code.Split('_')[1];
+	var FKEntity=_AllModels.Where(t=>t.Code==FCode).FirstOrDefault();
+	if(FKEntity!=null){ 
+		foreach (var model2 in FKEntity.ColumnsList.Where(t => t.Virtual == false)){#>
+			if(FieldInfo.IsIncludeChild("<#=model.Code#>","<#=model2.Code#>"))
+			{
+				var <#=model.Code#>_<#=model2.Code#>Field= FieldInfo.IncludeChild("<#=model.Code#>","<#=model2.Code#>");
+				if(<#=model.Code#>_<#=model2.Code#>Field!=null)
+				{
+					row[<#=model.Code#>Field.FieldName+"_"+<#=model.Code#>_<#=model2.Code#>Field.FieldName+"_"+<#=model.Code#>_<#=model2.Code#>Field.Description] = model.<#=model.Code#>?.<#=model2.Code#>;
+				}
+			}
+<#}}#>
+	}
+<#}else{#>
+				var <#=model.Code#>Field = FieldInfo.ValidHidden("<#=model.Code#>");
+				if(<#=model.Code#>Field!=null)
+					row[<#=model.Code#>Field.FieldName+"_"+<#=model.Code#>Field.Description] = model.<#=model.Code#>;
+<#if(model.FK){ var FKEntity=_AllModels.Where(t=>t.Code==model.FKTable.Replace("Entity", "")).FirstOrDefault();if(FKEntity!=null){#>
+				if(FieldInfo.IsInclude("<#=model.Code#>"))
+				{
+<# foreach (var model2 in FKEntity.ColumnsList.Where(t => t.Virtual == false)){#>
+					if(FieldInfo.IsIncludeChild("<#=model.Code#>","<#=model2.Code#>"))
+					{
+						var <#=model.Code#>_<#=model2.Code#>Field= FieldInfo.IncludeChild("<#=model.Code#>","<#=model2.Code#>");
+						if(<#=model.Code#>_<#=model2.Code#>Field!=null)
+						{
+							row[<#=model.Code#>Field.FieldName+"_"+<#=model.Code#>_<#=model2.Code#>Field.FieldName+"_"+<#=model.Code#>_<#=model2.Code#>Field.Description] = model.<#=model.Code+"_"+model.FKTable.Replace("Entity", "")#>?.<#=model2.Code#>;
+						}
+					}
+<#}#>
+				}
+<#}}}}#>
+            }
+            else
+            {
+<# foreach (var model in models.ColumnsList.Where(t => t.Virtual == false)){#>
+				row["<#=model.Code#>"] = model.<#=model.Code#>;
+<#}#>
+            }
+        }
+
+		private Expression<Func<<#=_entityName#>Entity, <#=_entityName#>Model>> <#=_entityName#>Expression(bool IsAuth = true, MenuFieldInfo FieldInfo = null)
+        {
+            Expression<Func<<#=_entityName#>Entity, <#=_entityName#>Model>> <#=_entityName.ToLower()#>Expression;
+			if(IsAuth)//根据配置查询字段
+			{
+<# foreach (var model in models.ColumnsList.Where(t => t.Virtual == false||(t.Virtual&&t.PK&&t.FK))){#>
+	var <#=model.Code#>Status=FieldInfo.IsValidHidden("<#=model.Code#>");
+<#if(model.Virtual){ var FCode=model.Code.Split('_')[1];
+#>
+		var <#=model.Code#>IsInclude=FieldInfo.IsInclude("<#=model.Code#>");
+<#
+	var FKEntity=_AllModels.Where(t=>t.Code==FCode).FirstOrDefault();
+	if(FKEntity!=null){ 
+		foreach (var model2 in FKEntity.ColumnsList.Where(t => t.Virtual == false||(t.Virtual&&t.PK&&t.FK))){#>
+			var <#=model.Code+"_"+model2.Code#>Status=FieldInfo.IsIncludeChild("<#=model.Code#>","<#=model2.Code#>");
+<#}}}
+	else if(model.FK&&model.PK==false){	var FCode=model.FKTable.Replace("Entity", "");#>
+		var <#=model.Code#>IsInclude=FieldInfo.IsInclude("<#=model.Code#>");
+<# var FKEntity=_AllModels.Where(t=>t.Code==FCode).FirstOrDefault();
+if(FKEntity!=null){ 
+foreach (var model2 in FKEntity.ColumnsList.Where(t => t.Virtual == false||(t.Virtual&&t.PK&&t.FK))){#>
+				var <#=model.Code+"_"+model2.Code#>Status=FieldInfo.IsIncludeChild("<#=model.Code#>","<#=model2.Code#>");
+<#}}}}#>
+				<#=_entityName.ToLower()#>Expression=_<#=_entityName.ToLower()#>=>new <#=_entityName#>Model
+				{
+<# foreach (var model in models.ColumnsList.Where(t => t.Virtual == false||(t.Virtual&&t.PK&&t.FK))){
+var type=model.DataType.IndexOf("(") == -1 ? model.DataType.Replace("?","") : model.DataType.Substring(0, model.DataType.IndexOf("(")).Replace("?","");#>
+<#if(model.Virtual){#>
+	<#=model.Code#>=<#=model.Code#>Status&&<#=model.Code#>IsInclude? _<#=_entityName.ToLower()#>.<#=model.Code#>==null ? null:new <#=model.Code.Split('_')[1]+(model.Code.Split('_')[1]==_entityName?"_DataModel":"Model")#>
+				{
+				<# var FKEntity=_AllModels.Where(t=>t.Code==model.Code.Split('_')[1]).FirstOrDefault();
+				if(FKEntity!=null)
+				{ 
+					foreach (var model2 in FKEntity.ColumnsList.Where(t => t.Virtual == false)){
+					var type2=model2.DataType.IndexOf("(") == -1 ? model2.DataType.Replace("?","") : model2.DataType.Substring(0, model2.DataType.IndexOf("(")).Replace("?","");#>
+					<#=model2.Code#>=!<#=model.Code+"_"+model2.Code#>Status ? <#=Helper.getDefaultValue(_options.DataBaseType,type2,model2.IsNull)#>:_<#=_entityName.ToLower()#>.<#=model.Code#>.<#=model2.Code#>,
+	<#}#>
+				}:null,
+	<#}#>
+<#}else{#>
+<#=model.Code#>=<#=model.Code#>Status?_<#=_entityName.ToLower()#>.<#=model.Code#>:<#=Helper.getDefaultValue(_options.DataBaseType,type,model.IsNull)#>,
+<#if(model.FK&&model.PK==false){#>
+				<#=model.Code+"_"+model.FKTable.Replace("Entity", "")#>= <#=model.Code#>IsInclude? _<#=_entityName.ToLower()#>.<#=model.Code+"_"+model.FKTable.Replace("Entity", "")#>==null ? null:new <#=model.FKTable.Replace("Entity","")+(model.FKTable.Replace("Entity","")==_entityName?"_DataModel":"Model")#>
+				{
+				<# var FKEntity=_AllModels.Where(t=>t.Code==model.FKTable.Replace("Entity", "")).FirstOrDefault();
+				if(FKEntity!=null)
+				{ 
+					foreach (var model2 in FKEntity.ColumnsList.Where(t => t.Virtual == false)){
+					var type2=model2.DataType.IndexOf("(") == -1 ? model2.DataType.Replace("?","") : model2.DataType.Substring(0, model2.DataType.IndexOf("(")).Replace("?","");
+#>
+					<#=model2.Code#>=!<#=model.Code+"_"+model2.Code#>Status ? <#=Helper.getDefaultValue(_options.DataBaseType,type2,model2.IsNull)#>:_<#=_entityName.ToLower()#>.<#=model.Code+"_"+model.FKTable.Replace("Entity", "")#>.<#=model2.Code#>,
+<#}}#>
+					}:null,
+<#}#>
+<#}}#>			};
+			}
+			else//方便联查取出默认的Model
+			{
+				<#=_entityName.ToLower()#>Expression=<#=_entityName.ToLower()#>=>new <#=_entityName#>Model
+				{
+					<#=_entityName#>Text=<#=_entityName.ToLower()#>.<#=PKData.Code#>.ToString(),
+<# foreach (var model in models.ColumnsList.Where(t => t.Virtual == false)){#>
+					<#=model.Code#>=<#=_entityName.ToLower()#>.<#=model.Code#>,
+<#}#>			
+				};
+			}
+            return <#=_entityName.ToLower()#>Expression;
+        }
+
+		public IQueryable<<#=_entityName#>Entity> Where(Expression<Func<<#=_entityName#>Entity, bool>> expression=null,IQueryable<<#=_entityName#>Entity> Query=null,bool IsAuth=false, MenuFieldInfo FieldInfo=null)
+		{
+			return _<#=_entityName.ToLower()#>BaseService.Where(expression, Query, IsAuth, FieldInfo);
+		}
+
+        public IQueryable<<#=_entityName#>Model> MWhere(Expression<Func<<#=_entityName#>Entity, bool>> expression=null,IQueryable<<#=_entityName#>Entity> Query=null,bool IsAuth=false, MenuFieldInfo FieldInfo=null)
+		{
+			var Ex<#=_entityName#> = <#=_entityName#>Expression(IsAuth,FieldInfo);
+			if (Query == null)
+                Query = Where(expression, Query, IsAuth, FieldInfo);
+            else
+                Query = expression == null ? Query : Query.Where(expression);
+			return DynamicInclude(Query, IsAuth, FieldInfo).Select(Ex<#=_entityName#>);
+		}
+
+		private void SetDefaultValue(<#=_entityName#>Model m<#=_entityName.ToLower()#>,bool IsAuth=false,MenuFieldInfo fieldInfo=null)
+		{
+			#region 设置默认值
+			if(IsAuth){
+			fieldInfo.DefaultFieldList().ForEach(item =>
+            {
+                switch (item.FieldName)
+                {
+<# foreach (var model in models.ColumnsList.Where(t => t.Virtual == false)){	#>
+				case "<#=model.Code#>":
+<# if(model.CodeType=="string"){#>
+						if(item.DataType==MenuAuth_DataType.当前时间)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#>= DateTime.Now.ToString();
+                        else if(item.DataType == MenuAuth_DataType.用户编号)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#> = _workContext.CurrentUser.Id.ToString();
+                        else if (item.DataType == MenuAuth_DataType.机构编号)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#> = _workContext.SuperRole.Org.ToString();
+                        else if (item.DataType == MenuAuth_DataType.授权编号)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#> = _workContext.SuperRole.Id.ToString();
+                        else if (item.DataType == MenuAuth_DataType.角色编号)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#> = _workContext.UserRole.RoleID.ToString();
+						else if (item.DataType == MenuAuth_DataType.区域编号)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#> = _workContext.AreaInfo.Id.ToString();
+						else if (item.DataType == MenuAuth_DataType.班级编号)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#> = _workContext.ClassInfo.OrgID.ToString();
+						else if (item.DataType == MenuAuth_DataType.学段年级关联编号)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#> = _workContext.LinkInfo.Id.ToString();
+						else if (item.DataType == MenuAuth_DataType.学段编号)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#> = _workContext.LinkInfo.Key.ToString();
+						else if (item.DataType == MenuAuth_DataType.年级编号)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#> = _workContext.LinkInfo.Value.ToString();
+                        else if (item.DataType == MenuAuth_DataType.随机密钥串)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#> = _validateCode.GetRandomString(16, true);
+						else if (item.DataType == MenuAuth_DataType.机构层级编码)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#> = _workContext.OrgInfo.LevelCode;
+						else if (item.DataType == MenuAuth_DataType.机构区域编码)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#> = _workContext.AreaInfo.Code;
+						else if(!item.DataValue.IsNull()) 
+							m<#=_entityName.ToLower()#>.<#=model.Code#>=item.DataValue;
+<#}else if(model.EM){#>
+						m<#=_entityName.ToLower()#>.<#=model.Code#>=(<#=model.EnumName#>)item.DataValue.getValueint();
+<#}else if(model.CodeType.StartsWith("int")){#>
+						if(item.DataType == MenuAuth_DataType.用户编号)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#> = _workContext.CurrentUser.Id;
+                        else if (item.DataType == MenuAuth_DataType.机构编号)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#> = _workContext.SuperRole.Org;
+                        else if (item.DataType == MenuAuth_DataType.授权编号)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#> = _workContext.SuperRole.Id;
+                        else if (item.DataType == MenuAuth_DataType.角色编号)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#> = _workContext.UserRole.RoleID;
+                        else if (item.DataType == MenuAuth_DataType.区域编号)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#> = _workContext.AreaInfo.Id;
+						else if (item.DataType == MenuAuth_DataType.班级编号)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#> = _workContext.ClassInfo.OrgID;
+						else if (item.DataType == MenuAuth_DataType.学段年级关联编号)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#> = _workContext.LinkInfo.Id;
+						else if (item.DataType == MenuAuth_DataType.学段编号)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#> = _workContext.LinkInfo.Key;
+						else if (item.DataType == MenuAuth_DataType.年级编号)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#> = _workContext.LinkInfo.Value;
+						else if(!item.DataValue.IsNull())  
+							m<#=_entityName.ToLower()#>.<#=model.Code#>=item.DataValue.getValue<#=model.CodeType.Replace("?","")#>();
+<#}else if(model.CodeType.StartsWith("DateTime")){#>
+						if(item.DataType==MenuAuth_DataType.当前时间)
+                            m<#=_entityName.ToLower()#>.<#=model.Code#>= DateTime.Now;
+						else if(!item.DataValue.IsNull()) 
+							m<#=_entityName.ToLower()#>.<#=model.Code#>=item.DataValue.getValue<#=model.CodeType.Replace("?","")#>();
+
+<#}else{#>
+						 if(!item.DataValue.IsNull()) 
+							m<#=_entityName.ToLower()#>.<#=model.Code#>=item.DataValue.getValue<#=model.CodeType.Replace("?","")#>();
+<#}#>
+						break;
+<#}#>
+
+                }
+            });
+			}
+            #endregion
+		}
+
+		#region 新增/编辑
+		public <#=_entityName#>Entity CreateOrModify(<#=_entityName#>Model m<#=_entityName.ToLower()#>,Expression<Func<<#=_entityName#>Entity, bool>> expression=null,bool IsAuth=false, MenuFieldInfo _fieldInfo = null)
+		{
+			_<#=_entityName.ToLower()#>ChangeService.CreateOrModifySetDefaultParameters(m<#=_entityName.ToLower()#>,IsAuth);
+			SetDefaultValue(m<#=_entityName.ToLower()#>, IsAuth,_fieldInfo);
+<# foreach (var model in models.ColumnsList.Where(t => t.Virtual == false&&t.IsNull==false&&t.PK==false))
+{	
+	if(model.CodeType.StartsWith("DateTime")){if(model.Code!="AddTime"&&model.Code!="UpTime"){ #>
+			if(IsAuth)
+			{
+				if(_fieldInfo.IsValidInput("<#=model.Code#>"))
+					throw new ValidateException("<#=model.Name#>不能为空");
+			}
+			else if(m<#=_entityName.ToLower()#>.<#=model.Code#>.Year==1) 
+				throw new ValidateException("<#=model.Name#>不能为空");
+	<#}}else if(model.EM){
+		var Min=model.EmodelList.Select(t=>t.Attribute).Min();
+		var Max=model.EmodelList.Select(t=>t.Attribute).Max();
+	#>
+			if(IsAuth){
+				var <#=model.Code#>Field=_fieldInfo.getField("<#=model.Code#>");
+				if(<#=model.Code#>Field!=null&&<#=model.Code#>Field.ShowType==MenuAuth_ShowType.输入模式)
+				{
+					if(!<#=model.Code#>Field.Xml_EList.Select(t=>t.Attribute).Contains((int)m<#=_entityName.ToLower()#>.<#=model.Code#>))
+						throw new ValidateException("<#=model.Name#>不在选项范围内。");
+				}
+			}
+			<# if(Min>0){#>
+			else if((int)m<#=_entityName.ToLower()#>.<#=model.Code#>==0)
+				throw new ValidateException("<#=model.Name#>不能为空。");
+			<#}#>
+			else if((int)m<#=_entityName.ToLower()#>.<#=model.Code#><<#=Min#>||(int)m<#=_entityName.ToLower()#>.<#=model.Code#>><#=Max#>)
+				throw new ValidateException("<#=model.Name#>不在选项范围内。");
+
+	<#}else if((model.CodeType.StartsWith("int")||model.CodeType.StartsWith("long")||model.CodeType.StartsWith("decimal"))&&model.Code!="AddUser"&&model.Code!="UpUser"&&model.Code!="LogID"){#>
+			if(m<#=_entityName.ToLower()#>.<#=model.Code#>==0)
+			{
+				if(IsAuth)
+				{
+					if(_fieldInfo.IsValidInput("<#=model.Code#>"))
+						throw new ValidateException("<#=model.Name#>不能为空");
+				}
+				else throw new ValidateException("<#=model.Name#>不能为空");
+			}
+	<#}else if(model.CodeType.StartsWith("string")){#>
+			if(string.IsNullOrEmpty(m<#=_entityName.ToLower()#>.<#=model.Code#>))
+			{
+				if(IsAuth)
+				{
+					if(_fieldInfo.IsValidInput("<#=model.Code#>"))
+						throw new ValidateException("<#=model.Name#>不能为空");
+				}
+				else throw new ValidateException("<#=model.Name#>不能为空");
+			}	
+	<#}
+}#>
+<#if(IsFK){#>
+			if(m<#=_entityName.ToLower()#>.<#=PKData.Code#>==<#=PKData.DataType.IndexOf("int")==-1?"\"\"":"0"#>) throw new ValidateException("<#=PKData.Name#>不能为空");
+<#}#>			
+			<#=_entityName#>Entity <#=_entityName#>m<#=IsFK?"=_"+_entityName.ToLower()+"Repository.GetById(m"+_entityName.ToLower()+"."+PKData.Code+");":";"#>
+            if (<#=IsFK?_entityName+"m==null":"m"+_entityName.ToLower()+"."+PKData.Code+" == "+(PKData.DataType.IndexOf("int")==-1?"\"\"":"0")#>)
+            {
+				if(IsAuth)
+				{
+					if(_fieldInfo.ActionType!=MenuAction_ActionType.新增操作)
+						throw new ValidateException("没有新增操作权限");
+				}
+				<#=_entityName#>m=new <#=_entityName#>Entity();
+<#if(IsFK){#>
+			<#=_entityName#>m.<#=PKData.Code#>=m<#=_entityName.ToLower()#>.<#=PKData.Code#>;
+<#}#>
+ <#foreach (var model in models.ColumnsList.Where(t => t.Virtual == false&&t.PK==false))
+ {
+	if(model.CodeType.StartsWith("DateTime"))
+	{
+		if(model.IsNull) {#>
+			if(IsAuth)
+			{
+				if(_fieldInfo.IsValid("<#=model.Code#>"))
+				{
+					if(m<#=_entityName.ToLower()#>.<#=model.Code#>!=null&&((DateTime)m<#=_entityName.ToLower()#>.<#=model.Code#>).Year!=1)
+						<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+				}
+			}
+			else
+			{
+				if(m<#=_entityName.ToLower()#>.<#=model.Code#>!=null&&((DateTime)m<#=_entityName.ToLower()#>.<#=model.Code#>).Year!=1)
+						<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+			}
+		<#}else if(model.Code=="UpTime"||model.Code=="AddTime") {#>
+			if(IsAuth)
+			{
+				if(_fieldInfo.IsValid("<#=model.Code#>")&&m<#=_entityName.ToLower()#>.<#=model.Code#>.Year!=1)
+					<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+				else 
+					<#=_entityName#>m.<#=model.Code#>=DateTime.Now;
+			}
+			else
+			{
+				if(m<#=_entityName.ToLower()#>.<#=model.Code#>.Year!=1)
+					<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+				else 
+					<#=_entityName#>m.<#=model.Code#>=DateTime.Now;
+			}
+		<#} else{#>
+		if(IsAuth)
+		{
+			if(_fieldInfo.IsValid("<#=model.Code#>"))
+			{
+				if(m<#=_entityName.ToLower()#>.<#=model.Code#>.Year==1)
+					<#=_entityName#>m.<#=model.Code#>=DateTime.Now;
+				else
+					<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+			}
+			else	throw new ValidateException(" <#=model.Code#>字段不能为空，请联系管理员授权或设置默认值。");
+		}
+		else
+		{
+			if(m<#=_entityName.ToLower()#>.<#=model.Code#>.Year==1)
+				<#=_entityName#>m.<#=model.Code#>=DateTime.Now;
+			else 
+				<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+		}
+		<#}
+	}else if(model.EM) {#>
+		if(IsAuth)
+		{
+			if(_fieldInfo.IsValid("<#=model.Code#>"))
+				<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+		}
+		else
+		{
+			<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+		}
+	<#}else{ 
+		if(model.Code=="AddUser"||model.Code=="UpUser"){#>
+			if(IsAuth)
+			{
+				if(_fieldInfo.IsValid("<#=model.Code#>")&&m<#=_entityName.ToLower()#>.<#=model.Code#>!=0)
+					<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+				else 
+					<#=_entityName#>m.<#=model.Code#>=<#=model.IsNull?"_workContext.CurrentUser?.Id":"_workContext.CurrentUser.Id"#>;
+			}
+			else
+			{
+				if(m<#=_entityName.ToLower()#>.<#=model.Code#>!=0)
+					<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+				else 
+					<#=_entityName#>m.<#=model.Code#>=<#=model.IsNull?"_workContext.CurrentUser?.Id":"_workContext.CurrentUser.Id"#>;
+			}
+		<#}else if(model.Code=="LogID"){#>
+			<#=_entityName#>m.<#=model.Code#>=_workContext.LogID;
+		<#}else{#>	
+		if(IsAuth)	
+		{
+			if(_fieldInfo.IsValid("<#=model.Code#>"))
+				<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+		}
+		else
+		{	
+			<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+		}
+<#}}}#>	
+			_<#=_entityName.ToLower()#>ChangeService.Add(<#=_entityName#>m);
+			_<#=_entityName.ToLower()#>Repository.Insert(<#=_entityName#>m);
+            }
+            else
+            {	
+				if(IsAuth)
+				{
+					if(_fieldInfo.ActionType!=MenuAction_ActionType.编辑操作)
+						throw new ValidateException("没有编辑操作权限");
+				}
+                 <#=IsFK?"":_entityName+"m = GetById(m"+_entityName.ToLower()+"."+PKData.Code+",expression,IsAuth,_fieldInfo);"#>
+<#if(!IsFK){#>
+				if(<#=_entityName#>m==null) throw new ValidateException("修改的数据不存在或无权限。");
+<#} foreach (var model in models.ColumnsList.Where(t => t.Virtual == false&&t.PK==false)){
+if(model.EM) {#>
+				if(IsAuth)
+				{
+					if(_fieldInfo.IsValid("<#=model.Code#>"))
+					{
+						var <#=model.Code#>Change= _<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+						if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+						{
+							<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+						}
+					}
+				}
+				else
+				{	
+					_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+					<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+				}
+<#}else if(model.CodeType.StartsWith("int")||model.CodeType.StartsWith("lon")||model.CodeType.StartsWith("dec")){
+				if(model.Code=="UpUser"){#>
+					if(IsAuth)
+					{
+						if(_fieldInfo.IsValid("<#=model.Code#>"))
+						{
+							if(m<#=_entityName.ToLower()#>.<#=model.Code#>!=0)
+							{
+								var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+								if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+								{
+									<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+								}
+							}
+							else
+							{
+								var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",<#=model.IsNull?"_workContext.CurrentUser?.Id":"_workContext.CurrentUser.Id"#>);
+								if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+								{
+									<#=_entityName#>m.<#=model.Code#>=<#=model.IsNull?"_workContext.CurrentUser?.Id":"_workContext.CurrentUser.Id"#>;
+								}
+							}
+						}
+					}
+					else
+					{
+						if(m<#=_entityName.ToLower()#>.<#=model.Code#>!=0)
+						{
+								var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+								if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+								{
+									<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+								}
+						}
+						else
+						{
+								var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",<#=model.IsNull?"_workContext.CurrentUser?.Id":"_workContext.CurrentUser.Id"#>);
+								if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+								{	
+									<#=_entityName#>m.<#=model.Code#>=<#=model.IsNull?"_workContext.CurrentUser?.Id":"_workContext.CurrentUser.Id"#>;
+								}
+						}
+					}
+				<#}else if(model.Code=="AddUser"){#>
+					if(IsAuth)
+					{
+						if(_fieldInfo.IsValid("<#=model.Code#>"))
+						{
+							if(m<#=_entityName.ToLower()#>.<#=model.Code#>!=0)
+							{
+								var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+								if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+								{	
+									<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+								}
+							}
+						}
+					}
+					else
+					{
+						if(m<#=_entityName.ToLower()#>.<#=model.Code#>!=0)
+						{
+							var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+							if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+							{	
+								<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+							}
+						}
+					}
+				<#}else if(model.Code!="LogID"){#>
+				if(IsAuth)
+				{
+					if(_fieldInfo.IsValid("<#=model.Code#>"))
+					{
+						if(m<#=_entityName.ToLower()#>.<#=model.Code#>!=0)
+						{
+							var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+							if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+							{	
+								<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+							}
+						}
+					}
+				}
+				else
+				{
+					if(m<#=_entityName.ToLower()#>.<#=model.Code#>!=0)
+					{
+						var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+						if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+						{	
+							<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+						}
+					}
+				}
+<#}}else if(model.CodeType.StartsWith("str")){
+if(model.IsNull) {#>
+				if(IsAuth)
+				{
+					if(_fieldInfo.IsValid("<#=model.Code#>"))
+					{
+						var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+						if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+						{	
+							<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+						}
+					}
+				}
+				else
+				{
+					var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+					if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+					{	
+						<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+					}
+				}
+<#}else {#>
+				if(IsAuth)
+				{	
+					if(_fieldInfo.IsValid("<#=model.Code#>"))
+					{
+						if(!string.IsNullOrEmpty(m<#=_entityName.ToLower()#>.<#=model.Code#>))
+						{
+							var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+							if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+							{	
+								<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+							}
+						}
+					}
+				}
+				else
+				{
+					if(!string.IsNullOrEmpty(m<#=_entityName.ToLower()#>.<#=model.Code#>))
+					{
+						var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+						if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+						{	
+							<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+						}
+					}
+				}
+<#}}else if(model.CodeType.StartsWith("DateTime")){
+	if(model.IsNull) {#>
+				if(IsAuth)
+				{
+					if(_fieldInfo.IsValid("<#=model.Code#>"))
+					{
+						if(m<#=_entityName.ToLower()#>.<#=model.Code#>!=null&&((DateTime)m<#=_entityName.ToLower()#>.<#=model.Code#>).Year!=1)
+						{
+							var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+							if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+							{	
+								<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+							}
+						}
+					}
+				}
+				else
+				{
+					if(m<#=_entityName.ToLower()#>.<#=model.Code#>!=null&&((DateTime)m<#=_entityName.ToLower()#>.<#=model.Code#>).Year!=1)
+					{
+						var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+						if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+						{	
+							<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+						}
+					}
+				}
+	<#}else if(model.Code=="UpTime") {#>
+				if(IsAuth)
+				{
+					if(_fieldInfo.IsValid("<#=model.Code#>"))
+					{
+						if(m<#=_entityName.ToLower()#>.<#=model.Code#>!=null&&((DateTime)m<#=_entityName.ToLower()#>.<#=model.Code#>).Year!=1)
+						{
+							var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+							if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+							{	
+								<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+							}
+						}
+						else 
+						{
+							var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",DateTime.Now);
+							if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+							{	
+								<#=_entityName#>m.<#=model.Code#>=DateTime.Now;
+							}
+						}
+					}
+				}
+				else
+				{
+					if(m<#=_entityName.ToLower()#>.<#=model.Code#>!=null&&((DateTime)m<#=_entityName.ToLower()#>.<#=model.Code#>).Year!=1)
+					{
+						var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+						if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+						{	
+							<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+						}
+					}
+					else 
+					{
+						var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",DateTime.Now);
+						if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+						{	
+							<#=_entityName#>m.<#=model.Code#>=DateTime.Now;
+						}
+					}
+				}
+	<#}else if(model.Code=="AddTime") {#>
+				if(IsAuth)
+				{
+					if(_fieldInfo.IsValid("<#=model.Code#>"))
+					{
+						if(m<#=_entityName.ToLower()#>.<#=model.Code#>!=null&&((DateTime)m<#=_entityName.ToLower()#>.<#=model.Code#>).Year!=1)
+						{
+							var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+							if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+							{	
+								<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+							}
+						}
+					}
+				}
+				else
+				{
+					if(m<#=_entityName.ToLower()#>.<#=model.Code#>!=null&&((DateTime)m<#=_entityName.ToLower()#>.<#=model.Code#>).Year!=1)
+					{
+						var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+						if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+						{	
+							<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+						}
+					}
+				}
+	<#}else{ #>
+				if(IsAuth)
+				{
+					if(_fieldInfo.IsValid("<#=model.Code#>"))
+					{
+						if(m<#=_entityName.ToLower()#>.<#=model.Code#>.Year!=1)
+						{
+							var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+							if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+							{	
+								<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+							}
+						}
+					}
+				}
+				else
+				{
+					if(m<#=_entityName.ToLower()#>.<#=model.Code#>.Year!=1)
+					{
+						var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+						if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+						{	
+							<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+						}
+					}
+				}
+	<#}}
+else{#>
+				if(IsAuth)
+				{
+					if(_fieldInfo.IsValid("<#=model.Code#>"))
+					{
+						var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+						if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+						{	
+							<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+						}
+					}
+				}
+				else
+				{
+					var <#=model.Code#>Change=_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+					if(<#=model.Code#>Change&&_workContext.ValidatChangeField)
+					{	
+						<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+					}
+				}
+ <#}}#>
+				}
+				_<#=_entityName.ToLower()#>ChangeService.Update(<#=_entityName#>m);
+				return <#=_entityName#>m;
+		}
+		#endregion
+		#region 批量删除
+		public async Task<int> Delete(RequestBeachModel<<#=PKData.CodeType#>> Request,Expression<Func<<#=_entityName#>Entity, bool>> expression=null,IQueryable<<#=_entityName#>Entity> Query=null,bool IsAuth=false, MenuFieldInfo FieldInfo=null)
+		{
+			if (Request.List == null || Request.List.Count == 0) throw new ValidateException("未包含任何删除的元素");
+			//查询根据权限可实际删除数据
+			var DeleteList =await Where(t => Request.List.Contains(t.<#=PKData.Code#>), Where(expression,Query), IsAuth, FieldInfo).ToListAsync();
+			if(!DeleteList.Any()) throw new ValidateException("数据不存在或无权限。");
+			if(DeleteList.Count()!= Request.List.Count) throw new ValidateException("部分删除元素不存在或无权限操作。");
+			DeleteList.ForEach(item =>
+            {
+                _<#=_entityName.ToLower()#>ChangeService.Delete(item);
+				_<#=_entityName.ToLower()#>Repository.Delete(item);
+            });
+			return Request.List.Count();
+		}
+		#endregion
+		#region 批量编辑
+		public async Task<int> BeachOperation(RequestBeachModel<<#=PKData.CodeType#>> request,Expression<Func<<#=_entityName#>Entity, bool>> expression=null,IQueryable<<#=_entityName#>Entity> mQuery=null,bool IsAuth=false, MenuFieldInfo FieldInfo=null)
+        {
+            if(request.Value.IsNull()) throw new ValidateException("数据值不能为空");
+            if (request.List == null || request.List.Count == 0) throw new ValidateException("未包含任何数据");
+			if(IsAuth)
+			{
+				if(FieldInfo.ActionType!=MenuAction_ActionType.批量操作) throw new ValidateException("操作类型错误。");
+				if (!FieldInfo.IsValid(request.FieldName)) throw new ValidateException("未授权，请联系管理员。");
+			}
+			var Query =await Where(t => request.List.Contains(t.<#=PKData.Code#>), Where(expression,mQuery), IsAuth, FieldInfo).ToListAsync();
+			if(Query.Count()!= request.List.Count) throw new ValidateException("部分元素不存在或无权限操作。");
+            Query.ForEach(item =>
+            {
+                switch (request.FieldName)
+                {
+<# foreach (var model in models.ColumnsList.Where(t => t.Virtual == false)){#>
+                    case "<#=model.Code#>":
+<#if(model.EM){#>
+						var <#=model.Code#>Value=(<#=model.EnumName#>)request.Value.getValue<#=model.CodeType.Replace("?","")#>();
+						_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(item,item.<#=model.Code#>,"<#=model.Code#>",<#=model.Code#>Value);
+						item.<#=model.Code#> =<#=model.Code#>Value;
+						_<#=_entityName.ToLower()#>ChangeService.Update(item);
+<#}else if(model.CodeType=="string"){#>
+						_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(item,item.<#=model.Code#>,"<#=model.Code#>",request.Value);
+                        item.<#=model.Code#> =request.Value;
+						_<#=_entityName.ToLower()#>ChangeService.Update(item);
+<#}else{#>
+						var <#=model.Code#>Value=request.Value.getValue<#=model.CodeType.Replace("?","")#>();
+						_<#=_entityName.ToLower()#>ChangeService.UpdateFieldBegin(item,item.<#=model.Code#>,"<#=model.Code#>",<#=model.Code#>Value);
+                        item.<#=model.Code#> =<#=model.Code#>Value;
+						_<#=_entityName.ToLower()#>ChangeService.Update(item);
+<#}#>
+                        break;
+<#}#>
+                    default:
+                        throw new ValidateException("未找到该项操作，请联系管理员("+request.FieldName+")");
+                }
+            });
+            return Query.Count();
+        }
+		#endregion
+		#region 转义敏感信息
+		private void Translation(MenuFieldInfo FieldInfo,<#=_entityName#>Model model)
+		{
+<# foreach (var model in models.ColumnsList.Where(t => t.Virtual == false||(t.Virtual&&t.PK&&t.FK))){if(model.Virtual){#>
+	if(FieldInfo.IsInclude("<#=model.Code#>"))
+	{
+<#   var FCode=model.Code.Split('_')[1];
+	var FKEntity=_AllModels.Where(t=>t.Code==FCode).FirstOrDefault();
+	if(FKEntity!=null){ 
+		foreach (var model2 in FKEntity.ColumnsList.Where(t => t.Virtual == false&&t.CodeType=="string")){#>
+			if(FieldInfo.IsIncludeChildTranslation("<#=model.Code#>","<#=model2.Code#>"))
+			{
+				model.<#=model.Code#>.<#=model2.Code#> = model.<#=model.Code#>.<#=model2.Code#>.ReplaseX();
+			}
+<#}}#>
+	}
+<#}else{#>
+<#if(model.CodeType=="string"){#>
+		if(FieldInfo.IsTranslation("<#=model.Code#>"))
+			model.<#=model.Code#> = model.<#=model.Code#>.ReplaseX();
+<#}#>
+<#if(model.FK&&!model.PK){ var FKEntity=_AllModels.Where(t=>t.Code==model.FKTable.Replace("Entity", "")).FirstOrDefault();if(FKEntity!=null){#>
+				if(FieldInfo.IsInclude("<#=model.Code#>"))
+				{
+<# foreach (var model2 in FKEntity.ColumnsList.Where(t => t.Virtual == false&&t.CodeType=="string")){#>
+					if(FieldInfo.IsIncludeChildTranslation("<#=model.Code#>","<#=model2.Code#>"))
+					{
+						if(FieldInfo.IsIncludeChildTranslation("<#=model.Code#>","<#=model2.Code#>"))
+						{
+							model.<#=model.Code+"_"+model.FKTable.Replace("Entity", "")#>.<#=model2.Code#> = model.<#=model.Code+"_"+model.FKTable.Replace("Entity", "")#>.<#=model2.Code#>.ReplaseX();
+						}
+					}
+<#}#>
+				}
+<#}}}}#>
+		}
+
+		public async Task<int> SaveChangesAsync()
+		{
+			return await _<#=_entityName.ToLower()#>Repository.SaveChangesAsync();
+		}
+
+		#endregion
+		public <#=_entityName#>Entity GetById (<#=PKData.CodeType#> <#=PKData.Code#>,Expression<Func<<#=_entityName#>Entity, bool>> expression=null,bool IsAuth=false, MenuFieldInfo FieldInfo=null)
+		{
+            return Where(t => t.<#=PKData.Code#> == <#=PKData.Code#>, null, IsAuth, FieldInfo).FirstOrDefault();
+		}
+
+		public  async Task<<#=_entityName#>Model> GetModelById (RequestModel<<#=PKData.CodeType#>> Request,Expression<Func<<#=_entityName#>Entity, bool>> expression=null,bool IsAuth=false, MenuFieldInfo FieldInfo=null)
+		{
+			var Query=Where(expression);
+			if(IsAuth)
+			{
+				#region 查询已有数据模型
+				if(FieldInfo.ActionType==MenuAction_ActionType.编辑操作||FieldInfo.ActionType == MenuAction_ActionType.查看操作)
+				{
+					Expression<Func<<#=_entityName#>Entity, bool>> FiterExpression = null;
+<#
+					var PKtype=PKData.DataType.IndexOf("(") == -1 ? PKData.DataType.Replace("?","") : PKData.DataType.Substring(0, PKData.DataType.IndexOf("(")).Replace("?","");
+					var PKDefaultValue=Helper.getDefaultValue(_options.DataBaseType,PKtype,PKData.IsNull);
+#>
+					if(Request.Id!=<#=PKDefaultValue#>)
+						FiterExpression=t => t.<#=PKData.Code#> == Request.Id;
+					var <#=_entityName#>Model=await MWhere(FiterExpression, Query, IsAuth,FieldInfo).FirstOrDefaultAsync();
+					if(<#=_entityName#>Model==null) throw new ValidateException("数据不存在或无权限。");
+					if(IsAuth&&FieldInfo.IsTranslation())
+						Translation(FieldInfo,<#=_entityName#>Model);
+					return <#=_entityName#>Model;
+				}
+				#endregion
+				#region 设置模型初始值
+				else if(FieldInfo.ActionType==MenuAction_ActionType.新增操作)
+				{
+					var <#=_entityName#>Model=new <#=_entityName#>Model();
+					SetDefaultValue(<#=_entityName#>Model, IsAuth, FieldInfo);
+					return <#=_entityName#>Model;
+				}
+				#endregion
+				throw new ValidateException("该类型暂不支持，请联系管理员。");
+			}
+			else
+			{
+				var <#=_entityName#>Model=await MWhere(t => t.<#=PKData.Code#> == Request.Id, Query, IsAuth,FieldInfo).FirstOrDefaultAsync();
+				if(<#=_entityName#>Model==null) throw new ValidateException("数据不存在或无权限。");
+				return <#=_entityName#>Model;
+			}
+		}
+		public IQueryable<<#=_entityName#>Entity> Get<#=_entityName#>sByCondition(<#=_entityName#>SearchCondition condition,Expression<Func<<#=_entityName#>Entity, bool>> expression=null,IQueryable<<#=_entityName#>Entity> Query=null,bool IsAuth=false, MenuFieldInfo FieldInfo=null)
+		{
+			_<#=_entityName.ToLower()#>ChangeService.Get<#=_entityName#>sByConditionSetDefaultParameters(condition,IsAuth);
+<#if(_pro){#>
+			return ((<#=_projectName#>DbContext)_<#=_entityName.ToLower()#>Repository.Context).<#=_entityName#>FuncSearch(<#=PaStr#>);
+<#}else{#>
+			var query = _<#=_entityName.ToLower()#>BaseService.SearchByCondition(condition,expression,Query,IsAuth,FieldInfo);
+
+			#region 动态排序
+			if(condition!=null&&!condition.OrderBy.IsNull() && (IsAuth&& FieldInfo!=null&&FieldInfo.IsOrderBy(condition.OrderBy)||!IsAuth))
+			{
+				switch (condition.OrderBy)
+                {
+<#				foreach(var model in _sModels.Where(r=>r.Virtual==false).OrderByDescending(c => c.Search)){ #>
+					case "<#=model.Code#>":
+						query = condition.IsDescending?query.OrderByDescending(q=>q.<#=model.Code#>):query.OrderBy(q=>q.<#=model.Code#>);
+						break;
+<# }#>
+                }
+			}
+			else
+				query = query.OrderBy(q=>q.<#=PKData.Code#>);
+			#endregion
+			return query;
+<#}#>
+		}
+	}
+}

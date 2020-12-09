@@ -1,0 +1,133 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="FileLoder.TemplateModel" #>
+using <#=_projectName#>.Entity;
+using <#=_projectName#>.Models;
+using System.Data.Entity;
+using System.Data.Entity.Core.Objects;
+using System.Data.Entity.Infrastructure;
+using System.Linq;
+using System;
+using System.Collections.Generic;
+using CodeFirstStoreFunctions;
+
+namespace <#=_projectName#>.Base
+{
+	public partial class <#=_projectName#>DbContext
+    {
+<# var sqData=_models.ColumnsList.Where(r=>r.Search != SearchType.Null&&r.Virtual==false).ToList();
+		var sum=4+sqData.Count+sqData.Where(r=>r.Search == SearchType.Range).ToList().Count;
+		int p=0;
+		var Pa=new  StringBuilder();
+		Pa.Append("bool? IsDescending=null,int? OrderBy=null,int?  Page=null,int?  PageCount=null");
+		foreach(var model in sqData)
+		{ 
+			var type = (model.CodeType=="string"||model.CodeType.IndexOf("?")!=-1)?model.CodeType:model.CodeType+"?";
+			if(model.Search==SearchType.In)
+			{
+				Pa.Append(",string "+model.Code+"s"+"=null");
+			}
+			else if (model.Search == SearchType.Like)
+			{
+				Pa.Append(","+type+" "+model.Code+"=null");
+			}
+			else if (model.Search == SearchType.Equal)
+			{
+				Pa.Append(","+type+" "+model.Code+"=null");
+			}
+			else if (model.Search == SearchType.Range)
+			{
+				Pa.Append(","+type+" "+model.Code+"Begin"+"=null");
+				Pa.Append(","+type+" "+model.Code+"End"+"=null");
+			}
+		}
+		var PaStr=Pa.ToString();
+#>
+        [DbFunction("<#=_projectName#>DbContext", "<#=_entityName#>_Func_Search")]
+        public virtual IQueryable<<#=_entityName#>Entity> <#=_entityName#>FuncSearch(<#=PaStr#>)
+        {
+			var Para = new ObjectParameter[<#=sum#>];
+			Para[<#=p++#>] = IsDescending==null? new ObjectParameter("IsDescending", typeof(bool)):new ObjectParameter("IsDescending", IsDescending);
+			Para[<#=p++#>] = OrderBy==null? new ObjectParameter("OrderBy", typeof(int)):new ObjectParameter("OrderBy", OrderBy);
+			Para[<#=p++#>] = Page==null? new ObjectParameter("Page", typeof(int)):new ObjectParameter("Page", Page);
+			Para[<#=p++#>] = PageCount==null? new ObjectParameter("PageCount", typeof(int)):new ObjectParameter("PageCount", PageCount);
+<#	foreach(var model in sqData){ 
+	var type = (model.CodeType=="string"||model.CodeType.IndexOf("?")!=-1)?model.CodeType:model.CodeType+"?";
+	if(model.Search==SearchType.In)
+{#>
+			Para[<#=p#>] =(<#=model.Code#>s==null||<#=model.Code#>s.Length==0)? new ObjectParameter("<#=model.Code#>s", typeof(string)):new ObjectParameter("<#=model.Code#>s", <#=model.Code#>s);
+<#}else if (model.Search == SearchType.Equal){#>
+			Para[<#=p#>] = <#=model.Code#>==null? new ObjectParameter("<#=model.Code#>", typeof(<#=type#>)):new ObjectParameter("<#=model.Code#>", <#=model.Code#>);
+<#
+				}
+				else if (model.Search == SearchType.Like)
+				{
+#>
+			Para[<#=p#>] = (<#=model.Code#>==null||<#=model.Code#>.Trim()=="")? new ObjectParameter("<#=model.Code#>", typeof(<#=type#>)):new ObjectParameter("<#=model.Code#>", <#=model.Code#>);
+<#
+				}
+				else if (model.Search == SearchType.Range)
+				{
+#>
+			Para[<#=p#>] = <#=model.Code#>Begin==null? new ObjectParameter("<#=model.Code#>Begin", typeof(<#=type#>)):new ObjectParameter("<#=model.Code#>Begin", <#=model.Code#>Begin);
+<#p++;#>
+			Para[<#=p#>] = <#=model.Code#>End==null? new ObjectParameter("<#=model.Code#>End", typeof(<#=type#>)):new ObjectParameter("<#=model.Code#>End", <#=model.Code#>End);
+<#
+				}
+			p++;}
+#>
+			string pas="@"+string.Join(",@",Para.Select(t => t.Name).ToList());
+            return ((IObjectContextAdapter)this).ObjectContext
+                .CreateQuery<<#=_entityName#>Entity>(
+                    string.Format("[{0}].{1}", GetType().Name,
+                        string.Format("[{0}]({1})","<#=_entityName#>_Func_Search",pas)), Para);
+        }
+
+		[DbFunction("<#=_projectName#>DbContext", "<#=_entityName#>_Pro_Search")]
+		[DbFunctionDetails(ResultTypes = new[] {typeof (<#=_entityName#>_DataModel),typeof (int)})] 
+        public virtual ObjectResult<<#=_entityName#>_DataModel> <#=_entityName#>ProSearch(<#=PaStr#>)
+        {
+<#int pg=0;#>
+			var Para = new ObjectParameter[<#=sum#>];
+			Para[<#=pg++#>] = IsDescending==null? new ObjectParameter("IsDescending", typeof(bool)):new ObjectParameter("IsDescending", IsDescending);
+			Para[<#=pg++#>] = OrderBy==null? new ObjectParameter("OrderBy", typeof(int)):new ObjectParameter("OrderBy", OrderBy);
+			Para[<#=pg++#>] = Page==null? new ObjectParameter("Page", typeof(int)):new ObjectParameter("Page", Page);
+			Para[<#=pg++#>] = PageCount==null? new ObjectParameter("PageCount", typeof(int)):new ObjectParameter("PageCount", PageCount);
+<#	foreach(var model in sqData){ 
+				var type = (model.CodeType=="string"||model.CodeType.IndexOf("?")!=-1)?model.CodeType:model.CodeType+"?";
+				if(model.Search==SearchType.In)
+				{
+#>
+			Para[<#=pg#>] =(<#=model.Code#>s==null||<#=model.Code#>s.Length==0)? new ObjectParameter("<#=model.Code#>s", typeof(string)):new ObjectParameter("<#=model.Code#>s", <#=model.Code#>s);
+<#
+				}
+				else if (model.Search == SearchType.Equal)
+				{
+#>
+			Para[<#=pg#>] =<#=model.Code#>==null? new ObjectParameter("<#=model.Code#>", typeof(<#=type#>)): new ObjectParameter("<#=model.Code#>", <#=model.Code#>);
+<#
+				}
+				else if (model.Search == SearchType.Like)
+				{
+#>
+			Para[<#=pg#>] =(<#=model.Code#>==null||<#=model.Code#>.Trim()=="")? new ObjectParameter("<#=model.Code#>", typeof(<#=type#>)): new ObjectParameter("<#=model.Code#>", <#=model.Code#>);
+<#
+				}
+				else if (model.Search == SearchType.Range)
+				{
+#>
+			Para[<#=pg#>] =<#=model.Code#>Begin==null? new ObjectParameter("<#=model.Code#>Begin", typeof(<#=type#>)): new ObjectParameter("<#=model.Code#>Begin", <#=model.Code#>Begin);
+<#pg++;#>
+			Para[<#=pg#>] =<#=model.Code#>End==null? new ObjectParameter("<#=model.Code#>End", typeof(<#=type#>)): new ObjectParameter("<#=model.Code#>End", <#=model.Code#>End);
+<#
+				}
+			pg++;}
+#>
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<<#=_entityName#>_DataModel>("<#=_entityName#>_Pro_Search", Para);
+        }
+        
+    }
+}

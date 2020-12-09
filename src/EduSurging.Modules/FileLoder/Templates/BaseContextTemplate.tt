@@ -1,0 +1,23 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+using <#=_projectName#>.Entity;
+
+namespace <#=_projectName#>.Base
+{
+	public class <#=_projectName#>Context : I<#=_projectName#>Context
+    {
+        private readonly I<#=_projectName#>Repository<<#=_entityName#>Entity> _<#=_entityName#>Repository;
+        public <#=_projectName#>Context(I<#=_projectName#>Repository<<#=_entityName#>Entity> <#=_entityName#>Repository)
+        {
+            _<#=_entityName#>Repository = <#=_entityName#>Repository;
+        }
+        public <#=_projectName#>DbContext <#=_projectName#>DbContext()
+        {
+            return (<#=_projectName#>DbContext)_<#=_entityName#>Repository.Context;
+        }
+    }
+}

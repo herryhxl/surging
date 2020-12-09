@@ -1,0 +1,56 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+using Autofac;
+using Autofac.Core;
+using System.Data.Entity;
+using Edu.Core.Configuration;
+using Edu.Core.Data;
+using Edu.Core.Infrastructure;
+using Edu.Core.Infrastructure.DependencyManagement;
+using Edu.Data.EntityFramework.Migrations;
+
+namespace <#=_projectName#>.Base
+{
+    public class <#=_projectName#>Depency : IDependencyRegistrar
+    {
+        public int Order
+        {
+            get
+            {
+                return 1;
+            }
+        }
+
+        public void Register(ContainerBuilder builder, ITypeFinder typeFinder,EduConfig config)
+        {
+            var dataSettingsManager = new DataSettingsManager();
+            var Settings = dataSettingsManager.GetSettings();
+            foreach (var dataProviderSettings in Settings)
+            {
+                //不同数据库对应不同的仓库
+                if (dataProviderSettings.RawDataSettings.ContainsKey("<#=_projectName#>Connection"))
+                {
+					<#if(_dataBaseType==DataBaseType.MySql){#>
+					Database.SetInitializer(new MySqlEfInitializer<<#=_projectName#>DbContext, <#=_projectName#>Configuration>(dataProviderSettings.RawDataSettings["<#=_projectName#>Connection"]));
+                    builder.Register<IMySqlDbContext>(c => new <#=_projectName#>DbContext(dataProviderSettings.RawDataSettings["<#=_projectName#>Connection"])).Named<IMySqlDbContext>("<#=_projectName#>").InstancePerRequest();
+                    var <#=_projectName#>Parameter = new ResolvedParameter((pi, ctx) => pi.Name == "context",
+                                        (pi, ctx) => ctx.ResolveNamed<IMySqlDbContext>("<#=_projectName#>"));
+                    builder.RegisterGeneric(typeof(<#=_projectName#>Repository<>)).WithParameter(<#=_projectName#>Parameter)
+					.As(typeof(I<#=_projectName#>Repository<>)).InstancePerRequest();
+					<#}else if(_dataBaseType==DataBaseType.MSSQL){#>
+                    Database.SetInitializer(new EfInitializer<<#=_projectName#>DbContext, <#=_projectName#>Configuration>(dataProviderSettings.RawDataSettings["<#=_projectName#>Connection"]));
+                    builder.Register<IDbContext>(c => new <#=_projectName#>DbContext(dataProviderSettings.RawDataSettings["<#=_projectName#>Connection"])).Named<IDbContext>("<#=_projectName#>").InstancePerRequest();
+                    var <#=_projectName#>Parameter = new ResolvedParameter((pi, ctx) => pi.Name == "context",
+                                        (pi, ctx) => ctx.ResolveNamed<IDbContext>("<#=_projectName#>"));
+                    builder.RegisterGeneric(typeof(<#=_projectName#>Repository<>)).WithParameter(<#=_projectName#>Parameter)
+					.As(typeof(I<#=_projectName#>Repository<>)).InstancePerRequest();
+					<#}#>
+                }
+            }
+        }
+    }
+}

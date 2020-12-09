@@ -1,0 +1,243 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+
+package <#=_package#>.Data;
+
+import java.util.ArrayList;
+import java.util.List;
+import <#=_package#>.ViewModel.<#=_entityName#>ViewModel;
+import com.example.yunjoy.Base.DBOpenHelper;
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+
+
+
+<# 
+var CreateSql=new StringBuilder();
+var AddContent=new StringBuilder();
+var UpdateContent=new StringBuilder();
+var Conlums=new StringBuilder();
+var Result=new StringBuilder();
+var p=1;
+foreach(var model in _models.ColumnsList.Where(t=>t.Virtual==false)){
+	var CodeType = model.CodeType.Replace("?","");
+	var Code=model.Code.Replace("?","");
+	var DataType=model.DataType.Replace("?","");
+	if(DataType=="xml"){
+		DataType="text";
+	}
+	else if(DataType=="int"||DataType=="bit"){
+		DataType="integer";
+	}
+	else if(DataType=="bigint"){
+		DataType="long";
+	}
+	else if(DataType=="decimal"){
+		DataType="float";
+	}
+	else DataType="text";
+		var type="String";
+		var rp="getString"+"("+p+")";
+			if(CodeType=="string"||CodeType=="Guid"||CodeType=="datetime") 
+			{
+				type="String";
+				rp="getString"+"("+p+")";
+			}
+			else if(CodeType=="int") {
+				type="int";
+				rp="getInt"+"("+p+")";
+			}
+			else if(CodeType=="bigint") {
+				type="long";
+				rp="getLong"+"("+p+")";
+			}
+			else if(CodeType=="decimal") {
+				type="double";
+				rp="getDouble"+"("+p+")";
+			}
+			else if(CodeType=="bool"){ 
+				type="Boolean";
+				rp="getInt"+"("+p+")==1";
+			}
+CreateSql.Append(","+Code+" "+(model.DataType.Replace("?","")=="xml"?"text":model.DataType.Replace("?","")) );//
+AddContent.Append("values.put(\""+Code+"\","+_entityName.ToLower()+".get"+_models.Code+
+Code+"());\r\n");
+Conlums.Append(",\""+Code+"\"");
+Result.Append(",cursor."+rp);
+p++;
+}
+var Add=AddContent.ToString();
+UpdateContent.Append("values.put(\"_id\","+ _entityName.ToLower()+".get__id());\r\n");
+UpdateContent.Append(Add);
+var Update=UpdateContent.ToString();
+var Con="\"_id\""+Conlums.ToString();
+var Re="cursor.getInt(0)"+Result.ToString();
+#>
+public class <#=_entityName#>DAO {
+	private SQLiteDatabase db;
+	private static final String TabName="t_<#=_entityName.ToLower()#>";
+	public static String CreateSql="create table "+TabName+" (_id integer primary key AUTOINCREMENT <#=CreateSql#>)";
+	private DBOpenHelper helper;
+	private String secret_key = "@#{}*Hndssafd)~GDF";
+
+	public <#=_entityName#>DAO(Context con) {
+		helper = new DBOpenHelper(con,TabName);
+	}
+
+	public static String getCreateSql()
+	{
+		return CreateSql;
+	}
+
+
+	// 添加
+	public long Add(<#=_entityName#>ViewModel <#=_entityName.ToLower()#>) {
+		db = helper.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		try {
+				<#=Add#>
+				return db.insert(TabName, null, values);
+
+		} catch (Exception e) {
+			throw e;
+		}finally {
+
+			db.close();
+		}
+
+	}
+
+	// 更新
+	public void Update(<#=_entityName#>ViewModel <#=_entityName.ToLower()#>) {
+		db = helper.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		try {
+			<#=Update#>
+			db.update(TabName, values, "_id = ?",
+					new String[]{String.valueOf(<#=_entityName.ToLower()#>.get__id())});
+
+		} catch (Exception e) {
+			throw e;
+		}finally {
+				db.close();
+			}
+	}
+	public <#=_entityName#>ViewModel getById(int _id) {
+		db = helper.getWritableDatabase();
+		Cursor cursor=null;
+		try {
+			cursor = db.query(TabName, new String[] { <#=Con#>}, "_id = ?",
+					new String[] { String.valueOf(_id)}, null, null, null);
+
+			if (cursor.moveToNext())
+				return new <#=_entityName#>ViewModel(<#=Re#>);
+			else
+				return null;
+		}catch (Exception e) {
+			throw e;
+		} finally {
+			if (cursor != null) {
+				cursor.close();
+				cursor = null;
+			}
+			db.close();
+		}
+	}
+	public void delete(Integer... id) {
+		if (id.length > 0) {
+			try {
+				StringBuffer sb = new StringBuffer();
+				String[] strbid = new String[id.length];
+				for (int i = 0; i < id.length; i++) {
+					sb.append('?').append(',');
+					strbid[i] = String.valueOf(id[i]);
+				}
+				sb.deleteCharAt(sb.length() - 1);
+				db = helper.getWritableDatabase();
+				db.delete(TabName, "_id in (" + sb + ")", strbid);
+			}catch (Exception e) {
+				throw e;
+			} finally {
+				db.close();
+			}
+		}
+	}
+
+	public List<<#=_entityName#>ViewModel> getscrollData(int start, int count) {
+		List<<#=_entityName#>ViewModel> Data = new ArrayList<<#=_entityName#>ViewModel>();
+		db = helper.getWritableDatabase();
+		Cursor cursor = db.query(TabName, new String[] { <#=Con#>}, null, null, null, null,
+				"_id desc", start + "," + count);
+		try {
+			while (cursor.moveToNext())
+				try {
+					Data.add(new <#=_entityName#>ViewModel(<#=Re#>));
+				} catch (Exception e) {
+
+				}
+			return Data;
+		}catch (Exception e) {
+			throw e;
+		} finally {
+			if (cursor != null) {
+				cursor.close();
+				cursor = null;
+			}
+			db.close();
+		}
+
+	}
+
+	public List<<#=_entityName#>ViewModel> getData() {
+		List<<#=_entityName#>ViewModel> DataList = new ArrayList<<#=_entityName#>ViewModel>();
+		db = helper.getWritableDatabase();
+		Cursor cursor = db
+				.query(TabName, new String[]{<#=Con#>}, null, null, null, null, null);
+		try {
+			while (cursor.moveToNext()) {
+				try {
+					DataList.add(new <#=_entityName#>ViewModel(<#=Re#>));
+				} catch (Exception e) {
+					Log.i("t", e.toString());
+					e.printStackTrace();
+				}
+			}
+			return DataList;
+		}catch (Exception e) {
+			throw e;
+		} finally {
+			if (cursor != null) {
+				cursor.close();
+				cursor = null;
+			}
+			db.close();
+		}
+
+	}
+	public long getCount() {
+		db = helper.getWritableDatabase();
+		Cursor cursor = db.query(TabName, new String[] { "count(*)" }, null,
+				null, null, null, null);
+		try {
+			if (cursor.moveToNext()) {
+				return cursor.getLong(0);
+			}
+			return 0;
+		}catch (Exception e) {
+			throw e;
+		} finally {
+			if (cursor != null) {
+				cursor.close();
+				cursor = null;
+			}
+			db.close();
+		}
+	}
+}

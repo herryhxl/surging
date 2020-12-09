@@ -1,0 +1,28 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+using System.Linq.Expressions;
+using System.Threading.Tasks;
+using System.Linq;
+using <#=_projectName#>.Entity;
+using <#=_projectName#>.Models;
+using System.Collections.Generic;
+using System;
+using Edu.Core.Model;
+using Edu.Core.Data;
+
+<# var PKData=_models.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+	var IsFK=PKData.FK;
+#>
+
+namespace <#=_projectName#>.ChangeService.<#=_entityName#>
+{
+	public interface I<#=_entityName#>ChangeService:IChangeService<<#=_entityName#>Entity,<#=PKData.CodeType#>>
+	{
+		
+	}
+}

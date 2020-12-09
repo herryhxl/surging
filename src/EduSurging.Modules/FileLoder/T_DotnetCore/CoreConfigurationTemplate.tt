@@ -1,0 +1,69 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="FileLoder.TemplateModel" #>
+<#@ import namespace="FileLoder.Helper" #>
+
+using System.Data.Entity.Migrations;
+using Edu.Data.EntityFramework.Migrations;
+
+<#if(_dataBaseType==DataBaseType.MySql){#>
+using Edu.Data.EntityFramework.Migrations.MySql;
+using MySql.Data.Entity;
+<#}#>
+
+namespace <#=_projectName#>.Base
+{
+    public class <#=_projectName#>Configuration : DbMigrationsConfiguration<<#=_projectName#>DbContext>
+    {
+        public <#=_projectName#>Configuration()
+        {
+		<#if(_dataBaseType==DataBaseType.MySql){#>
+			SetSqlGenerator("MySql.Data.MySqlClient", new MyCustomMigrationSQLGenerator());
+            SetHistoryContextFactory("MySql.Data.MySqlClient", (conn, schema) => new MyCustomHistoryContext(conn, schema));
+		<#}#>
+            AutomaticMigrationsEnabled = true;
+            AutomaticMigrationDataLossAllowed = true;  //如果数据迁移时会发生数据丢失，false则抛出异常，true不抛出异常
+        }
+<#if(_pro){#>
+//判断存储过程是否存在,不存在就删除
+		protected void DropDropProcByName(<#=_projectName#>DbContext context,string ProcedureName)
+		{
+			string DropProc = "if exists (select * from dbo.sysobjects where id = object_id(N'[{0}]') and OBJECTPROPERTY(id, N'IsProcedure') = 1) begin DROP PROCEDURE [{0}] end";
+			var str = string.Format(DropProc, ProcedureName);
+			context.Database.ExecuteSqlCommand(str);
+		}
+		//判断方法是否存在,不存在就删除
+		protected void DropFunctionByName(<#=_projectName#>DbContext context, string FunctionName)
+		{
+			string DropFunc = "if exists (select * from dbo.sysobjects where id = object_id(N'[{0}]') and xtype in (N'FN', N'IF', N'TF')) begin DROP FUNCTION  [{0}] end";
+			var str = string.Format(DropFunc, FunctionName);
+			context.Database.ExecuteSqlCommand(str);
+		}
+		protected override void Seed(<#=_projectName#>DbContext context)
+        {
+			
+			
+            //初始化数据或创建存储过程以及数据库方法
+<# foreach (var item in _models)
+            {
+                var PROName = item.Code + "_Pro" + "_Search";
+                var FuncName = item.Code + "_Func" + "_Search";
+				var Store=Helper.GetStoredPro(item);
+#>
+		
+			DropDropProcByName(context, "<#=PROName#>");
+			DropFunctionByName(context,"<#=FuncName#>");
+			var <#=item.Code#>SqlS="<#=Store[0]#>";
+			var <#=item.Code#>SqlF="<#=Store[1]#>";
+			context.Database.ExecuteSqlCommand(<#=item.Code#>SqlS.Replace(" IF ","\r\t IF ").Replace(" ELSE ","\r\t  ELSE ").Replace(" begin ","\r\t begin \r\t").Replace(" and ","\r\t and ").Replace(" where ","\r\t where ").Replace(" order by ","\r\t order by \r\t").Replace(",",", \r\t"));
+			context.Database.ExecuteSqlCommand(<#=item.Code#>SqlF.Replace(" IF ","\r\t IF ").Replace(" ELSE ","\r\t  ELSE ").Replace(" begin ","\r\t begin \r\t").Replace(" and ","\r\t and ").Replace(" where ","\r\t where ").Replace(" order by ","\r\t order by \r\t").Replace(",",", \r\t"));
+            
+<#}#>
+			base.Seed(context);
+        }
+<#}#>
+    }
+}

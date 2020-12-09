@@ -3,7 +3,7 @@
   "AuthorizationRoutePath": "api/user/authentication",
   "AuthorizationServiceKey": "User",
   "TokenEndpointPath": "api/oauth2/token",
-  "CacheMode": "MemoryCache", //MemoryCache or  gateway.Redis save token
+  "CacheMode": "Redis", //MemoryCache or  gateway.Redis save token
   "AccessPolicy": {
     "AllowAnyHeader": true,
     "AllowAnyMethod": true

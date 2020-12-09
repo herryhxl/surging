@@ -1,0 +1,86 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+package <#=_package#>.Common;
+
+import android.content.Context;
+import android.support.design.widget.BottomSheetBehavior;
+import android.support.design.widget.BottomSheetDialog;
+import android.support.design.widget.CoordinatorLayout;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.TextView;
+import <#=_package#>.<#=_projectName#>.R;
+
+/**
+ * Created by herry on 2016/7/19.
+ */
+public class DialogUtil {
+    public static void showDialog(Context con,String Message,String Title,String Button) {
+
+        final BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(con);
+        View contentView = LayoutInflater.from(con)
+                .inflate(R.layout.dialog,
+                        null);
+        TextView title=(TextView) contentView.findViewById(R.id.Bootm_Title);
+        title.setText(Title);
+        TextView message=(TextView) contentView.findViewById(R.id.Bootm_Message);
+        message.setText(Message);
+        TextView button=(TextView) contentView.findViewById(R.id.Bootm_Exit);
+        button.setText(Button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                bottomSheetDialog.dismiss();
+            }
+        });
+        //view.setAnimation(new DefaultItemAnimator());
+        //view.setLayoutManager(new LinearLayoutManager(con, LinearLayoutManager.VERTICAL, false));
+
+        bottomSheetDialog.setCanceledOnTouchOutside(false);
+        bottomSheetDialog.setCancelable(false);
+        bottomSheetDialog.setContentView(contentView);
+        View parent = (View) contentView.getParent();
+        BottomSheetBehavior behavior = BottomSheetBehavior.from(parent);
+
+        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+//
+//        contentView.measure(0, 0);
+//        behavior.setPeekHeight(contentView.getMeasuredHeight());
+//        CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) parent.getLayoutParams();
+//        params.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
+//        parent.setLayoutParams(params);
+        bottomSheetDialog.show();
+
+
+//        final MaterialDialog mMaterialDialog = new MaterialDialog(con);
+//        mMaterialDialog.setTitle(Title);
+//        mMaterialDialog.setMessage(Message);
+//        mMaterialDialog.setPositiveButton(Button, new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                mMaterialDialog.dismiss();
+//            }
+//        });
+//
+//        mMaterialDialog.show();
+//        builder.setNegativeButton("取消",
+//                new android.content.DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        dialog.dismiss();
+//                    }
+//                });
+
+    }
+    public static void showDialog(Context con,String Message,String Title){
+        showDialog(con, Message,Title,"关闭");
+    }
+    public static void showDialog(Context con,String Message){
+        showDialog(con, Message,"提示","关闭");
+    }
+}

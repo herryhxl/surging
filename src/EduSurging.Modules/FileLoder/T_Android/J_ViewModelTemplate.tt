@@ -1,0 +1,284 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+package <#=_package#>.ViewModel;
+import android.databinding.Bindable;
+import java.util.ArrayList;
+import android.content.Context;
+import android.databinding.BaseObservable;
+import <#=_package#>.databinding.BR;
+import <#=_package#>.Common.Util;
+import <#=_package#>.Model.*;
+import <#=_package#>.Data.*;
+import android.text.Editable;
+import android.text.TextWatcher;
+import <#=_package#>.Util.TextWatcherAdapter;
+import static java.lang.Integer.parseInt;
+import static java.lang.Long.parseLong;
+import static java.lang.Double.parseDouble;
+import static java.lang.Boolean.parseBoolean;
+import <#=_package#>.<#=_projectName#>.R;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.RadioGroup;
+import android.widget.CompoundButton;
+import java.util.List;
+import com.google.gson.annotations.SerializedName;
+import <#=_package#>.Model.<#=_entityName#>Model;
+
+public class <#=_entityName#>ViewModel extends BaseObservable 
+{
+<# var para=new StringBuilder();
+var para2=new StringBuilder();
+var para3=new StringBuilder();
+var para4=new StringBuilder();
+var para5=new StringBuilder();
+foreach(var model in _models.ColumnsList.Where(t=>t.Virtual==false)){
+	var CodeType = model.CodeType.Replace("?","");
+	//var Code=model.Code.Replace("?","");
+	var Code=_models.Code+model.Code.Replace("?","");
+	var type="String";
+	if(CodeType=="string"||CodeType=="Guid"||CodeType=="datetime") 
+		type="String";
+	else if(CodeType=="int") 
+		type="int";
+	else if(CodeType=="bigint") 
+		type="long";
+	else if(CodeType=="decimal") 
+		type="double";
+	else if(CodeType=="bool") 
+		type="Boolean";
+	para.Append(","+type+" "+ Code.ToLower());
+	para4.Append(","+type+" "+ Code.ToLower());
+if(model.FK)
+{
+	var item=_AllModel.Where(t=>t.Code==model.FKTable.Replace("Entity", "")).FirstOrDefault();
+	var pk=item.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	var pcode=pk.CodeType=="string"?"<String>":"<Integer>";
+
+	para.Append(",List<EnumModel"+pcode+"> "+ Code+"_Entry");
+	para.Append(",String  "+ Code+"String");
+	para2.Append("if("+Code+"_Entry!=null){List<EnumViewModel"+pcode+"> "+model.Code.Replace("?","")+"VM = new ArrayList<>();for(EnumModel"+pcode+" item :"+Code+"_Entry ){"+model.Code.Replace("?","")+"VM.add(item.getViewModel());} this._"+Code+"_Entry="+model.Code.Replace("?","")+"VM;\r\n}\r\n");
+	
+	para2.Append("this._"+Code+"String="+Code+"String;\r\n");
+}
+para2.Append("set"+Code+"("+Code.ToLower()+");\r\n");
+para5.Append("set"+Code+"("+Code.ToLower()+");\r\n");
+if(model.EM)
+{
+	para.Append(",List<EnumModel<Integer>> "+ Code+"_EM");
+	para.Append(",String "+ Code+"String");
+	para2.Append("if("+Code+"_EM!=null){List<EnumViewModel<Integer>> "+model.Code.Replace("?","")+"EM= new ArrayList<>();for(EnumModel<Integer> item :"+Code+"_EM ){"+model.Code.Replace("?","")+"EM.add(item.getViewModel());} set"+Code+"_EM("+model.Code.Replace("?","")+"EM);\r\n}\r\n");
+	para2.Append("set"+Code+"String("+Code+"String);\r\n");
+}
+para3.Append(",_"+ Code.ToLower());
+if(model.FK)
+{
+	para3.Append(",_"+ Code+"_Entry");
+	para3.Append(",_"+ Code+"String");
+}
+if(model.EM)
+{
+	para3.Append(",_"+ Code+"_EM");
+	para3.Append(",_"+ Code+"String");
+}
+
+#>
+	@Bindable
+    public void set<#=Code#>(<#=type#> <#=Code.ToLower()#>) {
+	if(!Util.equals(this._<#=Code.ToLower()#>, <#=Code.ToLower()#>)){
+            this._<#=Code.ToLower()#>=<#=Code.ToLower()#>;
+<#if(!model.FK&&!model.EM){#>
+			notifyPropertyChanged(BR.<#=Code.Substring(0, 1).ToLower() + Code.Substring(1)#>);
+
+<#}if(model.EM){#>
+			switch (_<#=Code.ToLower()#>)
+			{
+<#foreach(var value in model.EmodelList){#>
+				case <#=value.Attribute#>:
+					set<#=Code#>String("<#=value.Description.StartsWith("_")?value.Description.Substring(1,value.Description.Length-1).Replace("_","-"):value.Description#>");
+					break;
+<#}#>
+			}
+<#}#>
+		}	
+	}
+<#if(type=="Boolean"){#>
+	 public CompoundButton.OnCheckedChangeListener <#=Code#>_Check=new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            _<#=Code.ToLower()#>=isChecked;
+        }
+	};
+	//@SerializedName("<#=model.Code.Replace("?","")#>")
+	/// <#=model.Name#>
+	private <#=type#> _<#=Code.ToLower()#>=false;
+	@Bindable
+	public <#=type#> get<#=Code#>() {
+		return this._<#=Code.ToLower()#>;
+	}
+<#} else if(model.EM){#>
+	
+	//@SerializedName("<#=model.Code.Replace("?","")#>")
+	/// <#=model.Name#>
+	private <#=type#> _<#=Code.ToLower()#><# if(model.EM){#>=<#=model.EmodelList.FirstOrDefault().Attribute#><#}#>;
+	
+	@Bindable
+    public <#=type#> get<#=Code#>() 
+	{
+		return this._<#=Code.ToLower()#>;
+    }
+
+
+	public List<EnumViewModel<Integer>> _<#=Code#>_EM;
+
+	@Bindable
+    public List<EnumViewModel<Integer>> get<#=Code#>_EM() 
+	{
+		if(_<#=Code#>_EM==null)
+		{
+			_<#=Code#>_EM=new ArrayList<>();
+<#foreach(var em in model.EmodelList){#>
+			_<#=Code#>_EM.add(new EnumViewModel<Integer>(<#=em.Attribute#>,"<#=em.Description#>",<#=em.Attribute#>==_<#=Code.ToLower()#>));
+<#}#>
+		}
+		return this._<#=Code#>_EM;
+    }
+	@Bindable
+    public void set<#=Code#>_EM(List<EnumViewModel<Integer>> <#=Code#>_EM) 
+	{
+		this._<#=Code#>_EM=<#=Code#>_EM;
+    }
+	public String _<#=Code#>String="<#=model.EmodelList.FirstOrDefault().Description#>";
+	@Bindable
+    public String get<#=Code#>String() 
+	{
+		return this._<#=Code#>String;
+    }
+	@Bindable
+    public void set<#=Code#>String(String <#=Code#>String) 
+	{
+		if(!Util.equals(this._<#=Code#>String, <#=Code#>String)){
+            this._<#=Code#>String=<#=Code#>String;
+			notifyPropertyChanged(BR.<#=Code.Substring(0, 1).ToLower() + Code.Substring(1)+"String"#>);
+        }
+	}
+	
+	
+<#} else if(model.FK){
+	var item=_AllModel.Where(t=>t.Code==model.FKTable.Replace("Entity", "")).FirstOrDefault();
+	var pk=item.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	var pcode=pk.CodeType=="string"?"<String>":"<Integer>";
+#>
+	public List<EnumViewModel<#=pcode#>> _<#=Code#>_Entry;
+	
+	@Bindable
+    public List<EnumViewModel<#=pcode#>> get<#=Code#>_Entry() 
+	{
+		return this._<#=Code#>_Entry;
+    }
+	@Bindable
+    public void set<#=Code#>_Entry(List<EnumViewModel<#=pcode#>> <#=Code#>_Entry) 
+	{
+		this._<#=Code#>_Entry=<#=Code#>_Entry;
+    }
+
+	public String _<#=Code#>String="<#=model.Name==null?model.Comment==null?"":model.Comment:model.Name#>";
+	@Bindable
+    public String get<#=Code#>String() 
+	{
+		return this._<#=Code#>String;
+    }
+	@Bindable
+    public void set<#=Code#>String(String <#=Code#>String) 
+	{
+		if(!Util.equals(this._<#=Code#>String, <#=Code#>String)){
+            this._<#=Code#>String=<#=Code#>String;
+			notifyPropertyChanged(BR.<#=Code.Substring(0, 1).ToLower() + Code.Substring(1)+"String"#>);
+        }
+	}
+
+
+	//@SerializedName("<#=model.Code.Replace("?","")#>")
+	/// <#=model.Name#>
+	private <#=type#> _<#=Code.ToLower()#>;
+	
+	@Bindable
+    public <#=type#> get<#=Code#>() 
+	{
+		return this._<#=Code.ToLower()#>;
+    }
+	
+<#}else {#>
+	//@SerializedName("<#=model.Code.Replace("?","")#>")
+	/// <#=model.Name#>
+	private <#=type#> _<#=Code.ToLower()#>;
+	
+	@Bindable
+	public <#=type#> get<#=Code#>() {
+		return this._<#=Code.ToLower()#>;
+	}
+	public TextWatcher <#=Code#>_Watcher = new TextWatcherAdapter() {
+		@Override public void afterTextChanged(Editable s) {
+			if (!Util.equals(_<#=Code.ToLower()#>, s.toString())) 
+			{
+				try{
+<#if(type=="int"){#>
+				_<#=Code.ToLower()#>=parseInt(s.toString());
+<#}else if(type=="long"){#>
+				_<#=Code.ToLower()#>=parseLong(s.toString());
+<#}else if(type=="double"){#>
+				_<#=Code.ToLower()#>=parseDouble(s.toString());
+<#}else if(type=="Boolean"){#>
+				_<#=Code.ToLower()#>=parseBoolean(s.toString());
+<#}else{#>
+				_<#=Code.ToLower()#>=s.toString();
+<#}#>
+				}catch(Exception e){}
+			}
+		}
+	};
+<#}}
+var Pa="int _id"+para.ToString();
+var Pa2=para2.ToString();
+var Pa3=para3.ToString();
+var Pa4="int _id"+para4.ToString();
+var Pa5=para5.ToString();
+var model3=_models.ColumnsList.Where(t=>t.Virtual==false&&t.CodeType=="string").FirstOrDefault();
+var Code3=model3==null?"__id+\"\"":"_"+_models.Code+model3.Code.Replace("?","");
+#>
+	public int __id;
+	public int get__id(){
+		return this.__id;
+	}
+	public void set__id(int id){
+		 this.__id=id;
+	}
+	public <#=_entityName#>ViewModel(<#=Pa#>)
+	{
+		set__id(_id);
+		<#=Pa2#>
+	}
+<# var count=_models.ColumnsList.Where(t=>t.Virtual==false&&(t.FK==true||t.EM==true)).Count();if(count>0){#>
+	public <#=_entityName#>ViewModel(<#=Pa4#>)
+	{
+		set__id(_id);
+		<#=Pa5#>
+	}
+<#}#>
+	public <#=_entityName#>ViewModel()
+	{
+		
+	}
+
+	@Override
+	public String toString(){
+		return <#=Code3.ToLower()#>;
+	}
+	public <#=_entityName#>Model getModel()
+	{
+		return new <#=_entityName#>Model(__id<#=Pa3#>);
+	}
+}

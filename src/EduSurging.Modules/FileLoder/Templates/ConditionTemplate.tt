@@ -1,0 +1,39 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="FileLoder.TemplateModel" #>
+<# var orderName =new List<string>(); #>
+<# var nullableType = new []{"int","bool","float","double","decimal","Int32","char","DateTime","long"}; #>
+using System;
+using System.Collections.Generic;
+using <#=_projectName#>.Base;
+using Edu.Core.Handler;
+
+namespace <#=_projectName#>.Entity
+{
+	public class <#=_entityName#>SearchCondition: BaseCondition
+	{
+<# foreach(var model in _models.Where(t=>t.Virtual==false||(t.Virtual&&t.PK&&t.FK))){
+if(model.Virtual){#>
+		public <#=model.Code.Split('_')[1]#>SearchCondition <#=model.Code#>Condition { get; set; }
+<#}else if(model.Search == EnumSearchType.In){ #>
+		public List<<#=model.C_CodeType.Replace("?","") #>> <#=model.Code#>s { get; set; }
+<#} else if (model.Search == EnumSearchType.Like) {#>
+		public <#=model.CodeType #><#=(nullableType.Contains(model.CodeType) || model.EM)?"?":""#> <#=model.Code#> { get; set; }
+<#} else if (model.Search == EnumSearchType.Equal) {#>
+		public <#=model.CodeType #><#=(nullableType.Contains(model.CodeType) || model.EM)?"?":""#> <#=model.Code#> { get; set; }
+<#}else if (model.Search == EnumSearchType.Range) {#>
+		public <#=model.CodeType #><#=(nullableType.Contains(model.CodeType) || model.EM)?"?":""#> <#=model.Code#>Begin { get; set; }
+
+		public <#=model.CodeType #><#=(nullableType.Contains(model.CodeType) || model.EM)?"?":""#> <#=model.Code#>End { get; set; }
+<#} if(model.FK&&!model.PK){#>
+		public <#=model.FKTable.Replace("Entity", "")#>SearchCondition <#=model.Code#>Condition { get; set; }
+<#}}#>
+		public string OrderBy { get; set; }
+
+		
+
+	}
+}

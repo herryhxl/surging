@@ -1,0 +1,50 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+using System.Linq.Expressions;
+using System.Threading.Tasks;
+using System.Linq;
+using <#=_projectName#>.Entity;
+using <#=_projectName#>.Models;
+using Edu.Core.Autofac;
+using System.Collections.Generic;
+using System;
+using System.Data.Entity.Core.Objects;
+using Edu.Core.Handler;
+using Edu.Core.Model;
+
+<# var PKData=_models.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+#>
+
+namespace <#=_projectName#>.Service.<#=_entityName#>
+{
+	public interface I<#=_entityName#>Service : IDependency
+	{
+<#if(_pro){#>
+		ObjectResult<<#=_entityName#>_DataModel> <#=_entityName#>ProSearch(<#=_entityName#>SearchCondition <#=_entityName.ToLower()#>condition,bool IsAuth=false, MenuFieldInfo menuFieldInfo = null);
+<#}#>
+		Task<PageList<<#=_entityName#><#=_pro==true?"_DataModel":"Model"#>>> <#=_entityName#>PageSearch(<#=_entityName#>SearchCondition <#=_entityName.ToLower()#>condition,Expression<Func<<#=_entityName#>Entity, bool>> expression=null,IQueryable<<#=_entityName#>Entity> Query=null,bool IsAuth=false, MenuFieldInfo menuFieldInfo = null);
+
+		IQueryable<<#=_entityName#>Entity> Where(Expression<Func<<#=_entityName#>Entity, bool>> expression=null,IQueryable<<#=_entityName#>Entity> Query=null,bool IsAuth=false, MenuFieldInfo menuFieldInfo = null);
+
+        IQueryable<<#=_entityName#>Model> MWhere(Expression<Func<<#=_entityName#>Entity, bool>> expression=null,IQueryable<<#=_entityName#>Entity> Query=null,bool IsAuth=false, MenuFieldInfo menuFieldInfo = null);
+		
+		<#=_entityName#>Entity CreateOrModify(<#=_entityName#>Model m<#=_entityName.ToLower()#>,Expression<Func<<#=_entityName#>Entity, bool>> expression=null,bool IsAuth=false, MenuFieldInfo menuFieldInfo = null);
+
+		<#=_entityName#>Entity GetById(<#=PKData.CodeType#> <#=PKData.Code#>,Expression<Func<<#=_entityName#>Entity, bool>> expression=null,bool IsAuth=false, MenuFieldInfo FieldInfo=null);
+
+		Task<int> Delete(RequestBeachModel<<#=PKData.CodeType#>> Request,Expression<Func<<#=_entityName#>Entity, bool>> expression=null,IQueryable<<#=_entityName#>Entity> Query=null,bool IsAuth=false, MenuFieldInfo menuFieldInfo = null);
+
+        Task<int> BeachOperation(RequestBeachModel<<#=PKData.CodeType#>> Request,Expression<Func<<#=_entityName#>Entity, bool>> expression=null,IQueryable<<#=_entityName#>Entity> Query=null,bool IsAuth=false, MenuFieldInfo menuFieldInfo = null);
+
+		Task<<#=_entityName#>Model> GetModelById (RequestModel<<#=PKData.CodeType#>> <#=PKData.Code#>,Expression<Func<<#=_entityName#>Entity, bool>> expression=null,bool IsAuth=false, MenuFieldInfo menuFieldInfo = null);
+
+		IQueryable<<#=_entityName#>Entity> Get<#=_entityName#>sByCondition(<#=_entityName#>SearchCondition condition,Expression<Func<<#=_entityName#>Entity, bool>> expression=null,IQueryable<<#=_entityName#>Entity> Query=null, bool IsAuth = false, MenuFieldInfo FieldInfo = null);
+
+		Task<int> SaveChangesAsync();
+	}
+}

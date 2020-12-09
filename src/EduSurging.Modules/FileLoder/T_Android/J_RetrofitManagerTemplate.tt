@@ -1,0 +1,65 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+package <#=_projectName#>.Manage;
+import <#=_projectName#>.Base.AppManager;
+import <#=_projectName#>.Base.AddCookiesInterceptor;
+import <#=_projectName#>.Base.ReceivedCookiesInterceptor;
+
+import java.io.IOException;
+import okhttp3.HttpUrl;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+public class RetrofitManager {
+    private Retrofit retrofit = null;
+    private static RetrofitManager retrofitManager;
+
+    private static final OkHttpClient sClient = new OkHttpClient.Builder()
+            //.addInterceptor(new Interceptor() {
+            //    @Override
+            //    public Response intercept(Interceptor.Chain chain) throws IOException {
+            //        Request request = chain.request();
+            //        HttpUrl url = request.url().newBuilder()
+            //                .addQueryParameter("_AppID", "0")//Android App操作
+            //                .build();
+            //        request = request.newBuilder().url(url).build();
+            //        return chain.proceed(request);
+            //    }
+            //})
+			.addInterceptor(new ReceivedCookiesInterceptor(AppManager.getContext()))
+            .addInterceptor(new AddCookiesInterceptor(AppManager.getContext()))
+            .build();
+
+    private RetrofitManager() {
+        retrofit = new Retrofit.Builder()
+                .client(sClient)
+                .baseUrl(AppManager._AppServer)
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .build();
+    }
+
+    public static RetrofitManager getInstance() {
+        if (retrofitManager == null) {
+            synchronized (RetrofitManager.class) {
+                if (retrofitManager == null) {
+                    retrofitManager = new RetrofitManager();
+                }
+            }
+        }
+        return retrofitManager;
+    }
+
+    public <T> T create(final Class<T> service) {
+        return retrofit.create(service);
+    }
+}

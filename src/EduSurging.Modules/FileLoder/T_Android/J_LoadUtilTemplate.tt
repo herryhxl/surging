@@ -1,0 +1,67 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+package <#=_package#>.Common;
+
+import android.content.Context;
+import android.databinding.DataBindingUtil;
+import android.support.design.widget.BottomSheetBehavior;
+import android.support.design.widget.BottomSheetDialog;
+import android.view.LayoutInflater;
+import android.view.View;
+
+import <#=_package#>.ViewModel.LoadingBaseViewModel;
+import <#=_package#>.<#=_projectName#>.R;
+import <#=_package#>.<#=_projectName#>.<#=_projectName#>.LoadingBaseBinding;
+
+public class LoadUtil {
+    private BottomSheetDialog bottomSheetDialog;
+    private boolean IsDis = false;
+    private Context _context;
+    private String _title;
+     public LoadingBaseViewModel _loadingBaseViewModel;
+
+    public LoadUtil(Context con, String title) {
+        this._context = con;
+        this._title = title;
+        _loadingBaseViewModel=new LoadingBaseViewModel(title,1);
+    }
+
+    public LoadUtil(Context con) {
+        new LoadUtil(con, "提示");
+    }
+
+    public void dismiss() {
+        if (bottomSheetDialog != null) {
+            if(!bottomSheetDialog.isShowing())
+                bottomSheetDialog.show();
+            if(_loadingBaseViewModel.Reduce()){
+                bottomSheetDialog.dismiss();
+            }
+        }
+    }
+
+    public void show() {
+        if (bottomSheetDialog != null) {
+            _loadingBaseViewModel.addNumber();
+            if(!bottomSheetDialog.isShowing())
+                bottomSheetDialog.show();
+        }
+        else {
+            IsDis = false;
+            bottomSheetDialog = new BottomSheetDialog(_context);
+            LoadingBaseBinding baseloading = DataBindingUtil.inflate(LayoutInflater.from(_context), R.layout.loading_base, null, false);
+            baseloading.setLoadingBaseViewModel(_loadingBaseViewModel);
+            View view = baseloading.getRoot();
+            bottomSheetDialog.setContentView(view);
+            View parent = (View) view.getParent();
+            BottomSheetBehavior behavior = BottomSheetBehavior.from(parent);
+            bottomSheetDialog.setCanceledOnTouchOutside(false);
+            bottomSheetDialog.setCancelable(false);
+            behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            bottomSheetDialog.show();
+        }
+    }
+}

@@ -1,0 +1,26 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+package <#=_projectName#>.Base;
+import android.content.Context;
+import android.support.annotation.CallSuper;
+import android.widget.Toast;
+
+import <#=_projectName#>.Common.DialogUtil;
+
+public abstract class DialogSubscriber<T> extends BaseSubscriber<T> {
+
+    public DialogSubscriber(Context context) {
+        super(context);
+    }
+
+    @CallSuper
+    @Override
+    public void onError(Throwable e) {
+        DialogUtil.showDialog(getContext(), e.getMessage(), "OK", "确定");
+        //Toast.makeText(getContext(),e.getMessage(),Toast.LENGTH_SHORT).show();
+    }
+}

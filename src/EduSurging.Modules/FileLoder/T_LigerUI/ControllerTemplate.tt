@@ -1,0 +1,36 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+using System;
+using System.Net.Http;
+using System.Web.Http;
+using System.ComponentModel;
+using System.Data.Entity;
+
+using System.Web.Mvc;
+
+<# var PKData=models.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+#>
+
+namespace <#=_apiName#>.Controllers
+{
+	
+	//<#=(models.Comment==null? "":models.Comment)#>
+    [Description("<#=(models.Comment==null?"":models.Comment)#>视图控制器")]
+    public class <#=_projectName#><#=_entityName#>Controller : Controller
+    {
+        [Description("<#=(models.Comment==null?"":models.Comment)#>视图[<#=_projectName#><#=_entityName#>Controller:Edit,<#=_entityName#>Controller.GetList]")]
+        public ActionResult Index()
+        {
+            return View();
+        }
+		[Description("新增或编辑<#=_entityName#>视图")]
+        public ActionResult Edit()
+        {
+            return View();
+        }
+    }
+}

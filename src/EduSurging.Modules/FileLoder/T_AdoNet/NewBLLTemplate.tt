@@ -1,0 +1,139 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+using System.Linq;
+using <#=_projectName#>.Model;
+using <#=_projectName#>.IDAL.<#=_entityName#>;
+using <#=_projectName#>.DAL.<#=_entityName#>;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Data;
+using System;
+
+namespace <#=_projectName#>.BLL.<#=_entityName#>
+{
+<# var PKData=_Columns.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+#>
+
+	public class <#=_entityName#>BLL 
+	{
+		private static readonly <#=_entityName#>BLL _bll = new <#=_entityName#>BLL();
+		private readonly I<#=_entityName#>DAL dal = new <#=_entityName#>DAL();
+		public <#=_entityName#>BLL ()
+		{
+		}
+		public static <#=_entityName#>BLL Instance
+        {
+            get { return _bll; }
+        }
+<#if(PKData.IsAutoAdd){#>
+		/// <summary>
+		/// 得到最大ID
+		/// </summary>
+		public int GetMaxId()
+		{
+			return dal.GetMaxId();
+		}
+<#}#>
+		/// <summary>
+		/// 是否存在该记录
+		/// </summary>
+		public bool Exists(<#=PKData.CodeType#> <#=PKData.Code#>)
+		{
+			return dal.Exists(<#=PKData.Code#>);
+		}
+		/// <summary>
+		/// 增加一条数据
+		/// </summary>
+		public <#=PKData.IsAutoAdd?PKData.CodeType:"bool"#> Add(<#=_entityName#>Model  m<#=_entityName.ToLower()#>)
+		{
+			return dal.Add(m<#=_entityName.ToLower()#>);
+		}
+		/// <summary>
+		/// 更新一条数据
+		/// </summary>
+		public bool Update(<#=_entityName#>Model  m<#=_entityName.ToLower()#>)
+		{
+			return dal.Update(m<#=_entityName.ToLower()#>);
+		}
+		/// <summary>
+		/// 删除一条数据
+		/// </summary>
+		public bool Delete(<#=PKData.CodeType#> <#=PKData.Code#>)
+		{
+			return dal.Delete(<#=PKData.Code#>);
+		}
+		/// <summary>
+		/// 根据条件删除数据
+		/// </summary>
+		public bool Delete(string Where=null, List<SqlParameter> para = null)
+		{
+			return dal.Delete(Where,para);
+		}
+		/// <summary>
+		/// 得到一个对象实体
+		/// </summary>
+		public <#=_entityName#>Model GetModel(<#=PKData.CodeType#> <#=PKData.Code#>)
+		{
+			return dal.GetModel(<#=PKData.Code#>);
+		}
+		/// <summary>
+		/// 获得数据列表
+		/// </summary>
+		public DataSet GetList(string Where=null, List<SqlParameter> para = null)
+		{
+			return dal.GetList(Where,para);
+		}
+		/// <summary>
+		/// 获得前几行数据
+		/// </summary>
+        public DataSet GetList(int Top, string strWhere, string filedOrder, List<SqlParameter> para = null)
+		{
+			return dal.GetList(Top,strWhere,filedOrder,para);
+		}
+		/// <summary>
+		/// 获取数据条数
+		/// </summary>
+		public int GetRecordCount(string strWhere=null, List<SqlParameter> para = null)
+		{
+			return dal.GetRecordCount(strWhere,para);
+		}
+		public <#=_entityName#>Model RowToModel(DataRow row)
+		{
+			return dal.RowToModel(row);
+		}
+		/// <summary>
+		/// 获得数据列表
+		/// </summary>
+        public List<<#=_entityName#>Model> DataTableToList(DataTable dt)
+		{
+            List<<#=_entityName#>Model> modelList = new List<<#=_entityName#>Model>();
+			int rowsCount = dt.Rows.Count;
+			if (rowsCount > 0)
+			{
+				foreach(DataRow row in dt.Rows)
+				{
+					modelList.Add(RowToModel(row));
+				}
+			}
+			return modelList;
+		}
+		/// <summary>
+		/// 获得数据列表
+		/// </summary>
+		public List<<#=_entityName#>Model> GetModelList(string Where=null, List<SqlParameter> para = null)
+		{
+			return dal.GetModelList(Where,para);
+		}
+		/// <summary>
+		/// 分页获取数据列表
+		/// </summary>
+        public DataSet GetListByPage(string strWhere, string orderby, int startIndex, int endIndex, List<SqlParameter> para = null)
+		{
+			return dal.GetListByPage( strWhere,  orderby,  startIndex,  endIndex,para);
+		}
+	}
+}

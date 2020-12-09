@@ -1,0 +1,227 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="FileLoder.TemplateModel" #>
+<#@ import namespace="FileLoder.Helper" #>
+
+<# var orderNames = new List<string>(); #>
+using System.Linq.Expressions;
+using System.Threading.Tasks;
+using System;
+using System.Linq;
+using Edu.Core.Data;
+using <#=_projectName#>.Entity;
+using <#=_projectName#>.Base;
+using <#=_projectName#>.Models;
+using System.Collections.Generic;
+using Edu.Core.Handler;
+using Edu.Core.Site;
+using Edu.Core.Extend;
+using Edu.Core.Model;
+using System.Data;
+
+<# var PKData=models.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+	var IsFK=PKData.FK;
+#>
+
+namespace <#=_projectName#>.BaseService
+{
+	public class <#=_entityName#>BaseService : I<#=_entityName#>BaseService
+	{
+		private readonly <#=_repositoryText#><<#=_entityName#>Entity> _<#=_entityName.ToLower()#>Repository;
+        private readonly IWorkContext _workContext;
+        private readonly IValidateCode _validateCode;
+
+		public <#=_entityName#>BaseService(<#=_repositoryText#><<#=_entityName#>Entity> <#=_entityName.ToLower()#>Repository, IWorkContext workContext,IValidateCode validateCode)
+		{
+			_<#=_entityName.ToLower()#>Repository = <#=_entityName.ToLower()#>Repository;
+			_workContext=workContext;
+            _validateCode = validateCode;
+		}
+
+		
+		public IQueryable<<#=_entityName#>Entity> Where(Expression<Func<<#=_entityName#>Entity, bool>> expression=null,IQueryable<<#=_entityName#>Entity> Query=null)
+		{
+			
+		}
+		
+		public IQueryable<<#=_entityName#>Entity> SearchByCondition(<#=_entityName#>SearchCondition condition,Expression<Func<<#=_entityName#>Entity, bool>> expression=null,IQueryable<<#=_entityName#>Entity> Query=null)
+		{
+			var query = Where(expression,Query);
+			#region 一级数据动态字段查询
+			if(condition!=null)
+			{
+<# foreach(var model in _sModels.Where(r=>r.Virtual==false).OrderByDescending(c => c.Search)){ 
+if(model.Search == EnumSearchType.Range){#>
+				if (condition.<#=model.Code#>Begin.HasValue)
+				{
+					<#if(model.CodeType.StartsWith("DateTime")){#>
+					var <#=model.Code#>Begin=condition.<#=model.Code#>Begin.Begin();
+					query = query.Where(q => q.<#=model.Code#>>= <#=model.Code#>Begin);
+					<#}else{#>
+						query = query.Where(q => q.<#=model.Code#>>= condition.<#=model.Code#>Begin);
+					<#}#>
+				}
+				if (condition.<#=model.Code#>End.HasValue)
+				{
+					<#if(model.CodeType.StartsWith("DateTime")){#>
+						var <#=model.Code#>End=condition.<#=model.Code#>End.End();
+						query = query.Where(q => q.<#=model.Code#> <= <#=model.Code#>End);
+					<#}else{#>
+						query = query.Where(q => q.<#=model.Code#>>= condition.<#=model.Code#>End);
+					<#}#>
+				}
+<# }else if(model.Search == EnumSearchType.Equal){
+	if(model.CodeType =="string"){#>
+				if (!string.IsNullOrEmpty(condition.<#=model.Code#>))
+					query = query.Where(q => q.<#=model.Code#> == condition.<#=model.Code#>);
+	<#} else if(model.CodeType =="Guid"){#>
+				if (condition.<#=model.Code#>!=Guid.Empty)
+					query = query.Where(q => q.<#=model.Code#> == condition.<#=model.Code#>);
+	<#}else{#>
+				if (condition.<#=model.Code#>.HasValue)
+					query = query.Where(q => <#=(model.EM==true?"(int)":"")#>q.<#=model.Code#> == condition.<#=model.Code#>.Value);
+	<# }
+} else if(model.Search == EnumSearchType.Like){
+			if(model.CodeType =="string"){#>
+				if (!string.IsNullOrEmpty(condition.<#=model.Code#>))
+					query = query.Where(q => q.<#=model.Code#>.Contains(condition.<#=model.Code#>));
+			<#}else{#>
+				if (condition.<#=model.Code#>.HasValue)
+					query = query.Where(q => q.<#=model.Code#>.Contains(condition.<#=model.Code#>.Value));
+<#}} else if(model.Search == EnumSearchType.In){#>
+				if (condition.<#=model.Code#>s != null && condition.<#=model.Code#>s.Any())
+<#if(model.IsNull){#>
+					query = query.Where(q =>q.<#=model.Code#>!=null&&condition.<#=model.Code#>s.Contains((int)q.<#=model.Code#>));
+<#}else{#>
+					query = query.Where(q => condition.<#=model.Code#>s.Contains(q.<#=model.Code#>));
+<#}}}#>
+			}
+			#endregion
+
+			#region 二级数据动态字段查询
+<# foreach (var model in models.ColumnsList.Where(t => t.Virtual == false||(t.Virtual&&t.PK&&t.FK))){if(model.Virtual){
+	var FCode=model.Code; var FkCode=model.Code.Split('_')[1];
+   var FKEntity=_AllModels.Where(t=>t.Code==FkCode).FirstOrDefault();
+if(FKEntity!=null){ 
+#>
+			var <#=FCode#>condition=condition.<#=model.Code#>Condition;
+			if(<#=FCode#>condition!=null)
+			{
+				//query=query.Where(q=>q.<#=model.Code#>!=null);
+<# foreach(var model2 in FKEntity.ColumnsList.Where(r=>r.Virtual==false).OrderByDescending(c => c.Search)){ 
+var queryCode=model.Code+"."+model2.Code;
+if(model2.Search == EnumSearchType.Range){#>
+			if (<#=FCode#>condition.<#=model2.Code#>Begin.HasValue)
+			{
+				<#if(model2.CodeType.StartsWith("DateTime")){#>
+				var <#=model2.Code#>Begin=<#=FCode#>condition.<#=model2.Code#>Begin.Begin();
+                query = query.Where(q => q.<#=queryCode#> >= <#=model2.Code#>Begin);
+				<#}else{#>
+					query = query.Where(q => q.<#=queryCode#> >= <#=FCode#>condition.<#=model2.Code#>Begin);
+				<#}#>
+			}
+            if (<#=FCode#>condition.<#=model2.Code#>End.HasValue)
+			{
+				<#if(model2.CodeType.StartsWith("DateTime")){#>
+					var <#=model2.Code#>End=<#=FCode#>condition.<#=model2.Code#>End.End();
+					query = query.Where(q => q.<#=queryCode#> <= <#=model2.Code#>End);
+				<#}else{#>
+					query = query.Where(q => q.<#=queryCode#> >= <#=FCode#>condition.<#=model2.Code#>End);
+				<#}#>
+			}
+<# }else if(model2.Search == EnumSearchType.Equal){
+	if(model2.CodeType =="string"){#>
+			if (!string.IsNullOrEmpty(<#=FCode#>condition.<#=model2.Code#>))
+                query = query.Where(q => q.<#=queryCode#> == <#=FCode#>condition.<#=model2.Code#>);
+	<#} else if(model2.CodeType =="Guid"){#>
+			if (<#=FCode#>condition.<#=model.Code#>.<#=model2.Code#>!=Guid.Empty)
+                query = query.Where(q => q.<#=model.Code#>.<#=model2.Code#> == <#=FCode#>condition.<#=model2.Code#>);
+	<#}else{#>
+			if (<#=FCode#>condition.<#=model2.Code#>.HasValue)
+                query = query.Where(q => <#=(model2.EM==true?"(int)":"")#>q.<#=queryCode#> == <#=FCode#>condition.<#=model2.Code#>.Value);
+	<# }
+} else if(model2.Search == EnumSearchType.Like){
+		if(model2.CodeType =="string"){#>
+			if (!string.IsNullOrEmpty(<#=FCode#>condition.<#=model2.Code#>))
+                query = query.Where(q => q.<#=queryCode#>.Contains(<#=FCode#>condition.<#=model2.Code#>));
+		<#}else{#>
+			if (<#=FCode#>condition.<#=model2.Code#>.HasValue)
+                query = query.Where(q => q.<#=queryCode#>.Contains(condition.<#=model2.Code#>.Value));
+<#}} else if(model2.Search == EnumSearchType.In){#>
+			if (<#=FCode#>condition.<#=model2.Code#>s != null && <#=FCode#>condition.<#=model2.Code#>s.Any())
+<#if(model2.IsNull){#>
+                query = query.Where(q =>q.<#=queryCode#>!=null&&<#=FCode#>condition.<#=model2.Code#>s.Contains((int)q.<#=queryCode#>));
+<#}else{#>
+				query = query.Where(q => <#=FCode#>condition.<#=model2.Code#>s.Contains(q.<#=queryCode#>));
+<#}}}#>
+
+<#}#>
+
+			}
+<#}else{#>
+<#if(model.FK&&!model.PK){var FCode=model.Code; var FkCode=model.FKTable.Replace("Entity", "");
+var FKEntity=_AllModels.Where(t=>t.Code==FkCode).FirstOrDefault();if(FKEntity!=null){#>
+				
+					var <#=FCode#>condition=condition.<#=model.Code#>Condition;
+					if(<#=FCode#>condition!=null)
+					{
+						//query=query.Where(q=>q.<#=model.Code+"_"+model.FKTable.Replace("Entity", "")#>!=null);
+<# foreach(var model2 in FKEntity.ColumnsList.Where(r=>r.Virtual==false).OrderByDescending(c => c.Search)){ 
+var queryCode=model.Code+"_"+model.FKTable.Replace("Entity", "")+"."+model2.Code;
+if(model2.Search == EnumSearchType.Range){#>
+			if (<#=FCode#>condition.<#=model2.Code#>Begin.HasValue)
+			{
+				<#if(model2.CodeType.StartsWith("DateTime")){#>
+				var <#=model2.Code#>Begin=<#=FCode#>condition.<#=model2.Code#>Begin.Begin();
+                query = query.Where(q => q.<#=queryCode#> >= <#=model2.Code#>Begin);
+				<#}else{#>
+					query = query.Where(q => q.<#=queryCode#> >= <#=FCode#>condition.<#=model2.Code#>Begin);
+				<#}#>
+			}
+            if (<#=FCode#>condition.<#=model2.Code#>End.HasValue)
+			{
+				<#if(model2.CodeType.StartsWith("DateTime")){#>
+					var <#=model2.Code#>End=<#=FCode#>condition.<#=model2.Code#>End.End();
+					query = query.Where(q => q.<#=queryCode#> <= <#=model2.Code#>End);
+				<#}else{#>
+					query = query.Where(q => q.<#=queryCode#> >= <#=FCode#>condition.<#=model2.Code#>End);
+				<#}#>
+			}
+<# }else if(model2.Search == EnumSearchType.Equal){
+	if(model2.CodeType =="string"){#>
+			if (!string.IsNullOrEmpty(<#=FCode#>condition.<#=model2.Code#>))
+                query = query.Where(q => q.<#=queryCode#> == <#=FCode#>condition.<#=model2.Code#>);
+	<#} else if(model2.CodeType =="Guid"){#>
+			if (<#=FCode#>condition.<#=model.Code#>.<#=model2.Code#>!=Guid.Empty)
+                query = query.Where(q => q.<#=model.Code#>.<#=model2.Code#> == <#=FCode#>condition.<#=model2.Code#>);
+	<#}else{#>
+			if (<#=FCode#>condition.<#=model2.Code#>.HasValue)
+                query = query.Where(q => <#=(model2.EM==true?"(int)":"")#>q.<#=queryCode#> == <#=FCode#>condition.<#=model2.Code#>.Value);
+	<# }
+} else if(model2.Search == EnumSearchType.Like){
+		if(model2.CodeType =="string"){#>
+			if (!string.IsNullOrEmpty(<#=FCode#>condition.<#=model2.Code#>))
+                query = query.Where(q => q.<#=queryCode#>.Contains(<#=FCode#>condition.<#=model2.Code#>));
+		<#}else{#>
+			if (<#=FCode#>condition.<#=model2.Code#>.HasValue)
+                query = query.Where(q => q.<#=queryCode#>.Contains(condition.<#=model2.Code#>.Value));
+<#}} else if(model2.Search == EnumSearchType.In){#>
+			if (<#=FCode#>condition.<#=model2.Code#>s != null && <#=FCode#>condition.<#=model2.Code#>s.Any())
+<#if(model2.IsNull){#>
+                query = query.Where(q =>q.<#=queryCode#>!=null&&<#=FCode#>condition.<#=model2.Code#>s.Contains((int)q.<#=queryCode#>));
+<#}else{#>
+				query = query.Where(q => <#=FCode#>condition.<#=model2.Code#>s.Contains(q.<#=queryCode#>));
+<#}}}#>
+					}
+<#}}}}#>
+
+			#endregion
+
+			return query;
+		}
+	}
+}

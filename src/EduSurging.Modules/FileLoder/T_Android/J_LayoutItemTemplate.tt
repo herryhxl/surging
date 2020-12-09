@@ -1,0 +1,55 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:bind="http://schemas.android.com/apk/res-auto">
+    <data>
+		<import type="<#=_package#>.Common.Util" />
+        <variable name="<#=_entityName#>Model" type="<#=_package#>.ViewModel.<#=_entityName#>ViewModel"/>
+        <!--<variable name="item_<#=_entityName#>Event" type="<#=_package#>.Event.item_<#=_entityName#>Event"/> -->
+		<!--android:onClick="@{<#=_entityName#>Adapter.<#=_models.Code#>_Liser}"-->
+		<!--<variable name="<#=_entityName#>Adapter" type="<#=_package#>.Adapter.<#=_entityName#>Adapter" />-->
+    </data>
+<android.support.v7.widget.CardView
+    android:id="@+id/<#=_entityName#>_ItemCardView"
+    android:layout_margin="5dp"
+    android:layout_height="wrap_content"
+    bind:cardBackgroundColor="@android:color/white"
+    bind:cardCornerRadius="5dp"
+    bind:cardElevation="5dp"
+    bind:contentPadding="5dip"
+    android:layout_width="match_parent"
+	 >
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    >
+<#
+	var blowID="";
+	foreach(var item in _models.ColumnsList.Where(t=>t.Virtual==false)){
+	var Code=_entityName+item.Code;
+#>
+		<TextView
+        android:id="@+id/item_<#=_entityName#>_<#=item.Code.Replace("?","")#>"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+<# if(blowID.Trim()!=""){#>
+		android:layout_below="@+id/<#=blowID#>"
+<# blowID="item_"+_entityName+"_"+item.Code.Replace("?",""); }else {
+		blowID="item_"+_entityName+"_"+item.Code.Replace("?","");
+}	if(item.PK){#>
+			android:visibility="gone"
+<#} if(item.EM){#>
+        android:text="@{<#=_entityName#>Model.<#=Code.Substring(0, 1).ToLower() + Code.Substring(1).Replace("?","")+"String"#>}"/>
+<#}else if(item.CodeType=="DateTime"){#>
+		android:text="@{Util.ToDate(String.valueOf(<#=_entityName#>Model.<#=Code.Substring(0, 1).ToLower() + Code.Substring(1).Replace("?","")#>))}"/>
+<#}else{#>
+	
+		android:text="@{String.valueOf(<#=_entityName#>Model.<#=Code.Substring(0, 1).ToLower() + Code.Substring(1).Replace("?","")#>)}"/>
+<#}}#>
+</RelativeLayout>
+</android.support.v7.widget.CardView>
+</layout>

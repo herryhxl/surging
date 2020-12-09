@@ -1,0 +1,25 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+using AutoMapper;
+using <#=_projectName#>.Models;
+using <#=_projectName#>.ModelsCustom;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace <#=_projectName#>.Base
+{
+    public class <#=_projectName#>Mapper : Profile
+    {
+        public <#=_projectName#>Mapper()
+        {
+<# foreach(var model in _AllModel){#>
+            CreateMap<<#=model.Code#>Vo, <#=model.Code#>Entity>().ReverseMap();
+            CreateMap<<#=model.Code#>Entity, <#=model.Code#>Do>().ReverseMap();
+<#}#>
+        }
+    }
+}

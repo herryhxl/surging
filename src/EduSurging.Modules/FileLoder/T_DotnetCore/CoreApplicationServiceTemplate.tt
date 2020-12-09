@@ -1,0 +1,451 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="FileLoder.TemplateModel" #>
+<#@ import namespace="FileLoder.Helper" #>
+<# var orderNames = new List<string>(); #>
+using System.Linq.Expressions;
+using System.Threading.Tasks;
+using System;
+using System.Linq;
+using <#=_projectName#>.Entity;
+using <#=_projectName#>.Base;
+using System.Collections.Generic;
+using Edu.Core.Handler;
+using Edu.Core.Site;
+using Edu.Core.Extend;
+using Edu.Core.Model;
+using Edu.Core.Data;
+using System.Data;
+using <#=_projectName#>.Service.<#=_entityName#>;
+using <#=_projectName#>.ChangeService.<#=_entityName#>;
+using <#=_projectName#>.Repository.<#=_entityName#>;
+using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+using Microsoft.Extensions.Logging;
+
+<# var PKData=models.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+	var IsFK=PKData.FK;
+	var FkData=models.ColumnsList.Where(t=>t.Virtual==false&&t.FK==true&&t.FKTable!=_entityName+"Entity").Select(t => t.FKTable).Distinct();
+#>
+
+<# var sqData=models.ColumnsList.Where(r=>r.Search != SearchType.Null&&r.Virtual==false).ToList();
+var Pa=new  StringBuilder();
+Pa.Append("condition.IsDescending,(int?)condition.OrderBy,condition.Page,condition.PageCount");
+		foreach(var model in sqData)
+		{ 
+			if(model.Search==SearchType.In)
+			{
+				Pa.Append(", (condition."+model.Code+"s==null?null:string.Join(\",\", condition."+model.Code+"s))");
+			}
+			else if (model.Search == SearchType.Like)
+			{
+				Pa.Append(", condition."+model.Code);
+			}
+			else if (model.Search ==  SearchType.Equal)
+			{
+				Pa.Append(",condition."+model.Code);
+			}
+			else if (model.Search ==  SearchType.Range)
+			{
+				Pa.Append(", condition."+model.Code+"Begin");
+				Pa.Append(", condition."+model.Code+"End");
+			}
+		}
+		var PaStr=Pa.ToString();#>
+namespace <#=_projectName#>.Service.<#=_entityName#>
+{
+	public class <#=_entityName#>Service: BaseService<<#=_entityName#>Entity,<#=PKData.CodeType#>,I<#=_entityName#>Repository, I<#=_entityName#>ChangeService>,  I<#=_entityName#>Service
+	{
+        private readonly IValidateCode _validateCode;
+		public <#=_entityName#>Service(I<#=_entityName#>Repository <#=_entityName#>Repository,I<#=_entityName#>ChangeService <#=_entityName.ToLower()#>ChangeService, 
+		IWorkContext workContext,IValidateCode validateCode) : base(<#=_entityName#>Repository, <#=_entityName.ToLower()#>ChangeService,workContext)
+		{
+            _validateCode = validateCode;
+		}
+		#region 新增/编辑
+		public override async Task<<#=_entityName#>Entity> CreateOrModifyAsync<ViewModel>(ViewModel v<#=_entityName.ToLower()#>,Expression<Func<<#=_entityName#>Entity, bool>> expression=null, List<Expression<Func<<#=_entityName#>Entity, object>>> includes=null)
+		{
+			<#=_entityName#>Entity m<#=_entityName.ToLower()#>;
+            if (v<#=_entityName.ToLower()#> is <#=_entityName#>Entity o<#=_entityName.ToLower()#>)
+                m<#=_entityName.ToLower()#> = o<#=_entityName.ToLower()#>;
+            else
+                m<#=_entityName.ToLower()#> =_repository.MapToEntity(v<#=_entityName.ToLower()#>);
+<#if(IsFK){#>
+			if(m<#=_entityName.ToLower()#>.<#=PKData.Code#><#=PKData.DataType.IndexOf("int")==-1?"==\"\"":"<=0"#>) throw new ValidateException("<#=PKData.Name#>不能为空");
+<#}#>			
+			<#=_entityName#>Entity <#=_entityName#>m<#=IsFK?"=await FirstOrDefaultAsync(r=>r."+PKData.Code+"==m"+_entityName.ToLower()+"."+PKData.Code+");":";"#>
+            if (<#=IsFK?_entityName+"m==null":"m"+_entityName.ToLower()+"."+PKData.Code+(PKData.DataType.IndexOf("int")==-1?"==\"\"":"<=0")#>)
+            {
+<# foreach (var model in models.ColumnsList.Where(t => t.Virtual == false&&t.IsNull==false&&t.PK==false))
+{	
+if(model.CodeType.StartsWith("DateTime")){if(model.Code!="AddTime"&&model.Code!="UpTime"){ #>
+				if(m<#=_entityName.ToLower()#>.<#=model.Code#>==DateTime.MinValue) 
+					throw new ValidateException("<#=model.Name#>不能为空");
+<#}}else if(model.EM){
+		var Min=model.EmodelList.Select(t=>t.Attribute).Min();
+		var Max=model.EmodelList.Select(t=>t.Attribute).Max();
+if(Min>0){#>
+				if((int)m<#=_entityName.ToLower()#>.<#=model.Code#><=0)
+					throw new ValidateException("<#=model.Name#>不能为空。");
+<#} else{#>
+				if((int)m<#=_entityName.ToLower()#>.<#=model.Code#><<#=Min#>||(int)m<#=_entityName.ToLower()#>.<#=model.Code#>><#=Max#>)
+					throw new ValidateException("<#=model.Name#>不在选项范围内。");
+<#}}else if((model.CodeType.StartsWith("int")||model.CodeType.StartsWith("long")||model.CodeType.StartsWith("decimal"))&&model.Code!="AddUser"&&model.Code!="UpUser"&&model.Code!="LogID"&&model.FK){#>
+				if(m<#=_entityName.ToLower()#>.<#=model.Code#><=0)
+					throw new ValidateException("<#=model.Name#>不能为空");
+<#}else if(model.CodeType.StartsWith("string")){#>
+				if(m<#=_entityName.ToLower()#>.<#=model.Code#>.IsNull())
+					throw new ValidateException("<#=model.Name#>不能为空");
+<#}}#>
+
+<#foreach (var model in models.ColumnsList.Where(t => t.Virtual == false&&t.PK==false))
+{if(model.CodeType.StartsWith("DateTime")){if(model.IsNull) {#>
+				if(m<#=_entityName.ToLower()#>.<#=model.Code#>.HasValue&&(m<#=_entityName.ToLower()#>.<#=model.Code#>).Value==DateTime.MinValue)
+					m<#=_entityName.ToLower()#>.<#=model.Code#>=null;		
+<#}else if(model.Code=="UpTime"||model.Code=="AddTime") {#>
+				if(m<#=_entityName.ToLower()#>.<#=model.Code#>==DateTime.MinValue)
+					m<#=_entityName.ToLower()#>.<#=model.Code#>=DateTime.Now;
+<#} else{#>
+				if(m<#=_entityName.ToLower()#>.<#=model.Code#>==DateTime.MinValue)
+					m<#=_entityName.ToLower()#>.<#=model.Code#>=DateTime.Now;
+<#}}else if(model.EM) {#>
+<#}else{ if(model.Code=="AddUser"||model.Code=="UpUser"){#>
+				if(m<#=_entityName.ToLower()#>.<#=model.Code#> <= 0)
+					m<#=_entityName.ToLower()#>.<#=model.Code#>=<#=model.IsNull?"_workContext.CurrentUser?.Id":"_workContext.CurrentUser.Id"#>;
+<#}else if(model.Code=="LogID"){#>
+				<#=_entityName#>m.<#=model.Code#>=_workContext.LogID;
+<#}}}#>	
+				<#=_entityName#>m=m<#=_entityName.ToLower()#>;
+				_changeService.Add(<#=_entityName#>m);
+				_repository.Insert(<#=_entityName#>m);
+            }
+            else
+            {
+                 <#=IsFK?"":_entityName+"m =await FirstOrDefaultAsync(r => r."+PKData.Code+" == m"+_entityName.ToLower()+"."+PKData.Code+",_repository.Where(expression),includes);"#>
+<#if(!IsFK){#>
+				if(<#=_entityName#>m==null) throw new ValidateException("修改的数据不存在或无权限。");
+<#}#>
+<#foreach (var model in models.ColumnsList.Where(t => t.Virtual == false&&t.PK==false)){
+if(model.EM) {#>
+				_changeService.UpdateField(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+				<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+<#}else if(model.CodeType.StartsWith("int")||model.CodeType.StartsWith("lon")||model.CodeType.StartsWith("dec")){
+if(model.Code=="UpUser"){#>
+				if(m<#=_entityName.ToLower()#>.<#=model.Code#> > 0)
+				{
+					var <#=model.Code#>Change=_changeService.UpdateField(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+					if(<#=model.Code#>Change)
+					{
+						<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+					}
+				}
+				else
+				{
+					var <#=model.Code#>Change=_changeService.UpdateField(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",<#=model.IsNull?"_workContext.CurrentUser?.Id":"_workContext.CurrentUser.Id"#>);
+					if(<#=model.Code#>Change)
+					{	
+						<#=_entityName#>m.<#=model.Code#>=<#=model.IsNull?"_workContext.CurrentUser?.Id":"_workContext.CurrentUser.Id"#>;
+					}
+				}
+<#}else if(model.Code=="AddUser"){#>
+				if(m<#=_entityName.ToLower()#>.<#=model.Code#> > 0)
+				{
+					var <#=model.Code#>Change=_changeService.UpdateField(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+					if(<#=model.Code#>Change)
+					{	
+						<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+					}
+				}
+<#}else if(model.Code!="LogID"){#>
+				if(m<#=_entityName.ToLower()#>.<#=model.Code#> > 0)
+				{
+					var <#=model.Code#>Change=_changeService.UpdateField(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+					if(<#=model.Code#>Change)
+					{	
+						<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+					}
+				}
+<#}}else if(model.CodeType.StartsWith("str")){
+if(model.IsNull) {#>
+				var <#=model.Code#>Change=_changeService.UpdateField(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+				if(<#=model.Code#>Change)
+				{	
+					<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+				}
+<#}else {#>
+				if(!m<#=_entityName.ToLower()#>.<#=model.Code#>.IsNull())
+				{
+					var <#=model.Code#>Change=_changeService.UpdateField(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+					if(<#=model.Code#>Change)
+					{	
+						<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+					}
+				}
+<#}}else if(model.CodeType.StartsWith("DateTime")){
+	if(model.IsNull) {#>
+				if(m<#=_entityName.ToLower()#>.<#=model.Code#>.HasValue&&m<#=_entityName.ToLower()#>.<#=model.Code#>.Value!=DateTime.MinValue)
+				{
+					var <#=model.Code#>Change=_changeService.UpdateField(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+					if(<#=model.Code#>Change)
+					{	
+						<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+					}
+				}
+<#}else if(model.Code=="UpTime"||model.Code=="AddTime") {#>
+				if(m<#=_entityName.ToLower()#>.<#=model.Code#>!=DateTime.MinValue)
+				{
+					var <#=model.Code#>Change=_changeService.UpdateField(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+					if(<#=model.Code#>Change)
+					{	
+						<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+					}
+				}
+				else 
+				{
+					var <#=model.Code#>Change=_changeService.UpdateField(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",DateTime.Now);
+					if(<#=model.Code#>Change)
+					{	
+						<#=_entityName#>m.<#=model.Code#>=DateTime.Now;
+					}
+				}
+<#}else{ #>
+				if(m<#=_entityName.ToLower()#>.<#=model.Code#>!=DateTime.MinValue)
+				{
+					var <#=model.Code#>Change=_changeService.UpdateField(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+					if(<#=model.Code#>Change)
+					{	
+						<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+					}
+				}
+<#}}else{#>
+				var <#=model.Code#>Change=_changeService.UpdateField(<#=_entityName#>m,<#=_entityName#>m.<#=model.Code#>,"<#=model.Code#>",m<#=_entityName.ToLower()#>.<#=model.Code#>);
+				if(<#=model.Code#>Change)
+				{	
+					<#=_entityName#>m.<#=model.Code#>=m<#=_entityName.ToLower()#>.<#=model.Code#>;
+				}
+<#}}#>
+				_changeService.Update(<#=_entityName#>m);
+			}
+			return <#=_entityName#>m;
+		}
+		#endregion
+		#region 编辑字段
+		public override void UpdateFieldValue(<#=_entityName#>Entity item, string fieldName, string value)
+        {
+             switch (fieldName.ToLower())
+			 {
+<# foreach (var model in models.ColumnsList.Where(t => t.Virtual == false)){#>
+				case "<#=model.Code.ToLower()#>":
+<#if(model.EM){#>
+				var <#=model.Code#>Value=(<#=model.EnumName#>)value.getValue<#=model.CodeType.Replace("?","")#>();
+				_changeService.UpdateField(item,item.<#=model.Code#>,"<#=model.Code#>",<#=model.Code#>Value);
+				item.<#=model.Code#> =<#=model.Code#>Value;
+<#}else if(model.CodeType=="string"){#>
+				_changeService.UpdateField(item,item.<#=model.Code#>,"<#=model.Code#>",value);
+                item.<#=model.Code#> =value;
+<#}else{#>
+				var <#=model.Code#>Value=value.getValue<#=model.CodeType.Replace("?","")#>();
+				_changeService.UpdateField(item,item.<#=model.Code#>,"<#=model.Code#>",<#=model.Code#>Value);
+                item.<#=model.Code#> =<#=model.Code#>Value;
+<#}#>
+                break;
+<#}#>
+				default:
+                   throw new ValidateException("未找到该项操作，请联系管理员("+fieldName+")");
+			}
+        }
+		#endregion
+
+		
+		public override Tuple<Expression<Func<<#=_entityName#>Entity, bool>>, Expression<Func<<#=_entityName#>Entity, object>>,TSearch> SearchByCondition<ViewModel, TSearch>(TSearch searchCondition, Expression<Func<<#=_entityName#>Entity, object>> orderBy = null)
+		{
+			if(searchCondition==null) throw new ValidateException("搜索参数不能为空。");
+			
+			if(searchCondition is <#=_entityName#>SearchCondition condition)
+			{
+				Expression<Func<<#=_entityName#>Entity, bool>> express = r => true;
+				#region 一级字段查询
+<# foreach(var model in _sModels.Where(r=>r.Virtual==false).OrderByDescending(c => c.Search)){ 
+if(model.Search == SearchType.Range){#>
+				if (condition.<#=model.Code#>Begin.HasValue)
+				{
+<#if(model.CodeType.StartsWith("DateTime")){#>
+					var <#=model.Code#>Begin=condition.<#=model.Code#>Begin.Begin();
+					express = express.And(q => q.<#=model.Code#>>= <#=model.Code#>Begin);
+<#}else{#>
+					express = express.And(q => q.<#=model.Code#>>= condition.<#=model.Code#>Begin);
+<#}#>
+				}
+				if (condition.<#=model.Code#>End.HasValue)
+				{
+<#if(model.CodeType.StartsWith("DateTime")){#>
+					var <#=model.Code#>End=condition.<#=model.Code#>End.End();
+					express = express.And(q => q.<#=model.Code#> <= <#=model.Code#>End);
+<#}else{#>
+					express = express.And(q => q.<#=model.Code#>>= condition.<#=model.Code#>End);
+<#}#>
+				}
+<# }else if(model.Search == SearchType.Equal){
+if(model.CodeType =="string"){#>
+				if (!condition.<#=model.Code#>.IsNull())
+					express = express.And(q => q.<#=model.Code#> == condition.<#=model.Code#>);
+<#} else if(model.CodeType =="Guid"){#>
+				if (condition.<#=model.Code#>!=Guid.Empty)
+					express = express.And(q => q.<#=model.Code#> == condition.<#=model.Code#>);
+<#}else{#>
+				if (condition.<#=model.Code#>.HasValue)
+					express = express.And(q => <#=(model.EM==true?"(int)":"")#>q.<#=model.Code#> == condition.<#=model.Code#>.Value);
+<# }
+} else if(model.Search == SearchType.Like){
+if(model.CodeType =="string"){#>
+				if (!condition.<#=model.Code#>.IsNull())
+					express = express.And(q => q.<#=model.Code#>.Contains(condition.<#=model.Code#>));
+<#}else{#>
+				if (condition.<#=model.Code#>.HasValue)
+					express = express.And(q => q.<#=model.Code#>.Contains(condition.<#=model.Code#>.Value));
+<#}} else if(model.Search == SearchType.In){#>
+				if (condition.<#=model.Code#>s != null && condition.<#=model.Code#>s.Any())
+<#if(model.IsNull){#>
+					express = express.And(q =>q.<#=model.Code#>!=null&&condition.<#=model.Code#>s.Contains((int)q.<#=model.Code#>));
+<#}else{#>
+					express = express.And(q => condition.<#=model.Code#>s.Contains(q.<#=model.Code#>));
+<#}}}#>
+				#endregion
+				#region 二级数据动态字段查询
+<# foreach (var model in models.ColumnsList.Where(t => t.Virtual == false||(t.Virtual&&t.PK&&t.FK))){if(model.Virtual){
+var FCode=model.Code; var FkCode=model.Code.Split('_')[1];
+var FKEntity=_AllModels.Where(t=>t.Code==FkCode).FirstOrDefault();
+if(FKEntity!=null){#>
+				var <#=FCode#>condition=condition.<#=model.Code#>Condition;
+				if(<#=FCode#>condition!=null)
+				{
+				//query=query.Where(q=>q.<#=model.Code#>!=null);
+<# foreach(var model2 in FKEntity.ColumnsList.Where(r=>r.Virtual==false).OrderByDescending(c => c.Search)){ 
+var queryCode=model.Code+"."+model2.Code;
+if(model2.Search == SearchType.Range){#>
+					if (<#=FCode#>condition.<#=model2.Code#>Begin.HasValue)
+					{
+<#if(model2.CodeType.StartsWith("DateTime")){#>
+						var <#=model2.Code#>Begin=<#=FCode#>condition.<#=model2.Code#>Begin.Begin();
+						express = express.And(q => q.<#=queryCode#> >= <#=model2.Code#>Begin);
+<#}else{#>
+						express = express.And(q => q.<#=queryCode#> >= <#=FCode#>condition.<#=model2.Code#>Begin);
+<#}#>
+					}
+					if (<#=FCode#>condition.<#=model2.Code#>End.HasValue)
+					{
+<#if(model2.CodeType.StartsWith("DateTime")){#>
+						var <#=model2.Code#>End=<#=FCode#>condition.<#=model2.Code#>End.End();
+						express = express.And(q => q.<#=queryCode#> <= <#=model2.Code#>End);
+<#}else{#>
+						express = express.And(q => q.<#=queryCode#> >= <#=FCode#>condition.<#=model2.Code#>End);
+<#}#>
+			}
+<# }else if(model2.Search == SearchType.Equal){
+if(model2.CodeType =="string"){#>
+					if (!<#=FCode#>condition.<#=model2.Code#>.IsNull())
+						express = express.And(q => q.<#=queryCode#> == <#=FCode#>condition.<#=model2.Code#>);
+<#} else if(model2.CodeType =="Guid"){#>
+					if (<#=FCode#>condition.<#=model.Code#>.<#=model2.Code#>!=Guid.Empty)
+						express = express.And(q => q.<#=model.Code#>.<#=model2.Code#> == <#=FCode#>condition.<#=model2.Code#>);
+<#}else{#>
+					if (<#=FCode#>condition.<#=model2.Code#>.HasValue)
+						express = express.And(q => <#=(model2.EM==true?"(int)":"")#>q.<#=queryCode#> == <#=FCode#>condition.<#=model2.Code#>.Value);
+<# }} else if(model2.Search == SearchType.Like){
+if(model2.CodeType =="string"){#>
+					if (!<#=FCode#>condition.<#=model2.Code#>.IsNull())
+						express = express.And(q => q.<#=queryCode#>.Contains(<#=FCode#>condition.<#=model2.Code#>));
+<#}else{#>
+					if (<#=FCode#>condition.<#=model2.Code#>.HasValue)
+						express = express.And(q => q.<#=queryCode#>.Contains(condition.<#=model2.Code#>.Value));
+<#}} else if(model2.Search == SearchType.In){#>
+					if (<#=FCode#>condition.<#=model2.Code#>s != null && <#=FCode#>condition.<#=model2.Code#>s.Any())
+<#if(model2.IsNull){#>
+						express = express.And(q =>q.<#=queryCode#>!=null&&<#=FCode#>condition.<#=model2.Code#>s.Contains((int)q.<#=queryCode#>));
+<#}else{#>
+						express = express.And(q => <#=FCode#>condition.<#=model2.Code#>s.Contains(q.<#=queryCode#>));
+<#}}}}#>
+					}
+<#}else{#>
+<#if(model.FK&&!model.PK){var FCode=model.Code; var FkCode=model.FKTable.Replace("Entity", "");
+var FKEntity=_AllModels.Where(t=>t.Code==FkCode).FirstOrDefault();if(FKEntity!=null){#>
+					var <#=FCode#>condition=condition.<#=model.Code#>Condition;
+					if(<#=FCode#>condition!=null)
+					{
+						//query=query.Where(q=>q.<#=model.Code+"_"+model.FKTable.Replace("Entity", "")#>!=null);
+<# foreach(var model2 in FKEntity.ColumnsList.Where(r=>r.Virtual==false).OrderByDescending(c => c.Search)){ 
+var queryCode=model.Code+"_"+model.FKTable.Replace("Entity", "")+"."+model2.Code;
+if(model2.Search ==SearchType.Range){#>
+						if (<#=FCode#>condition.<#=model2.Code#>Begin.HasValue)
+						{
+<#if(model2.CodeType.StartsWith("DateTime")){#>
+							var <#=model2.Code#>Begin=<#=FCode#>condition.<#=model2.Code#>Begin.Begin();
+							express = express.And(q => q.<#=queryCode#> >= <#=model2.Code#>Begin);
+<#}else{#>
+							express = express.And(q => q.<#=queryCode#> >= <#=FCode#>condition.<#=model2.Code#>Begin);
+<#}#>
+						}
+						if (<#=FCode#>condition.<#=model2.Code#>End.HasValue)
+						{
+<#if(model2.CodeType.StartsWith("DateTime")){#>
+							var <#=model2.Code#>End=<#=FCode#>condition.<#=model2.Code#>End.End();
+							express = express.And(q => q.<#=queryCode#> <= <#=model2.Code#>End);
+<#}else{#>
+							express = express.And(q => q.<#=queryCode#> >= <#=FCode#>condition.<#=model2.Code#>End);
+<#}#>
+						}
+<# }else if(model2.Search == SearchType.Equal){
+if(model2.CodeType =="string"){#>
+						if (!<#=FCode#>condition.<#=model2.Code#>.IsNull())
+							express = express.And(q => q.<#=queryCode#> == <#=FCode#>condition.<#=model2.Code#>);
+<#} else if(model2.CodeType =="Guid"){#>
+						if (<#=FCode#>condition.<#=model.Code#>.<#=model2.Code#>!=Guid.Empty)
+							express = express.And(q => q.<#=model.Code#>.<#=model2.Code#> == <#=FCode#>condition.<#=model2.Code#>);
+<#}else{#>
+						if (<#=FCode#>condition.<#=model2.Code#>.HasValue)
+							express = express.And(q => <#=(model2.EM==true?"(int)":"")#>q.<#=queryCode#> == <#=FCode#>condition.<#=model2.Code#>.Value);
+<# }} else if(model2.Search == SearchType.Like){
+if(model2.CodeType =="string"){#>
+						if (!<#=FCode#>condition.<#=model2.Code#>.IsNull())
+							express = express.And(q => q.<#=queryCode#>.Contains(<#=FCode#>condition.<#=model2.Code#>));
+<#}else{#>
+						if (<#=FCode#>condition.<#=model2.Code#>.HasValue)
+							express = express.And(q => q.<#=queryCode#>.Contains(condition.<#=model2.Code#>.Value));
+<#}} else if(model2.Search == SearchType.In){#>
+						if (<#=FCode#>condition.<#=model2.Code#>s != null && <#=FCode#>condition.<#=model2.Code#>s.Any())
+<#if(model2.IsNull){#>
+							express = express.And(q =>q.<#=queryCode#>!=null&&<#=FCode#>condition.<#=model2.Code#>s.Contains((int)q.<#=queryCode#>));
+<#}else{#>
+							express = express.And(q => <#=FCode#>condition.<#=model2.Code#>s.Contains(q.<#=queryCode#>));
+<#}}}#>
+				}
+<#}}}}#>
+				#endregion
+				#region 动态排序
+				if(orderBy==null)
+				{
+					if(condition!=null&&!condition.OrderBy.IsNull())
+					{
+						switch (condition.OrderBy.ToLower())
+						{
+<#					foreach(var model in _sModels.Where(r=>r.Virtual==false).OrderByDescending(c => c.Search)){ #>
+							case "<#=model.Code.ToLower()#>":
+								orderBy =q=>q.<#=model.Code#>;
+								break;
+<# }#>
+						}
+					}
+					if (orderBy == null)
+						orderBy = q => q.<#=PKData.Code#>;
+				}
+				#endregion
+				return new Tuple<Expression<Func<<#=_entityName#>Entity, bool>>, Expression<Func<<#=_entityName#>Entity, object>>,TSearch>(express, orderBy,searchCondition);
+			}
+			else throw new ValidateException("未适配当前对应搜索参数");
+		}
+	}
+}

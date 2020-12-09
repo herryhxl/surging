@@ -1,0 +1,71 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:bind="http://schemas.android.com/apk/res-auto">
+    <data>
+		<import type="<#=_package#>.Common.Util" />
+        <variable name="<#=_entityName#>Model" type="<#=_package#>.ViewModel.<#=_entityName#>ViewModel"/>
+        <variable name="<#=_entityName#>Event" type="<#=_package#>.Event.<#=_entityName#>Event"/>
+    </data>
+	<ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="none">
+<LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:layout_height="wrap_content">
+<#
+	foreach(var item in _models.ColumnsList.Where(t=>t.Virtual==false)){
+	var Code=_entityName+item.Code;
+	if(item.CodeType=="bool"){#>
+	<CheckBox
+			android:id="@+id/<#=_entityName#>_<#=item.Code.Replace("?","")#>"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" 
+            android:checked="@{<#=_entityName#>Model.<#=Code.Substring(0, 1).ToLower() + Code.Substring(1).Replace("?","")#>}"
+            android:text="<#=item.Name==null?item.Comment==null?"":item.Comment:item.Name#>"/>
+			android:addCheckedChangeListener="@{<#=_entityName#>Model.<#=_entityName#><#=item.Code.Replace("?","")#>_Check}"
+
+<#}else if(item.FK||item.EM){#>
+		<TextView
+            android:id="@+id/<#=_entityName#>_<#=item.Code.Replace("?","")#>String"
+            style="@style/TextViewStyle"
+            android:text="@{<#=_entityName#>Model.<#=Code.Substring(0, 1).ToLower() + Code.Substring(1)#>String}"
+            android:onClick="@{<#=_entityName#>Event.onClick}"
+            />
+<#}else {#>
+		<EditText
+        android:id="@+id/<#=_entityName#>_<#=item.Code.Replace("?","")#>"
+		style="@style/EditTextStyle"
+        android:hint="<#=item.Name==null?item.Comment==null?"":item.Comment:item.Name#>"
+<#if(item.PK){#>
+		android:visibility="gone"
+<#} #>
+        android:inputType="text"
+<#if(item.CodeType=="DateTime"){#>
+		android:text="@{Util.ToDate(String.valueOf(<#=_entityName#>Model.<#=Code.Substring(0, 1).ToLower() + Code.Substring(1).Replace("?","")#>))}"
+<#}else{#>
+		android:text="@{<#=item.CodeType=="string"?_entityName+"Model."+Code.Substring(0, 1).ToLower() + Code.Substring(1).Replace("?",""):"String.valueOf("+_entityName+"Model."+Code.Substring(0, 1).ToLower() + Code.Substring(1).Replace("?","")+")"#>}"
+<#}#>
+		android:addTextChangedListener="@{<#=_entityName#>Model.<#=_entityName#><#=item.Code.Replace("?","")#>_Watcher}"/>
+<#}}#>
+    
+	<Button
+        android:id="@+id/<#=_entityName#>_Save"
+        style="@style/ButtonStyle"
+		android:onClick="@{<#=_entityName#>Event.onClick}"
+        android:text="保存" />
+	<Button
+        android:id="@+id/<#=_entityName#>_List"
+        style="@style/ButtonStyle"
+		android:onClick="@{<#=_entityName#>Event.onClick}"
+        android:text="查看数据" />
+
+</LinearLayout>
+ </ScrollView>
+</layout>

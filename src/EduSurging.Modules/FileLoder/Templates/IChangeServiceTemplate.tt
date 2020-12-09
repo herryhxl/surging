@@ -1,0 +1,39 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+using System.Linq.Expressions;
+using System.Threading.Tasks;
+using System.Linq;
+using <#=_projectName#>.Entity;
+using <#=_projectName#>.Models;
+using Edu.Core.Autofac;
+using System.Collections.Generic;
+using System;
+using System.Data.Entity.Core.Objects;
+using Edu.Core.Model;
+
+<# var PKData=_models.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+	var IsFK=PKData.FK;
+#>
+
+namespace <#=_projectName#>.ChangeService.<#=_entityName#>
+{
+	public interface I<#=_entityName#>ChangeService : IDependency
+	{
+		void CreateOrModifySetDefaultParameters(<#=_entityName#>Model m<#=_entityName.ToLower()#>,bool IsAuth=false);
+
+		void Get<#=_entityName#>sByConditionSetDefaultParameters(<#=_entityName#>SearchCondition condition,bool IsAuth=false);
+
+		void Add(<#=_entityName#>Entity <#=_entityName.ToLower()#>);
+
+		bool UpdateFieldBegin<T>(<#=_entityName#>Entity <#=_entityName.ToLower()#>,T OldValue,string FieldName,T Value);
+
+		void Update(<#=_entityName#>Entity <#=_entityName.ToLower()#>);
+		
+		void Delete(<#=_entityName#>Entity <#=_entityName.ToLower()#>);
+	}
+}

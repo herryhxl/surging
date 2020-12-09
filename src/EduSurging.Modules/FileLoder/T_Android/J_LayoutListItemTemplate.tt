@@ -1,0 +1,35 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:bind="http://schemas.android.com/apk/res-auto">
+    <data>
+        <variable name="<#=_entityName#>ListViewModel" type="<#=_package#>.ViewModel.<#=_entityName#>ViewModel"/>
+		<variable name="<#=_entityName#>ListAdapter" type="<#=_package#>.Adapter.<#=_entityName#>ListAdapter" />
+    </data>
+<android.support.v7.widget.CardView
+    android:id="@+id/<#=_entityName#>_ListCardView"
+    android:layout_margin="0dp"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent" 
+    bind:cardBackgroundColor="@android:color/white"
+    bind:cardCornerRadius="5dp"
+    bind:cardElevation="5dp"
+    bind:contentPadding="5dip"
+	android:onClick="@{<#=_entityName#>ListAdapter.<#=_models.Code#>_Liser}">
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    >
+
+		<TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@{<#=_entityName#>ListViewModel.toString()}"/>
+
+</RelativeLayout>
+</android.support.v7.widget.CardView>
+</layout>

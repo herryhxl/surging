@@ -1,0 +1,248 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+package <#=_package#>.Event;
+import android.app.Activity;
+import android.content.Context;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
+import android.widget.AdapterView;
+import java.util.ArrayList;
+import java.util.List;
+import <#=_package#>.Base.*;
+import <#=_package#>.ViewModel.*;
+import <#=_package#>.Model.*;
+import <#=_package#>.Service.*;
+import <#=_package#>.Data.*;
+import <#=_package#>.Event.*;
+import <#=_package#>.Common.*;
+import <#=_package#>.Dialog.*;
+import <#=_package#>.Fragment.*;
+import com.example.yunjoy.Adapter.*;
+import <#=_package#>.<#=_projectName#>.R;
+import rx.subscriptions.CompositeSubscription;
+import <#=_package#>.<#=_projectName#>.<#=_projectName#>.<#=_models.Code.Substring(0, 1).ToUpper() + _models.Code.Substring(1).ToLower()#>Binding;
+
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
+
+<#	var PKData=_models.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+		if(PKData==null) throw new Exception("未包含主键字段");
+	var Dialogcount=_models.ColumnsList.Where(t=>t.Virtual==false&&(t.FK==true||t.EM==true)).Count();
+#>
+
+public class <#=_models.Code#>Event {
+	private CompositeSubscription _subscriptions;
+	private <#=_models.Code.Substring(0, 1).ToUpper() + _models.Code.Substring(1).ToLower()#>Binding _<#=_models.Code.ToLower()#>Binding;
+	private Context _context;
+	private <#=_models.Code#>ViewModel _<#=_models.Code.ToLower()#>ViewModel;
+	private <#=_models.Code#>Service _<#=_models.Code.ToLower()#>Service;
+	private LoadUtil _loading;
+	private <#=_models.Code#>DAO _<#=_models.Code.ToLower()#>DAO;
+    private ListViewDialog _ListViewDialog;
+	private FragmentManager _manage;
+	private Bundle _bundle;
+	private int Page=1,PageCount=200,OrderBy=0;
+	private boolean IsDescending=true;
+
+	private Activity _activity;
+    public <#=_models.Code#>Event(<#=_models.Code.Substring(0, 1).ToUpper() + _models.Code.Substring(1).ToLower()#>Binding <#=_models.Code.ToLower()#>Binding,Context context,CompositeSubscription subscriptions,LoadUtil loading,Activity activity,FragmentManager manage,Bundle bundle){
+        this._<#=_models.Code.ToLower()#>Binding=<#=_models.Code.ToLower()#>Binding;
+		this._subscriptions=subscriptions;
+		this._<#=_models.Code.ToLower()#>ViewModel=new <#=_models.Code#>ViewModel();
+		this._context=context;
+		this._loading=loading;
+		this._activity=activity;
+		this._<#=_models.Code.ToLower()#>Service=new <#=_models.Code#>Service(_context,_loading);
+<# if(Dialogcount>0){#>
+        this._ListViewDialog = new ListViewDialog(context);
+		this._ListViewDialog.setLiser(Liser);
+<#}#>
+		this._<#=_models.Code.ToLower()#>DAO=new <#=_models.Code#>DAO(context);
+		this._manage=manage;
+		this._bundle=bundle;
+		_<#=_models.Code.ToLower()#>Binding.set<#=_models.Code#>Event(this);
+		_<#=_models.Code.ToLower()#>Binding.set<#=_models.Code#>Model(_<#=_models.Code.ToLower()#>ViewModel);
+		Init();
+    }
+
+	public String GetDataString() {
+        Gson gson = new Gson();
+        return gson.toJson(_<#=_models.Code.ToLower()#>ViewModel.getModel());
+    }
+
+    ///绑定点击事件
+    public void onClick(View view)
+	{
+        final int Id=view.getId();
+        switch (Id){
+             case R.id.<#=_models.Code#>_Save:
+				//long p=_<#=_models.Code.ToLower()#>DAO.Add(_<#=_models.Code.ToLower()#>ViewModel);
+				//Toast.makeText(vi.getContext(),"保存数据"+(p==-1?"失败!":"成功!"),Toast.LENGTH_LONG).show();
+				_subscriptions.add(_<#=_models.Code.ToLower()#>Service.CreateOrModify(_<#=_models.Code.ToLower()#>ViewModel.getModel())
+				.subscribe(new MySubscriber<Msg<Object>>(_context, true, _loading) 
+				{
+					@Override
+                    public void onNext(Msg<Object> <#=_models.Code#>) {
+						if (<#=_models.Code#>.Status) {
+							FragmentTransaction Transaction = _manage.beginTransaction();
+							Transaction.replace(R.id.content,
+							DataViewFragment.newInstance(R.id.<#=_models.Code#>_List), "<#=_models.Code.Replace("?","")#>List").addToBackStack("<#=_models.Code.Replace("?","")#>").commitAllowingStateLoss();
+                        } else {
+							ToastUtil.Show(getContext(),<#=_models.Code#>.Msg);  
+						}
+                   }
+				}));
+                break;
+			case R.id.<#=_models.Code#>_List:
+                FragmentTransaction Transaction = _manage.beginTransaction();
+				Transaction.replace(R.id.content,
+				DataViewFragment.newInstance(Id), "<#=_models.Code.Replace("?","")#>List").addToBackStack("<#=_models.Code.Replace("?","")#>").commitAllowingStateLoss();
+                break;
+<# foreach(var model in _models.ColumnsList.Where(t=>t.Virtual==false)){ if(model.FK||model.EM){
+		var Code=_models.Code+model.Code.Replace("?","");
+		var pcode="<Integer>";
+		if(model.FK)
+		{
+			var item=_AllModel.Where(t=>t.Code==model.FKTable.Replace("Entity", "")).FirstOrDefault();
+			var pk=item.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+			pcode=pk.CodeType=="string"?"<String>":"<Integer>";
+		}
+#>
+		case R.id.<#=_models.Code#>_<#=model.Code.Replace("?","")#>String:
+			_ListViewDialog.setTagId(Id);
+			if(_ListViewDialog.getAdater()==null)
+			{
+				_ListViewDialog.setAdater(new RegisterTypeListAdapter<#=pcode#>(_context,_<#=_models.Code.ToLower()#>ViewModel.get<#=Code#>_<#=model.EM==true?"EM":"Entry"#>()));
+				_ListViewDialog.Show();
+			}
+			else
+			{
+				List<EnumViewModel<#=pcode#>> <#=_models.Code.ToLower()#>Data=_<#=_models.Code.ToLower()#>ViewModel.get<#=Code#>_<#=model.EM==true?"EM":"Entry"#>();
+				if(<#=_models.Code.ToLower()#>Data==null||<#=_models.Code.ToLower()#>Data.size()==0)
+				{
+					ToastUtil.Show(_context,"暂无数据。");
+				}
+				else
+				{
+					((RegisterTypeListAdapter<#=pcode#>)_ListViewDialog.getAdater()).setData(<#=_models.Code.ToLower()#>Data);
+					_ListViewDialog.Show();
+				}
+			}
+		break;
+
+<#}}#>
+            }
+    }
+<# if(Dialogcount>0){#>
+	private AdapterView.OnItemClickListener Liser = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            _ListViewDialog.Dismiss();
+            switch (_ListViewDialog.getTagId()) {
+<# foreach(var model in _models.ColumnsList.Where(t=>t.Virtual==false)){ if(model.FK||model.EM){var type="<Integer>";
+		if(model.FK)
+		{
+			var item=_AllModel.Where(t=>t.Code==model.FKTable.Replace("Entity", "")).FirstOrDefault();
+			var pk=item.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+			type=pk.CodeType=="string"?"<String>":"<Integer>";
+		}
+#>
+				case R.id.<#=_models.Code#>_<#=model.Code.Replace("?","")#>String:
+					int <#=model.Code#>=0;
+					RegisterTypeListAdapter<#=type#> <#=_models.Code+model.Code.Replace("?","")#>Adater=(RegisterTypeListAdapter<#=type#>)_ListViewDialog.getAdater();
+					List<EnumViewModel<#=type#>> <#=_models.Code+model.Code.Replace("?","")#>Data=<#=_models.Code+model.Code.Replace("?","")#>Adater.getData();
+                    for (EnumViewModel<#=type#> item : <#=_models.Code+model.Code.Replace("?","")#>Data) {
+                        if (item.getIsCheck())
+                            item.setIsCheck(false);
+						else if(<#=model.Code#>==position)
+							item.setIsCheck(true);
+						<#=model.Code#>++;
+                    }
+                    _<#=_models.Code.ToLower()#>ViewModel.set<#=_models.Code+model.Code.Replace("?","")#>String(<#=_models.Code+model.Code.Replace("?","")#>Data.get(position).getValue());
+                    _<#=_models.Code.ToLower()#>ViewModel.set<#=_models.Code+model.Code.Replace("?","")#>(<#=_models.Code+model.Code.Replace("?","")#>Data.get(position).getKey());
+                    break;
+			<#}}#>
+                
+            }
+        }
+    };
+<#}#>
+	private void Init()
+	{
+			String data = _bundle.getString("_<#=_models.Code.ToLower()#>Model", "");
+			if (Util.IsNullOrEmpty(data)) 
+			{	
+				if (_bundle.getBoolean("DataFlag",false)) 
+				{
+					ToastUtil.Show(_context, "接口加载数据。");
+					<#=PKData.CodeType=="string"?"String":PKData.CodeType#> <#=PKData.Code#>=_bundle.get<#=PKData.CodeType.Substring(0, 1).ToUpper() +PKData.CodeType.Substring(1).ToLower()#>("<#=PKData.Code#>");
+					_subscriptions.add(_<#=_models.Code.ToLower()#>Service.GetById(<#=PKData.Code#>)
+					.subscribe(new MySubscriber<Msg<<#=_models.Code#>Model>>(_context, true, _loading) {
+                       @Override
+                       public void onNext(Msg<<#=_models.Code#>Model> <#=_models.Code#>) {
+							if (<#=_models.Code#>.Status) {
+								_<#=_models.Code.ToLower()#>ViewModel=<#=_models.Code#>.Object.get<#=_models.Code#>ViewModel();
+                                _<#=_models.Code.ToLower()#>Binding.set<#=_models.Code#>Model(_<#=_models.Code.ToLower()#>ViewModel);
+								InitData();
+                            } else {
+                                  ToastUtil.Show(_context, <#=_models.Code#>.Msg);
+                            }
+                      }
+					}));
+				 }
+				 else
+				 {
+					_<#=_models.Code.ToLower()#>ViewModel=new <#=_models.Code#>ViewModel();
+                    _<#=_models.Code.ToLower()#>Binding.set<#=_models.Code#>Model(_<#=_models.Code.ToLower()#>ViewModel);
+					InitData();
+				 }
+			}
+			else
+			{
+				ToastUtil.Show(_context, "恢复数据。");
+				Gson gson = new Gson();
+				Type type = new TypeToken<<#=_models.Code#>Model>() {
+				}.getType();
+				<#=_models.Code#>Model model = gson.fromJson(data, type);
+				_<#=_models.Code.ToLower()#>ViewModel=model.get<#=_models.Code#>ViewModel();
+                _<#=_models.Code.ToLower()#>Binding.set<#=_models.Code#>Model(_<#=_models.Code.ToLower()#>ViewModel);
+			}
+	}
+
+	private void InitData()
+	{
+<# foreach(var model in _models.ColumnsList.Where(t=>t.Virtual==false)){ if(model.FK){
+		var item=_AllModel.Where(t=>t.Code==model.FKTable.Replace("Entity", "")).FirstOrDefault();
+		var pk=item.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+		var pcode=pk.CodeType=="string"?"<String>":"<Integer>";
+		var Code=_models.Code+model.Code.Replace("?","");
+#>
+					_subscriptions.add(new <#=item.Code.Replace("?","")#>Service(_context, _loading).GetList(IsDescending,OrderBy,Page,PageCount).subscribe(new MySubscriber<Msg<PageList<<#=item.Code.Replace("?","")#>Model>>>(_context, _loading) {
+						@Override
+						public void onNext(Msg<PageList<<#=item.Code.Replace("?","")#>Model>> pageListMsg) {
+							if (!pageListMsg.Status) 
+							{
+								ToastUtil.Show(_context,pageListMsg.Msg);
+								return;
+							}
+							List<EnumViewModel<#=pcode#>> <#=item.Code.Replace("?","")#> = new ArrayList<>();
+							for (<#=item.Code.Replace("?","")#>Model item : pageListMsg.Object.Records) {//<#=model.Code.Replace("?","")#>
+								if(item.get<#=pk.Code#>()==_<#=_models.Code.ToLower()#>ViewModel.get<#=Code#>())
+									_<#=_models.Code.ToLower()#>ViewModel.set<#=Code#>String(item.get<#=item.Code.Replace("?","")#>ViewModel().toString());
+								<#=item.Code.Replace("?","")#>.add(new EnumViewModel<#=pcode#>(item.get<#=pk.Code#>(),item.get<#=item.Code.Replace("?","")#>ViewModel().toString(),item.get<#=pk.Code#>()==_<#=_models.Code.ToLower()#>ViewModel.get<#=Code#>()));
+							}
+							_<#=_models.Code.ToLower()#>ViewModel.set<#=Code#>_Entry(<#=item.Code.Replace("?","")#>);
+					}
+				}));
+<#}}#>
+	}
+}

@@ -1,0 +1,92 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+package <#=_package#>.Dialog;
+import android.content.Context;
+import android.databinding.DataBindingUtil;
+import android.support.design.widget.BottomSheetBehavior;
+import android.support.design.widget.BottomSheetDialog;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+
+import <#=_package#>.Adapter.RegisterTypeListAdapter;
+import <#=_package#>.ViewModel.EnumViewModel;
+import <#=_package#>.<#=_projectName#>.R;
+import <#=_package#>.<#=_projectName#>.<#=_projectName#>.ListdataLayoutBinding;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ListViewDialog {
+    private Context _context;
+    private BottomSheetDialog bottomSheetDialog;
+    private List<EnumViewModel> _data;
+    private int TagId;
+    private ListdataLayoutBinding _listdataLayoutBinding;
+    private AdapterView.OnItemClickListener _liser;
+    private BaseAdapter _adater;
+    public ListViewDialog(Context context){
+        this._context=context;
+        _listdataLayoutBinding = DataBindingUtil.inflate(LayoutInflater.from(_context), R.layout.listdata_layout, null, false);
+    }
+    public int getTagId(){
+        return TagId;
+    }
+    public void setTagId(int Id){
+        this.TagId=Id;
+    }
+    public void setAdater(BaseAdapter t){
+        this._adater=t;
+    }
+    public BaseAdapter getAdater(){
+        return _adater;
+    }
+    public void setLiser(AdapterView.OnItemClickListener liser){
+        this._liser=liser;
+        _listdataLayoutBinding.ListDataView.setOnItemClickListener(_liser);
+    }
+    public Object getItem(int position){
+        return _adater.getItem(position);
+    }
+
+    public void Show() {
+        if(bottomSheetDialog!=null){
+            if(!bottomSheetDialog.isShowing())
+                bottomSheetDialog.show();
+        }
+        else {
+            bottomSheetDialog = new BottomSheetDialog(_context);
+            View view = _listdataLayoutBinding.getRoot();
+            bottomSheetDialog.setContentView(view);
+            View parent = (View) view.getParent();
+            BottomSheetBehavior behavior = BottomSheetBehavior.from(parent);
+            _listdataLayoutBinding.ListDataView.setAdapter(_adater);
+            _listdataLayoutBinding.ListDataView.setOnItemClickListener(_liser);
+            behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+			bottomSheetDialog.setCanceledOnTouchOutside(false);
+            bottomSheetDialog.setCancelable(false);
+//
+//        contentView.measure(0, 0);
+//        behavior.setPeekHeight(contentView.getMeasuredHeight());
+//        CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) parent.getLayoutParams();
+//        params.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
+//        parent.setLayoutParams(params);
+            bottomSheetDialog.show();
+        }
+    }
+
+
+
+    public void Dismiss() {
+        if(bottomSheetDialog.isShowing()) {
+            bottomSheetDialog.dismiss();
+        }
+    }
+}
+
+
+

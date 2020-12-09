@@ -1,0 +1,46 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+package <#=_package#>.Base;
+import <#=_package#>.<#=_projectName#>.R;
+import com.example.yunjoy.databinding.CustormActivity;
+import com.example.yunjoy.databinding.databinding.ActivityAdminBinding;
+import android.app.Application;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+
+public class AppManager extends Application {
+    public static Boolean _IsLoading=true;
+    public static String _LoadingMessage;
+    public static String _AppServer;
+    private static Context _context;
+    private static ActivityAdminBinding _binding;
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        this._context=getApplicationContext();
+		this._AppServer=getString(R.string.AppServer);
+		this._LoadingMessage=getString(R.string.LoadingMessage);
+
+		SharedPreferences sharedPreferences = _context.getSharedPreferences("cookie", Context.MODE_PRIVATE);
+        String Cookie = sharedPreferences.getString("cookie", "");
+        if (Cookie.equals("")) {
+            Intent in = new Intent(this, CustormActivity.class);
+            in.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(in);
+        }
+    }
+	public static Context getContext(){
+        return _context;
+    }
+	public static void setBinding(ActivityAdminBinding binding){
+        _binding=binding;
+    }
+    public static ActivityAdminBinding getBinding(){
+        return _binding;
+    }
+}

@@ -1,0 +1,24 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="FileLoder.TemplateModel" #>
+
+using System;
+using System.Linq;
+using Edu.Core.Data;
+using Edu.Core.Logging;
+using Edu.Data.EntityFramework;
+
+namespace <#=_projectName#>.Base
+{
+    public class <#=_projectName#>Repository<T> : <#=_RepositoryName#><T>, I<#=_projectName#>Repository<T> where T : class,IBaseEntity
+    {
+        public <#=_projectName#>Repository(<#=_DbContextName#> context, ILog log)
+            : base(context, log)
+        {
+
+        }
+    }
+}

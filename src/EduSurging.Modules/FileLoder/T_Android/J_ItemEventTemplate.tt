@@ -1,0 +1,60 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+package <#=_package#>.Event;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
+import <#=_package#>.ViewModel.*;
+import <#=_package#>.Service.*;
+import <#=_package#>.Data.*;
+import <#=_package#>.Event.*;
+import <#=_package#>.Common.LoadUtil;
+import <#=_package#>.Model.<#=_models.Code#>Model;
+import <#=_package#>.ViewModel.<#=_models.Code#>ViewModel;
+import <#=_package#>.<#=_projectName#>.R;
+import rx.subscriptions.CompositeSubscription;
+import android.content.Context;
+import <#=_package#>.<#=_projectName#>.<#=_projectName#>.<#=_models.Code.Substring(0, 1).ToUpper() + _models.Code.Substring(1).ToLower()#>Binding;
+
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import com.example.yunjoy.Fragment.*;
+
+public class Item<#=_models.Code#>Event {
+    public <#=_models.Code#>ViewModel _<#=_models.Code.ToLower()#>;
+	private CompositeSubscription _subscriptions;
+	private <#=_models.Code.Substring(0, 1).ToUpper() + _models.Code.Substring(1).ToLower()#>Binding _<#=_models.Code.ToLower()#>Binding;
+	private Context _context;
+	private <#=_models.Code#>ViewModel _<#=_models.Code.ToLower()#>ViewModel;
+	private <#=_models.Code#>Service _<#=_models.Code.ToLower()#>Service;
+	private LoadUtil _loading;
+	private <#=_models.Code#>DAO _<#=_models.Code.ToLower()#>DAO;
+	private FragmentManager _manage;
+
+    public Item<#=_models.Code#>Event(<#=_models.Code.Substring(0, 1).ToUpper() + _models.Code.Substring(1).ToLower()#>Binding <#=_models.Code.ToLower()#>Binding,Context context,CompositeSubscription subscriptions,LoadUtil loading,FragmentManager manage){
+        this._<#=_models.Code.ToLower()#>Binding=<#=_models.Code.ToLower()#>Binding;
+		this._subscriptions=subscriptions;
+		this._context=context;
+		this._loading=loading;
+		this._<#=_models.Code.ToLower()#>ViewModel=new <#=_models.Code#>ViewModel(context);
+		this._<#=_models.Code.ToLower()#>Service=new <#=_models.Code#>Service(_context,_loading);
+		this._<#=_models.Code.ToLower()#>DAO=new <#=_models.Code#>DAO(context);
+		<#=_models.Code.ToLower()#>Binding.set<#=_models.Code#>Event(this);
+		<#=_models.Code.ToLower()#>Binding.set<#=_models.Code#>Model(_<#=_models.Code.ToLower()#>ViewModel);
+		this._manage=manage;
+    }
+    ///绑定点击事件
+    public void onClick(View view)
+	{
+        int Id=view.getId();
+            Button vi=(Button)view;
+            switch (Id)
+			{
+                
+            }
+    }
+}

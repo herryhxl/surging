@@ -1,0 +1,80 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+using System.Linq;
+using <#=_projectName#>.Model;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Data;
+using System;
+
+namespace <#=_projectName#>.IDAL.<#=_entityName#>
+{
+<# var PKData=_Columns.Where(t=>t.PK==true).FirstOrDefault();
+if(PKData==null) throw new Exception("未包含主键字段");#>
+	/// <summary>
+	/// <#=_entityName#>操作接口方法
+	/// </summary>
+	public interface I<#=_entityName#>DAL 
+	{
+<#if(PKData.IsAutoAdd){#>
+		/// <summary>
+		/// 得到最大ID
+		/// </summary>
+		<#=PKData.CodeType#> GetMaxId();
+<#}#>
+		/// <summary>
+		/// 是否存在该记录
+		/// </summary>
+		bool Exists(<#=PKData.CodeType#> <#=PKData.Code#>);
+		/// <summary>
+		/// 新增
+		/// </summary>
+		<#=PKData.IsAutoAdd?PKData.CodeType:"bool"#> Add(<#=_entityName#>Model  m<#=_entityName.ToLower()#>);
+		/// <summary>
+		/// 删除
+		/// </summary>
+		bool Delete(<#=PKData.CodeType#> <#=PKData.Code#>);
+		/// <summary>
+		/// 删除
+		/// </summary>
+		bool Delete(string Where=null, List<SqlParameter> para = null);
+		/// <summary>
+		/// 更新
+		/// </summary>
+		bool Update(<#=_entityName#>Model  m<#=_entityName.ToLower()#>);
+		/// <summary>
+		/// 根据主键查询
+		/// </summary>
+		<#=_entityName#>Model GetModel(<#=PKData.CodeType#> <#=PKData.Code#>);
+		
+		/// <summary>
+		/// 获得数据列表
+		/// </summary>
+		DataSet GetList(string Where=null, List<SqlParameter> para = null);
+
+		/// <summary>
+		/// 获得前几行数据
+		/// </summary>
+        DataSet GetList(int Top, string strWhere, string filedOrder, List<SqlParameter> para = null);
+		/// <summary>
+        /// 获取记录总数
+        /// </summary>
+		int GetRecordCount(string strWhere=null, List<SqlParameter> para = null);
+		/// <summary>
+		/// 模型转换
+		/// </summary>
+		<#=_entityName#>Model RowToModel(DataRow row);
+
+		/// <summary>
+		/// where查询
+		/// </summary>
+		List<<#=_entityName#>Model> GetModelList(string Where=null, List<SqlParameter> para = null);
+		/// <summary>
+		/// 分页获取数据列表
+		/// </summary>
+        DataSet GetListByPage(string strWhere, string orderby, int startIndex, int endIndex, List<SqlParameter> para = null);
+	}
+}

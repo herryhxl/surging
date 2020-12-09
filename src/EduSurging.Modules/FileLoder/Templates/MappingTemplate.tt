@@ -1,0 +1,91 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="FileLoder.Helper" #>
+
+using Edu.Core.Data;
+using System.Data.Entity.ModelConfiguration;
+using <#=_projectName#>.Entity;
+using <#=_projectName#>.Base;
+using <#=_projectName#>.Models;
+using System.ComponentModel.DataAnnotations.Schema;
+
+<# var PKData=_eModel.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+#>
+namespace <#=_projectName#>.Entity.Mappings.<#=_entityName.Replace("_","")#>
+{
+	public class <#=_entityName.Replace("_","")#>Mapping : EntityTypeConfiguration<<#=_entityName.Replace("_","")#>Entity>, <#=_mapText#>
+	{
+		public <#=_entityName.Replace("_","")#>Mapping()
+		{
+<#if(_oracle){#>
+			ToTable("<#=_entityName#>","<#=_schmal#>");
+<#}else{#>
+			ToTable("<#=_entityName#>");
+<#}#>
+
+			HasKey(c =>new { 
+<# foreach(var model in _eModel.ColumnsList.Where(t=>t.PK==true&&t.Virtual==false)){#>
+				c.<#=model.Code#>,
+<#}#>
+			});
+<# foreach(var model in _eModel.ColumnsList.Where(t=>t.Virtual==false||(t.Virtual&&t.PK&&t.FK))){
+var type=model.DataType.IndexOf("(") == -1 ? model.DataType.Replace("?","") : model.DataType.Substring(0, model.DataType.IndexOf("(")).Replace("?","");
+if(model.Virtual){ if(PKData.PK&&PKData.FK){var name=model.FKCode+"_"+ _eModel.Code;#>
+			HasRequired(c=>c.<#=model.Code#>).WithOptional(d=>d.<#=name#>).WillCascadeOnDelete(false);
+<#}}else if(model.PK){ #>
+<#if(type=="int"||type=="bigint"){#>
+		<#if(!model.FK){#>
+			Property(c => c.<#=model.Code#>).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+		<#}#>
+			Property(c => c.<#=model.Code#>).HasColumnType("<#=Helper.GetMapDataType(_options.DataBaseType,type)#>")<#=model.Length==0?"":".HasMaxLength(" + model.Length +")"#><#=model.IsNull?".IsOptional()":".IsRequired()"#>;
+<#}else{#>
+			Property(c => c.<#=model.Code#>).HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
+			Property(c => c.<#=model.Code#>).HasColumnType("<#=Helper.GetMapDataType(_options.DataBaseType,type)#>")<#=model.Length==0?"":".HasMaxLength(" + model.Length +")"#><#=model.IsNull?".IsOptional()":".IsRequired()"#>;
+<#}#>
+
+<# }else if(model.FK){var name=model.Code+"_"+ _eModel.Code + "List";#>
+			Property(c => c.<#=model.Code#>).HasColumnType("<#=Helper.GetMapDataType(_options.DataBaseType,type)#>")<#=model.Length==0?"":".HasMaxLength(" + model.Length +")"#><#=model.IsNull?".IsOptional()":".IsRequired()"#>;
+			<#=model.IsNull?"HasOptional":"HasRequired"#>(c=>c.<#=model.Code+"_"+model.FKTable.Replace("Entity", "")#>).WithMany(d=>d.<#=name#>).HasForeignKey(c => c.<#=model.Code#>).WillCascadeOnDelete(<#=model.IsNull?"false":"true"#>);
+<#}else if(model.Virtual){#>
+	
+<#}else if(model.EM){#>
+			Ignore(c => c.<#=model.Code#>String);
+			Property(c => c.<#=model.Code#>).HasColumnType("<#=Helper.GetMapDataType(_options.DataBaseType,type)#>")<#=model.Length==0?"":".HasMaxLength(" + model.Length +")"#><#=model.IsNull?".IsOptional()":".IsRequired()"#>;
+<#}else if(type=="xml"){#>
+			Ignore(c => c.Xml_<#=model.Code#>);
+			Property(c => c.<#=model.Code#>).HasColumnType("<#=Helper.GetMapDataType(_options.DataBaseType,type)#>")<#=model.Length==0?"":".HasMaxLength(" + model.Length +")"#><#=model.IsNull?".IsOptional()":".IsRequired()"#>;
+<#}else{#>
+			Property(c => c.<#=model.Code#>).HasColumnType("<#=Helper.GetMapDataType(_options.DataBaseType,type)#>")<#=model.Length==0?"":".HasMaxLength(" + model.Length +")"#><#=model.IsNull?".IsOptional()":".IsRequired()"#>;
+<#}}#>
+<#if(_options.DataBaseType==DataBaseType.MSSQL){#>
+			MapToStoredProcedures();
+<#}#>
+		}
+	}
+
+	public class <#=_entityName.Replace("_","")#>_DataModelMapping : ComplexTypeConfiguration<<#=_entityName.Replace("_","")#>_DataModel>, <#=_mapText#>
+    {
+        public <#=_entityName.Replace("_","")#>_DataModelMapping()
+        {
+<# foreach(var model in _eModel.ColumnsList.Where(t=>t.Virtual==false)){var type=model.DataType.IndexOf("(") == -1 ? model.DataType.Replace("?","") : model.DataType.Substring(0, model.DataType.IndexOf("(")).Replace("?","");if(model.PK){ #>
+<#if(model.FK){var name=model.Code+"_"+ _eModel.Code;#>
+			
+<#} }else if(model.FK){var name=model.Code+"_"+ _eModel.Code + "List";#>
+			Property(c => c.<#=model.Code#>).HasColumnType("<#=Helper.GetMapDataType(_options.DataBaseType,type)#>")<#=model.Length==0?"":".HasMaxLength(" + model.Length +")"#><#=model.IsNull?".IsOptional()":".IsRequired()"#>;		
+<#}else if(model.Virtual){#>
+<#}else if(model.EM){#>
+			Ignore(c => c.<#=model.Code#>String);
+			Property(c => c.<#=model.Code#>).HasColumnType("<#=Helper.GetMapDataType(_options.DataBaseType,type)#>")<#=model.Length==0?"":".HasMaxLength(" + model.Length +")"#><#=model.IsNull?".IsOptional()":".IsRequired()"#>;
+<#}else if(type=="xml"){#>
+			Ignore(c => c.Xml_<#=model.Code#>);
+			Property(c => c.<#=model.Code#>).HasColumnType("<#=Helper.GetMapDataType(_options.DataBaseType,type)#>")<#=model.Length==0?"":".HasMaxLength(" + model.Length +")"#><#=model.IsNull?".IsOptional()":".IsRequired()"#>;
+<#}else{#>
+			Property(c => c.<#=model.Code#>).HasColumnType("<#=Helper.GetMapDataType(_options.DataBaseType,type)#>")<#=model.Length==0?"":".HasMaxLength(" + model.Length +")"#><#=model.IsNull?".IsOptional()":".IsRequired()"#>;
+<#}}#>
+        }
+    }
+}

@@ -1,0 +1,78 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+package <#=_package#>.Fragment;
+import android.databinding.DataBindingUtil;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import <#=_package#>.Common.LoadUtil;
+import <#=_package#>.Common.Util;
+import <#=_package#>.Base.*;
+import <#=_package#>.Event.*;
+import <#=_package#>.<#=_projectName#>.R;
+import <#=_package#>.<#=_projectName#>.<#=_projectName#>.DataLayoutBinding;
+import rx.subscriptions.CompositeSubscription;
+import com.google.gson.Gson;
+
+public class DataViewFragment extends Fragment {
+
+	private LoadUtil _loading;
+	private CompositeSubscription _subscriptions;
+	private DataLayoutBinding binding;
+	private DataViewEvent _DataViewEvent;
+    public DataViewFragment() {
+        
+    }
+
+    
+    public static DataViewFragment newInstance(int RId) {
+        DataViewFragment fragment = new DataViewFragment();
+        Bundle args = new Bundle();
+        args.putInt("ID", RId);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		saveStateToArguments();
+	}
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
+        binding = DataBindingUtil.inflate(inflater,R.layout.data_layout,container,false);
+		_subscriptions=new CompositeSubscription();
+        if (AppManager._IsLoading && _loading == null)
+			_loading = new LoadUtil(getContext(), AppManager._LoadingMessage);
+		_DataViewEvent=new DataViewEvent(binding,getContext(),_subscriptions,_loading,getActivity(),getActivity().getSupportFragmentManager(),getArguments());
+        return binding.getRoot();
+    }
+
+	private void saveStateToArguments() {
+		if(_DataViewEvent==null){
+            return;
+        }
+		String Data=_DataViewEvent.GetDataString();
+		if(getView()!=null&&!Util.IsNullOrEmpty(Data)) {
+			getArguments().putString("_DataViewModel", Data);
+		}
+    }
+	@Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Save State Here
+        _subscriptions.unsubscribe();
+		saveStateToArguments();
+    }
+}

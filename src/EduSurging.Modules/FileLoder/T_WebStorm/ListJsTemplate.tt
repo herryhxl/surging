@@ -1,0 +1,15 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<# var PKData=models.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+#>
+
+app.controller('<#=_projectName#>Controller', ['$scope', '$http', '$stateParams', '$state','CommonService',
+    function ($scope, $http, $stateParams, $state,CommonService) {
+		$scope.TableList=[];
+        var controller=$state.current.name.split(".")[1];
+        CommonService.Init($scope,controller,$state, $stateParams,"<#=PKData.Code#>");
+}]);

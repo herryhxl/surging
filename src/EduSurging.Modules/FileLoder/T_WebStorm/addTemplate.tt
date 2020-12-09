@@ -1,0 +1,99 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+<div class="panel panel-default">
+    <div class="panel-heading font-bold">
+       新增<#=(models.Comment==null?"":models.Comment)#>方法
+    </div>
+    <div class="panel-body" ng-controller="<#=_projectName#>Controller">
+        <form class="form-horizontal" name="form">
+<#foreach(var item in models.ColumnsList.Where(t=>t.Virtual==false)){
+	var Code=_entityName+item.Code;
+	if(item.CodeType=="bool"){#>
+		<div class="line line-dashed b-b line-lg pull-in"></div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label"><#=item.Name==null?item.Comment==null?"":item.Comment:item.Name#></label>
+                <div class="col-sm-4">
+                    <input type="text"   name="<#=item.Code.Replace("?","")#>" id="<#=item.Code.Replace("?","")#>"   ng-model="Model.<#=item.Code.Replace("?","")#>" class="form-control" placeholder="<#=item.Name==null?item.Comment==null?"":item.Comment:item.Name#>" <#=item.IsNull?"":"required"#>>
+<#if(item.IsNull){#>
+                    <span ng-show="form.<#=item.Code.Replace("?","")#>.$error.required" class="tipshowcl" aria-hidden="false">*必填项</span>
+<#}#>
+                </div>
+       </div>
+<#}else if(item.EM){#>
+		<div class="line line-dashed b-b line-lg pull-in"></div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label"><#=item.Name==null?item.Comment==null?"":item.Comment:item.Name#></label>
+                <div class="col-sm-4">
+                    <select name="<#=item.Code.Replace("?","")#>" id="<#=item.Code.Replace("?","")#>"   ng-model="Model.<#=item.Code.Replace("?","")#>" class="form-control" placeholder="<#=item.Name==null?item.Comment==null?"":item.Comment:item.Name#>" <#=item.IsNull?"":"required"#> >
+						<option value="" selected="selected" >请选择...</option>
+<#foreach(var em in item.EmodelList){#>
+						<option value="<#=em.Attribute#>" ><#=em.Description#></option>
+<#}#>
+					</select>
+<#if(item.IsNull){#>
+                    <span ng-show="form.<#=item.Code.Replace("?","")#>.$error.required" class="tipshowcl" aria-hidden="false">*必填项</span>
+<#}#>
+                </div>
+       </div>
+<#}else if(item.FK){#>
+		<tr>
+            <td>
+                <#=item.Name==null?item.Comment==null?"":item.Comment:item.Name#>：
+            </td>
+            <td>
+                <input id="<#=item.Code.Replace("?","")#>Text" name="<#=item.Code.Replace("?","")#>Text" validate="{required:<#=item.IsNull?"false":"true"#>}" />
+            </td>
+        </tr>
+<#}else if(item.PK) {#>
+		
+<#}else {#>
+		<tr>
+            <td>
+                <label for="textbox1"><#=item.Name==null?item.Comment==null?"":item.Comment:item.Name#>：</label>
+            </td>
+            <td>
+			<#
+				var require=item.IsNull?"false":"true";
+			#>
+                <input  id="<#=item.Code.Replace("?","")#>" name="<#=item.Code.Replace("?","")#>" type="text" class="<#=item.CodeType=="DateTime"?"ui-datepicker":"ui-textbox"#>" validate="{required:<#=require#>}" />
+            </td>
+        </tr>
+<#}}#>
+
+            <div class="line line-dashed b-b line-lg pull-in"></div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">方法名</label>
+                <div class="col-sm-4">
+                    <input type="text"   name="ActionName" id="ActionName"   ng-model="Model.ActionName" class="form-control" placeholder="方法名">
+                    <span ng-show="form.ActionName.$error.required" class="tipshowcl" aria-hidden="false">*必填项</span>
+                </div>
+            </div>
+
+            <div class="line line-dashed b-b line-lg pull-in"></div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">描述</label>
+                <div class="col-sm-4">
+                    <input type="text"   name="Description" id="Description"   ng-model="ActionModels.Description" class="form-control" placeholder="描述">
+                    <span ng-show="form.Description.$error.required" class="tipshowcl" aria-hidden="false">*必填项</span>
+                </div>
+            </div>
+
+            
+            <div class="line line-dashed b-b line-lg pull-in"></div>
+            <div class="form-group">
+                <div class="col-sm-4 col-sm-offset-2">
+                    <button ng-click="update()" type="submit" class="btn btn-primary">保存</button>
+                    <button type="submit" ui-sref="app.action.list" class="btn btn-default">取消</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+<script type="text/javascript">
+   
+</script>

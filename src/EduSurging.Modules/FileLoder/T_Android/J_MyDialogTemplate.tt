@@ -1,0 +1,61 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+package <#=_package#>.Dialog;
+import android.content.Context;
+import android.databinding.DataBindingUtil;
+import android.support.design.widget.BottomSheetBehavior;
+import android.support.design.widget.BottomSheetDialog;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.TextView;
+import <#=_package#>.ViewModel.MyDialogViewModel;
+import android.os.Bundle;
+import <#=_package#>.<#=_projectName#>.R;
+import <#=_package#>.<#=_projectName#>.<#=_projectName#>.MyDialogBinding;
+
+public class MyDialog {
+    private Context _context;
+    private BottomSheetDialog bottomSheetDialog;
+    private MyDialogBinding _mydialogBinding;
+    private Bundle _bundle;
+    public MyDialog(Context context,MyDialogViewModel model,View.OnClickListener liser){
+        this._context=context;
+        _mydialogBinding= DataBindingUtil.inflate(LayoutInflater.from(_context), R.layout.my_dialog, null, false);
+        _mydialogBinding.setMyDialogViewModel(model);
+        _mydialogBinding.MyDialogSureText.setOnClickListener(liser);
+        _mydialogBinding.MyDialogChanelText.setOnClickListener(liser);
+    }
+	public void setBundle(Bundle bundle){
+        this._bundle=bundle;
+    }
+    public Bundle getBundle(){
+        return this._bundle;
+    }
+    public void Show() {
+        if(bottomSheetDialog!=null){
+            if(!bottomSheetDialog.isShowing()) {
+                bottomSheetDialog.show();
+            }
+        }
+        else {
+            bottomSheetDialog = new BottomSheetDialog(_context);
+            View contentView = _mydialogBinding.getRoot();
+            //bottomSheetDialog.setCanceledOnTouchOutside(false);
+            //bottomSheetDialog.setCancelable(false);
+            bottomSheetDialog.setContentView(contentView);
+            View parent = (View) contentView.getParent();
+
+            BottomSheetBehavior behavior = BottomSheetBehavior.from(parent);
+            behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            bottomSheetDialog.show();
+        }
+    }
+    public void Dismiss(){
+        if(bottomSheetDialog.isShowing()) {
+            bottomSheetDialog.dismiss();
+        }
+    }
+}

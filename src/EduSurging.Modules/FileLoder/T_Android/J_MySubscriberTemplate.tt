@@ -1,0 +1,49 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+package <#=_projectName#>.Base;
+
+import android.content.Context;
+import android.support.annotation.CallSuper;
+
+import <#=_projectName#>.Common.DialogUtil;
+import <#=_projectName#>.Common.LoadUtil;
+import <#=_projectName#>.Common.ToastUtil;
+
+public abstract class MySubscriber<T> extends BaseSubscriber<T> 
+{
+    private Boolean IsDialog=false;
+    private LoadUtil _loading;
+    public MySubscriber(Context context,Boolean IsDialog,LoadUtil loading) 
+	{
+        super(context);
+        this.IsDialog=IsDialog;
+        this._loading=loading;
+    }
+    public MySubscriber(Context context,LoadUtil loading) 
+	{
+        super(context);
+        this._loading=loading;
+    }
+    @Override
+    public void onCompleted() 
+	{
+		if(_loading!=null)
+            _loading.dismiss();
+    }
+    @CallSuper
+    @Override
+    public void onError(Throwable e) 
+	{
+        String Message=e.getMessage().indexOf(":")==-1?e.getMessage():e.getMessage().substring(e.getMessage().indexOf(":")+1);
+		if(_loading!=null)
+            _loading.dismiss();
+        if(IsDialog)
+            DialogUtil.showDialog(getContext(),Message,"提示");
+        else
+            ToastUtil.Show(getContext(), Message);
+    }
+}

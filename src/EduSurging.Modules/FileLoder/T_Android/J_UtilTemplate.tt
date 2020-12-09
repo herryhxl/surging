@@ -1,0 +1,63 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+package <#=_projectName#>.Common;
+
+import <#=_projectName#>.Model.CookieModel;
+import java.util.List;
+import android.text.format.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.text.ParseException;
+
+public class Util {
+    public  static boolean IsNullOrEmpty(String r){
+        return (r==null||r.trim().equals(""));
+    }
+	public static boolean equals(Object a, Object b) {
+        return (a == b) || (a != null && a.equals(b));
+    }
+
+	public static List<CookieModel> ProceeeCookie(List<CookieModel> old, List<CookieModel> New) {
+        if (old.size() == 0) return New;
+        for (CookieModel item : New) {
+            boolean flag = true;
+            for (CookieModel item2 : old) {
+                if (item.getKey().equals(item2.getKey())) {
+                    flag = false;
+                    item2.setValue(item.getValue());
+                    break;
+                }
+            }
+            if (flag)
+                old.add(item);
+        }
+        return old;
+    }
+	
+	public static Date StrToDate(String str) {
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Date date = null;
+		try {
+			date = format.parse(str);
+		} catch (ParseException e) {
+		}
+		return date;
+	}
+
+	public static String ToDate(String Date) {
+		if (Date != null && !Date.trim().equals("")) {
+			if (Date.indexOf("T") != -1) {
+				Date date=StrToDate(Date.replace("T", " "));
+				return date==null? "":new SimpleDateFormat("yyyy/MM/dd HH:mm").format(date);
+			} else if (Date.indexOf("Date") != -1) {//:ss
+				Long longtime = Long.parseLong(Date.replace("/Date(", "").replace(")/", ""), 10);
+				return DateFormat.format("yyyy/MM/dd HH:mm", longtime).toString();
+			}
+		}
+		return "";
+	}
+}

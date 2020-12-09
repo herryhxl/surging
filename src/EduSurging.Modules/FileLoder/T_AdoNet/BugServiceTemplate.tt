@@ -1,0 +1,238 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+using System.Linq;
+using <#=_projectName#>.Model;
+using <#=_projectName#>.IDAL.<#=_entityName#>;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Text;
+using System.Data;
+using System;
+
+namespace <#=_projectName#>.Service.<#=_entityName#>
+{
+	<# var PKData=_Columns.Where(t=>t.PK==true).FirstOrDefault();
+		if(PKData==null) throw new Exception("未包含主键字段");
+	#>
+	/// <summary>
+	/// 数据访问类:<#=_entityName#>
+	/// </summary>
+	public partial class <#=_entityName#>
+	{
+		/// <summary>
+		/// 得到最大ID
+		/// </summary>
+		public int GetMaxId()
+		{
+            return DbHelperSQL.GetMaxID("<#=PKData.Code#>", "<#=_entityName#>"); 
+		}
+		/// <summary>
+		/// 是否存在该记录
+		/// </summary>
+		public bool Exists(<#=PKData.CodeType#> <#=PKData.Code#>)
+		{
+			StringBuilder strSql=new StringBuilder();
+			strSql.Append("select count(1) from <#=_entityName#>");
+			strSql.Append(" where <#=PKData.Code#>=@<#=PKData.Code#>");
+            List<SqlParameter> Para = new List<SqlParameter>();
+			Para.Add(new SqlParameter("@<#=PKData.Code#>", <#=PKData.Code#>));
+			return DbHelperSQL.Exists(strSql.ToString(),Para.ToArray());
+		}
+		public int Add(Model.<#=_entityName#> m<#=_entityName.ToLower()#>)
+		{
+			string flag = "insert into {0} ({1}) values ({2}) ;select @@IDENTITY";
+            StringBuilder Key = new StringBuilder();
+            StringBuilder Values = new StringBuilder();
+            List<SqlParameter> Para = new List<SqlParameter>();
+			<# foreach(var item in _Columns.Where(t=>t.PK!=true)){#>
+			if(m<#=_entityName.ToLower()#>.<#=item.Code#>!=null)
+			{
+				<# if(!item.PK) {#>
+				Key.Append(",<#=item.Code#>");
+				Values.Append(",@<#=item.Code#>");
+				Para.Add(new SqlParameter("@<#=item.Code#>", m<#=_entityName.ToLower()#>.<#=item.Code#>));
+				<#}#>
+			}
+			<#}#>
+			var Sql=string.Format(flag,"<#=_entityName#>",Key.ToString().Substring(1),Values.ToString().Substring(1));
+			object obj = DbHelperSQL.GetSingle(Sql, Para.ToArray());
+            if (obj == null)
+            {
+                return 1;
+            }
+            else
+            {
+                return Convert.ToInt32(obj);
+            }
+		}
+		
+		public bool Update(Model.<#=_entityName#> m<#=_entityName.ToLower()#>)
+		{
+			StringBuilder Key = new StringBuilder();
+            List<SqlParameter> Para = new List<SqlParameter>();
+            var flag="update <#=_entityName#> set ";
+			<# var str="";foreach(var item in _Columns){#>
+			if(m<#=_entityName.ToLower()#>.<#=item.Code#>!=null)
+			{
+				<# if(item.PK) {
+				str=" where "+item.Code+"=@"+item.Code;
+				#>
+					Para.Add(new SqlParameter("@<#=item.Code#>", m<#=_entityName.ToLower()#>.<#=item.Code#>));
+				<#}else{#>
+				Key.Append(string.Format(",<#=item.Code#>=@<#=item.Code#>"));
+				Para.Add(new SqlParameter("@<#=item.Code#>", m<#=_entityName.ToLower()#>.<#=item.Code#>));
+				<#}#>
+			}
+			<#}#>
+			Key.Append("<#=str#>");
+			int rowsAffected = DbHelperSQL.ExecuteSql(flag + Key.ToString().Substring(1), Para.ToArray());
+			if (rowsAffected > 0)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		public int Delete(<#=PKData.CodeType#> <#=PKData.Code#>)
+		{
+			StringBuilder strSql = new StringBuilder();
+			List<SqlParameter> Para = new List<SqlParameter>();
+            strSql.Append("delete from <#=_entityName#> ");
+			strSql.Append(" where <#=PKData.Code#>=@<#=PKData.Code#> ");
+			Para.Add(new SqlParameter("@<#=PKData.Code#>", <#=PKData.Code#>));
+            return DbHelperSQL.ExecuteSql(strSql.ToString(), Para.ToArray());
+		}
+		/// <summary>
+		/// 批量删除数据
+		/// </summary>
+		public bool DeleteList(string <#=PKData.Code#>list)
+		{
+			StringBuilder strSql=new StringBuilder();
+			strSql.Append("delete from <#=_entityName#> ");
+			strSql.Append(" where <#=PKData.Code#> in (@<#=PKData.Code#>list)  ");
+			List<SqlParameter> Para = new List<SqlParameter>();
+			Para.Add(new SqlParameter("@<#=PKData.Code#>list", <#=PKData.Code#>list));
+			int rows=DbHelperSQL.ExecuteSql(strSql.ToString(), Para.ToArray());
+			if (rows > 0)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		public Model.<#=_entityName#> GetModel(<#=PKData.CodeType#> <#=PKData.Code#>)
+		{
+			StringBuilder strSql = new StringBuilder();
+			List<SqlParameter> Para = new List<SqlParameter>();
+            strSql.Append("select * from <#=_entityName#> ");
+			strSql.Append(" where <#=PKData.Code#>=@<#=PKData.Code#> ");
+			Para.Add(new SqlParameter("@<#=PKData.Code#>", <#=PKData.Code#>));
+            DataSet ds= DbHelperSQL.Query(strSql.ToString(), Para.ToArray());
+			if (ds.Tables.Count > 0&&ds.Tables[0].Rows.Count > 0)
+			{
+				return RowToModel(ds.Tables[0].Rows[0]);
+			}
+			return null;
+		}
+		public Model.<#=_entityName#> RowToModel(DataRow row)
+		{
+			Model.<#=_entityName#> m<#=_entityName#>=new Model.<#=_entityName#>();
+			<# foreach(var item in _Columns){if(item.CodeType=="string"){#>
+			if(row["<#=item.Code#>"]!=null)
+				m<#=_entityName#>.<#=item.Code#>=row["<#=item.Code#>"].ToString();
+			<#}else{#>
+			if(row["<#=item.Code#>"]!=null)
+				m<#=_entityName#>.<#=item.Code#>=<#=item.CodeType.Replace("?","")#>.Parse(row["<#=item.Code#>"].ToString());
+			<#}}#>
+			return m<#=_entityName#>;
+		}
+		/// <summary>
+		/// 获得数据列表
+		/// </summary>
+        public DataSet GetList(string strWhere, List<SqlParameter> para = null)
+		{
+			StringBuilder strSql=new StringBuilder();
+			strSql.Append("select * ");
+			strSql.Append(" FROM <#=_entityName#> ");
+			if(strWhere.Trim()!="")
+			{
+				strSql.Append(" where "+strWhere);
+            }
+            return para == null ? DbHelperSQL.Query(strSql.ToString()) : DbHelperSQL.Query(strSql.ToString(), para.ToArray());
+		}
+		/// <summary>
+		/// 获得前几行数据
+		/// </summary>
+		public DataSet GetList(int Top, string strWhere, string filedOrder, List<SqlParameter> para = null)
+		{
+			StringBuilder strSql=new StringBuilder();
+			strSql.Append("select ");
+			if(Top>0)
+			{
+				strSql.Append(" top "+Top.ToString());
+			}
+			strSql.Append(" * ");
+			strSql.Append(" FROM <#=_entityName#> ");
+			if(strWhere.Trim()!="")
+			{
+				strSql.Append(" where "+strWhere);
+			}
+            strSql.Append(" order by " + filedOrder);
+            return para == null ? DbHelperSQL.Query(strSql.ToString()) : DbHelperSQL.Query(strSql.ToString(), para.ToArray());
+		}
+		public int GetRecordCount(string strWhere=null, List<SqlParameter> para = null)
+        {
+            StringBuilder strSql = new StringBuilder();
+            strSql.Append("select count(1) FROM <#=_entityName#> ");
+            if (strWhere!=null&&strWhere.Trim()!="")
+            {
+                strSql.Append(" where " + strWhere);
+            }
+            object obj =para==null? DbHelperSQL.GetSingle(strSql.ToString()):DbHelperSQL.GetSingle(strSql.ToString(),para.ToArray());
+            if (obj == null)
+            {
+                return 0;
+            }
+            else
+            {
+                return Convert.ToInt32(obj);
+            }
+        }
+		/// <summary>
+		/// 分页获取数据列表
+		/// </summary>
+        public DataSet GetListByPage(string strWhere, string orderby, int startIndex, int endIndex, List<SqlParameter> para = null)
+		{
+			StringBuilder strSql=new StringBuilder();
+			strSql.Append("SELECT * FROM ( ");
+			strSql.Append(" SELECT ROW_NUMBER() OVER (");
+			if (!string.IsNullOrEmpty(orderby.Trim()))
+			{
+				strSql.Append("order by T." + orderby );
+			}
+			else
+			{
+				strSql.Append("order by T.ID desc");
+			}
+			strSql.Append(")AS Row, T.*  from <#=_entityName#> T ");
+			if (!string.IsNullOrEmpty(strWhere.Trim()))
+			{
+				strSql.Append(" WHERE " + strWhere);
+			}
+			strSql.Append(" ) TT");
+			strSql.AppendFormat(" WHERE TT.Row between {0} and {1}", startIndex, endIndex);
+            return para == null ? DbHelperSQL.Query(strSql.ToString()) : DbHelperSQL.Query(strSql.ToString(), para.ToArray());
+		}
+        public DataSet GetListByPage(string strSql, List<SqlParameter> para = null)
+        {
+            return para == null ? DbHelperSQL.Query(strSql) : DbHelperSQL.Query(strSql, para.ToArray());
+        }
+	}
+}

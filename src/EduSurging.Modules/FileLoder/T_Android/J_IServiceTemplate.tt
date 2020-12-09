@@ -1,0 +1,117 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="FileLoder.TemplateModel" #>
+
+package <#=_package#>.IService;
+
+import <#=_package#>.Base.PageList;
+import <#=_package#>.Model.<#=_entityName#>Model;
+import <#=_package#>.Response.MsgResponse;
+import java.util.ArrayList;
+import java.util.List;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import retrofit2.Response;
+import retrofit2.http.Field;
+import retrofit2.http.Body;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.Multipart;
+import retrofit2.http.Query;
+import rx.Observable;
+
+<# var PKData=_models.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+#>
+
+<# var sqData=_models.ColumnsList.Where(r=>r.Search != EnumSearchType.Null&&r.Virtual==false).ToList();
+		var sum=4+sqData.Count+sqData.Where(r=>r.Search == EnumSearchType.Range).ToList().Count;
+		int p=0;
+		var Pa=new  StringBuilder();
+		
+var para=new StringBuilder();
+var para2=new StringBuilder();
+foreach(var model in _models.ColumnsList.Where(t=>t.Virtual==false)){
+	var CodeType = model.CodeType.Replace("?","");
+	var Code=model.Code.Replace("?","");
+		var type="String";
+			if(CodeType=="string"||CodeType=="Guid"||CodeType=="datetime") 
+				type="String";
+			else if(CodeType=="int") 
+				type="int";
+			else if(CodeType=="bigint") 
+				type="long";
+			else if(CodeType=="decimal") 
+				type="double";
+			else if(CodeType=="bool") 
+				type="Boolean";
+		para.Append(",@Query(\""+Code+"\")"+type+" "+ Code);
+		para2.Append(","+Code);
+		}
+		
+		var ParaStr=para.ToString().Substring(1);
+		var ParaStr2=para2.ToString().Substring(1);
+
+
+		Pa.Append("@Field(\"IsDescending\")Boolean IsDescending,@Field(\"OrderBy\")int OrderBy,@Field(\"Page\")int  Page,@Field(\"PageCount\")int  PageCount");
+		foreach(var model in sqData)
+		{ 
+			var CodeType = model.CodeType.Replace("?","");
+			var Code=model.Code.Replace("?","");
+			var type="String";
+			if(CodeType=="string"||CodeType=="Guid"||CodeType=="datetime") 
+				type="String";
+			else if(CodeType=="int") 
+				type="int";
+			else if(CodeType=="bigint") 
+				type="long";
+			else if(CodeType=="decimal") 
+				type="double";
+			else if(CodeType=="bool") 
+				type="Boolean";
+			
+			if(model.Search==EnumSearchType.In)
+			{
+				Pa.Append(",@Field(\""+Code+"s\")String "+Code+"s");
+			}
+			else if (model.Search == EnumSearchType.Like)
+			{
+				Pa.Append(",@Field(\"+Code+\")"+type+" "+Code);
+			}
+			else if (model.Search == EnumSearchType.Equal)
+			{
+				Pa.Append(",@Field(\"+Code+\")"+type+" "+Code);
+			}
+			else if (model.Search == EnumSearchType.Range)
+			{
+				Pa.Append(",@Field(\""+Code+"Begin\")"+type+" "+Code+"Begin");
+				Pa.Append(",@Field(\""+Code+"End\")"+type+" "+Code+"End");
+			}
+		}
+		var PaStr=Pa.ToString();
+#>
+
+public interface I<#=_entityName#>Service 
+{
+	@Multipart
+    @POST("/api/<#=_entityName#>/CreateOrModify")
+    Observable<Response<MsgResponse<Object>>> CreateOrModify(@Body RequestBody model);
+	@FormUrlEncoded
+	@POST("/api/<#=_entityName#>/RemoveList")
+    Observable<Response<MsgResponse<Object>>> RemoveList(@Field("")List<<#=PKData.CodeType=="string"?"String":"Integer"#>> List<#=PKData.Code#>);
+	@FormUrlEncoded
+	@POST("/api/<#=_entityName#>/GetById")
+    Observable<Response<MsgResponse<<#=_entityName#>Model>>> GetById(@Field("")<#=PKData.CodeType=="string"?"String":"Integer"#> <#=PKData.Code#>);
+	@FormUrlEncoded
+	@POST("/api/<#=_entityName#>/GetList")
+	//<#=PaStr#>
+    Observable<Response<MsgResponse<PageList<<#=_entityName#>Model>>>> GetList(@Field("IsDescending")Boolean IsDescending,@Field("OrderBy")int OrderBy,@Field("Page")int  Page,@Field("PageCount")int  PageCount);
+<# if(_models.Code=="Action") {#>
+	@POST("/api/Action/Init")
+    Observable<Response<MsgResponse<Object>>> Init();
+<# }#>
+}

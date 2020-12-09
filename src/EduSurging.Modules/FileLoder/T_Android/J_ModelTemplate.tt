@@ -1,0 +1,158 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+package <#=_package#>.Model;
+import <#=_package#>.ViewModel.*;
+import <#=_package#>.Model.*;
+import java.util.List;
+import java.util.ArrayList;
+public class <#=_entityName#>Model
+{
+<# 
+var para=new StringBuilder();
+var para2=new StringBuilder();
+var para3=new StringBuilder();
+foreach(var model in _models.ColumnsList.Where(t=>t.Virtual==false)){
+	var CodeType = model.CodeType.Replace("?","");
+	var Code=model.Code.Replace("?","");
+		var type="String";
+			if(CodeType=="string"||CodeType=="Guid"||CodeType=="datetime") 
+				type="String";
+			else if(CodeType=="int") 
+				type="int";
+			else if(CodeType=="bigint") 
+				type="long";
+			else if(CodeType=="decimal") 
+				type="double";
+			else if(CodeType=="bool") 
+				type="Boolean";
+para.Append(","+type+" "+ Code);
+if(model.FK)
+{
+	
+	var item=_AllModel.Where(t=>t.Code==model.FKTable.Replace("Entity", "")).FirstOrDefault();
+	var pk=item.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	var pcode=pk.CodeType=="string"?"<String>":"<Integer>";
+	para.Append(",List<EnumViewModel"+pcode+"> "+ Code+"_Entry");
+	para.Append(",String  "+ Code+"String");
+	
+	para2.Append("if("+Code+"_Entry!=null){List<EnumModel"+pcode+"> "+model.Code.Replace("?","")+"VM = new ArrayList<>();for(EnumViewModel"+pcode+" item :"+Code+"_Entry ){"+model.Code.Replace("?","")+"VM.add(item.getModel());} this._"+Code+"_Entry="+model.Code.Replace("?","")+"VM;\r\n}\r\n");
+	
+	para2.Append("this._"+Code+"String="+Code+"String;\r\n");
+}
+para2.Append("this."+Code+"="+Code+";\r\n");
+if(model.EM)
+{
+	para.Append(",List<EnumViewModel<Integer>> "+ Code+"_EM");
+	para.Append(",String  "+ Code+"String");
+	para2.Append("if("+Code+"_EM!=null){List<EnumModel<Integer>> "+model.Code.Replace("?","")+"EM = new ArrayList<>();for(EnumViewModel<Integer> item :"+Code+"_EM ){"+model.Code.Replace("?","")+"EM.add(item.getModel());} this._"+Code+"_EM="+model.Code.Replace("?","")+"EM;\r\n}\r\n");
+	para2.Append("this."+Code+"String="+Code+"String;\r\n");
+}
+para3.Append(","+ Code);
+if(model.FK)
+{
+	para3.Append(",_"+ Code+"_Entry");
+	para3.Append(",_"+ Code+"String");
+}
+if(model.EM)
+{
+	para3.Append(",_"+ Code+"_EM");
+	para3.Append(","+ Code+"String");
+}
+#>
+	
+	/// <#=model.Name#>
+	private <#=type#> <#=Code#>;
+	
+	
+    public <#=type#> get<#=Code#>() {
+            return this.<#=Code#>;
+        }
+    public void set<#=Code#>(<#=type#> <#=Code.ToLower()#>) {
+            this.<#=Code#>=<#=Code.ToLower()#>;
+        }
+
+<#if(model.FK){
+	var item=_AllModel.Where(t=>t.Code==model.FKTable.Replace("Entity", "")).FirstOrDefault();
+	var pk=item.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+#>
+
+	public List<EnumModel<#=pk.CodeType=="string"?"<String>":"<Integer>"#>> _<#=Code#>_Entry;
+	
+	
+    public List<EnumModel<#=pk.CodeType=="string"?"<String>":"<Integer>"#>> get<#=Code#>_Entry() 
+	{
+		return this._<#=Code#>_Entry;
+    }
+	
+    public void set<#=Code#>_Entry(List<EnumModel<#=pk.CodeType=="string"?"<String>":"<Integer>"#>> <#=Code#>_Entry) 
+	{
+		this._<#=Code#>_Entry=<#=Code#>_Entry;
+    }
+	public String _<#=Code#>String;
+	
+    public String get<#=Code#>String() 
+	{
+		return this._<#=Code#>String;
+    }
+	
+    public void set<#=Code#>String(String <#=Code#>String) 
+	{
+         this._<#=Code#>String=<#=Code#>String;
+	}
+		
+<#}if(model.EM){#>
+	public List<EnumModel<Integer>> _<#=Code#>_EM;
+	
+	
+    public List<EnumModel<Integer>> get<#=Code#>_Entry() 
+	{
+		return this._<#=Code#>_EM;
+    }
+	
+    public void set<#=Code#>_Entry(List<EnumModel<Integer>> <#=Code#>_EM) 
+	{
+		this._<#=Code#>_EM=<#=Code#>_EM;
+    }
+
+	public String <#=Code#>String;
+	
+    public String get<#=Code#>String() 
+	{
+		return this.<#=Code#>String;
+    }
+	
+    public void set<#=Code#>String(String <#=Code#>string) 
+	{
+         this.<#=Code#>String=<#=Code#>string;
+	}
+
+<#}#>
+	
+<#}
+var Pa="int _id"+para.ToString();
+var Pa2=para2.ToString();
+var Pa3="__id"+para3.ToString();
+#>
+
+
+	private int __id;
+	public int get__id(){
+		return this.__id;
+	}
+	public void set__id(int id){
+		 this.__id=id;
+	}
+
+	public <#=_entityName#>Model(<#=Pa#>)
+	{
+		this.__id=_id;
+		<#=Pa2#>
+	}
+	public <#=_entityName#>ViewModel get<#=_entityName#>ViewModel()
+	{
+		return new <#=_entityName#>ViewModel(<#=Pa3#>);
+	}
+}

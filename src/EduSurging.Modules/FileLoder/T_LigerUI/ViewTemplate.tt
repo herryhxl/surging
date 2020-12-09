@@ -1,0 +1,143 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<# var PKData=models.ColumnsList.Where(t =>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+#>
+
+@{
+     ViewBag.Title = "<#=(models.Comment==null?"":models.Comment)#>";
+      Layout = "~/Areas/Admin/Views/Shared/_layout.cshtml";
+}
+<style>
+       body {
+       padding: 0 !important;
+       margin: 0 !important;
+       }
+</style>
+
+<script type="text/javascript">
+    var <#=_entityName#> = null;
+    $(document).ready(function () {
+        $("#layout1").ligerLayout({
+            centerWidth: 700
+        });
+        <#=_entityName#> = $("#<#=_entityName#>").ligerGrid({
+            columns: [
+<#var data=models.ColumnsList.Where(t=>t.Virtual==false&&t.PK!=true).ToList();
+	int p=1,Count=data.Count();
+	foreach(var model in data){#>
+<# if(model.EM){#>
+		{ display: '<#=model.Name#>', name: '<#=model.Code+"String"#>', width: 100 }<#=p==Count?"":","#>
+<#}else { var render="";if(model.DataType=="bit") render=", render: readerStatus";else if(model.DataType=="datetime") render=", render: ChangeDateFormat2"; #>
+		{ display: '<#=model.Name#>', name: '<#=model.Code#>', width: 100 <#=render#> }<#=p==Count?"":","#>
+<#}p++;}#>
+            ],
+            pageSize: 30,
+            url: common.AppUrl("/Api/<#=_entityName#>/GetListData"),
+            width: '100%',
+            height: '100%',
+            root: "Records",
+            record: "TotalCount",
+            pagesizeParmName: "PageCount",
+            pageParmName: "Page",
+            dateFormat: "",
+            checkbox: true,
+			frozen:true,
+            toolbar: {
+                items: [
+                    {
+                        text: '新增', click: function () {
+                            common.showTopDialog({
+                                url: '/Admin/Admin<#=_entityName#>/Edit',
+                                title: "新增<#=(models.Comment==null?"":models.Comment)#>",
+                                saveSuccess: function (dataObj) {
+                                    <#=_entityName#>.reload();
+                                }
+                            });
+                        }, icon: 'add'
+                    },
+                    {
+                        text: '编辑', click: function () {
+                            var <#=PKData.Code#> = GetSelect();
+							if(<#=PKData.Code#>==null)
+								return;
+                            common.showTopDialog({
+                                url: '/Admin/Admin<#=_entityName#>/Edit?<#=PKData.Code#>='+<#=PKData.Code#>,
+                                title: "编辑<#=(models.Comment==null?"":models.Comment)#>",
+                                saveSuccess: function (dataObj) {
+                                    <#=_entityName#>.reload();
+                                }
+                            });
+                        }, icon: 'ok'
+                    },
+                    { line: true },
+                    {
+                        text: '删除', click: function () {
+							var <#=PKData.Code#> = <#=_entityName#>.getSelecteds();
+							if(<#=PKData.Code#>.length==0)
+							{
+								common.showTopTip("请先选择行再操作。");
+								return;
+							}
+							var <#=PKData.Code#>List=[];
+							for(var item in <#=PKData.Code#>){
+								<#=PKData.Code#>List.push(<#=PKData.Code#>[item].<#=PKData.Code#>);
+							}   
+                            common.ask({
+                                msg: "确定删除吗？", yes: function () {
+                                    common.Ajax({
+                                        url: "/Api/<#=_entityName#>/RemoveList",
+										data:{"":<#=PKData.Code#>List},
+                                        afterAjaxSuccessHandler: function (data) {
+                                            <#=_entityName#>.reload();
+                                        }
+                                    });
+                                }
+                            });
+                        }, icon: 'delete'
+                    }
+                ]
+            }
+
+        });
+        $(document.body).keydown(function (e) {
+            if (e.keyCode == 13) {
+                $("#Search").click();
+            }
+        });
+        $("#Search").click(function () {
+            <#=_entityName#>.set('parms', { KeyNO: $("#KeyNOText").val(), LoginName: $("#LoginName").val(), Status: $("#Status").val() });
+            <#=_entityName#>.changePage("first");
+            <#=_entityName#>.reload();
+        });
+        function GetSelect() {
+            var selectedRow = <#=_entityName#>.getSelectedRow();
+            if (selectedRow == null) {
+                common.showTopTip("请先选择行再操作。");
+                return null;
+            }
+            else {
+               return selectedRow.<#=PKData.Code#>;
+            }
+        }
+    });
+</script>
+<div id="layout1">
+      <div position="center" title="<#=(models.Comment==null?" ":models.Comment)#>">
+           <div style="padding:5px;">
+             软件序列号：<input id="KeyNOText" type="text">
+             用户名：<input id="LoginName" type="text">
+             <select id="Status">
+                  <option value="">不限</option>
+                  <option value="true">启用</option>
+                  <option value="false">禁用</option>
+             </select>
+             <input id="Search" type="button" value="搜索">
+           </div>
+       <div id="<#=_entityName#>"></div>
+     </div>
+</div>
+

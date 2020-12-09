@@ -1,0 +1,106 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+using <#=_projectName#>.Entity;
+using <#=_projectName#>.Models;
+using <#=_projectName#>.Base;
+using Edu.Core.Data;
+using Edu.Core.Site;
+using Edu.Core.Extend;
+
+<# var PKData=models.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+	var FkData=models.ColumnsList.Where(t=>t.Virtual==false&&t.FK==true&&t.FKTable!=_entityName+"Entity").Select(t => t.FKTable).Distinct();
+#>
+
+namespace <#=_projectName#>.ChangeService.<#=_entityName#>
+{
+	public class <#=_entityName#>ChangeService : I<#=_entityName#>ChangeService
+    {
+        private readonly <#=_repositoryText#><<#=_entityName#>Entity> _<#=_entityName.ToLower()#>Repository;
+        private readonly IWorkContext _workContext;
+<# foreach(var model in FkData){
+	var item=_AllModels.Where(t=>t.Code==model.Replace("Entity", "")).FirstOrDefault();
+	if(item!=null){
+#>
+		private readonly <#=_repositoryText#><<#=item.Code#>Entity> _<#=item.Code.ToLower()#>Repository;
+<#}}#>
+        public <#=_entityName#>ChangeService(<#=_repositoryText#><<#=_entityName#>Entity> <#=_entityName.ToLower()#>Repository,IWorkContext workContext
+<# foreach(var model in FkData){
+	var item=_AllModels.Where(t=>t.Code==model.Replace("Entity", "")).FirstOrDefault();
+	if(item!=null){
+#>
+		,<#=_repositoryText#><<#=item.Code#>Entity> <#=item.Code.ToLower()#>Repository
+<#}}#>
+		)
+        {
+            _<#=_entityName.ToLower()#>Repository = <#=_entityName.ToLower()#>Repository;
+			_workContext=workContext;
+<# foreach(var model in FkData){
+	var item=_AllModels.Where(t=>t.Code==model.Replace("Entity", "")).FirstOrDefault();
+#>
+		_<#=item.Code.ToLower()#>Repository=<#=item.Code.ToLower()#>Repository;
+<#}#>
+        }
+
+
+		public void CreateOrModifySetDefaultParameters(<#=_entityName#>Model m<#=_entityName.ToLower()#>,bool IsAuth=false)
+		{
+			if(!IsAuth)
+			{	
+				//新增
+				if (m<#=_entityName.ToLower()#>.<#=PKData.Code#> == <#=PKData.DataType.IndexOf("int")==-1?"\"\"":"0"#>)
+				{
+				}
+				//修改
+                else
+				{
+				  
+				}
+			}
+		}
+
+		public void Get<#=_entityName#>sByConditionSetDefaultParameters(<#=_entityName#>SearchCondition condition,bool IsAuth=false)
+		{
+			if(!IsAuth)
+			{
+				
+			}
+		}
+
+		public void Add(<#=_entityName#>Entity <#=_entityName.ToLower()#>)
+		{
+
+		}
+
+		public void Update(<#=_entityName#>Entity <#=_entityName.ToLower()#>)
+		{
+
+
+		}
+
+		public bool UpdateFieldBegin<T>(<#=_entityName#>Entity <#=_entityName.ToLower()#>,T OldValue,string FieldName,T Value)
+		{
+			var Change = OldValue.IsChange(Value);
+			if(Change)
+			{
+				switch (FieldName)
+				{
+<# foreach (var model in models.ColumnsList.Where(t => t.Virtual == false)){#>
+					case "<#=model.Code#>":
+					
+						break;
+<#}#>      
+				}
+			}
+			return Change;
+		}
+		
+		public void Delete(<#=_entityName#>Entity <#=_entityName.ToLower()#>)
+		{
+
+		}
+    }
+}

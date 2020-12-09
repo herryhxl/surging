@@ -1,0 +1,58 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="FileLoder.TemplateModel" #>
+<# var orderName =new List<string>(); #>
+<# var nullableType = new []{"int","bool","float","double","decimal","Int32","char","DateTime","long"}; #>
+using System;
+using System.Collections.Generic;
+using <#=_projectName#>.Base;
+using Edu.Core.Data;
+
+namespace <#=_projectName#>.Entity
+{	/// <summary>
+	/// <#=(_entityName+"搜索")#>
+	/// </summary>
+	public class <#=_entityName#>SearchCondition: BaseCondition
+	{
+<# foreach(var model in _models.Where(t=>t.Virtual==false||(t.Virtual&&t.PK&&t.FK))){
+if(model.Virtual){#>
+		public <#=model.Code.Split('_')[1]#>SearchCondition <#=model.Code#>Condition { get; set; }
+<#}else if(model.Search == SearchType.In){ #>
+		/// <summary>
+		/// <#=(model.Comment==null?model.Name:model.Comment)#>
+		/// </summary>
+		public List<<#=model.C_CodeType.Replace("?","") #>> <#=model.Code#>s { get; set; }
+<#} else if (model.Search == SearchType.Like) {#>
+		/// <summary>
+		/// <#=(model.Comment==null?model.Name:model.Comment)#>
+		/// </summary>
+		public <#=model.CodeType #><#=(nullableType.Contains(model.CodeType) || model.EM)?"?":""#> <#=model.Code#> { get; set; }
+<#} else if (model.Search == SearchType.Equal) {#>
+		/// <summary>
+		/// <#=(model.Comment==null?model.Name:model.Comment)#>
+		/// </summary>
+		public <#=model.CodeType #><#=(nullableType.Contains(model.CodeType) || model.EM)?"?":""#> <#=model.Code#> { get; set; }
+<#}else if (model.Search == SearchType.Range) {#>
+		/// <summary>
+		/// <#=(model.Comment==null?model.Name:model.Comment)#>开始
+		/// </summary>
+		public <#=model.CodeType #><#=(nullableType.Contains(model.CodeType) || model.EM)?"?":""#> <#=model.Code#>Begin { get; set; }
+		/// <summary>
+		/// <#=(model.Comment==null?model.Name:model.Comment)#>结束
+		/// </summary>
+		public <#=model.CodeType #><#=(nullableType.Contains(model.CodeType) || model.EM)?"?":""#> <#=model.Code#>End { get; set; }
+<#} if(model.FK&&!model.PK){#>
+		/// <summary>
+		/// <#=(model.Comment==null?model.Name:model.Comment)#>
+		/// </summary>
+		public <#=model.FKTable.Replace("Entity", "")#>SearchCondition <#=model.Code#>Condition { get; set; }
+<#}}#>
+		/// <summary>
+		/// 排序字段
+		/// </summary>
+		public string OrderBy { get; set; }
+	}
+}

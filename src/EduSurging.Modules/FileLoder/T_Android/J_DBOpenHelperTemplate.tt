@@ -1,0 +1,44 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+package <#=_package#>.Base;
+import <#=_package#>.Data.*;
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+public class DBOpenHelper extends SQLiteOpenHelper {
+
+	private static final int VERSION = 1;
+	private static final String DBNAME = "System.db";
+	private static String TabName;
+
+	public DBOpenHelper(Context context,String Table) {
+		super(context, DBNAME, null, VERSION);
+		TabName=Table;
+	}
+
+	@Override
+	public void onCreate(SQLiteDatabase db) {
+		//db.beginTransaction();
+<#foreach(var item in _models){#>
+        db.execSQL(<#=item.Code.Replace("?","")#>DAO.getCreateSql());
+<#}#>
+		//db.endTransaction();
+	}
+
+	@Override
+	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+		// TODO Auto-generated method stub
+		// Log.i(TAG, "onUpgrade");
+		// String tempTable="temp_student";
+		//db.execSQL("alter table "+STUDENT+" rename to "+tempTable);
+		// db.execSQL("create table "+STUDENT+" (id integer primary key,name varchar(20),age integer,sex varchar(4))");
+		// String sql="insert into "+STUDENT+" (name,age,sex) select name,age,'男' from "+tempTable;
+		// db.execSQL(sql);
+	}
+
+}
+

@@ -1,0 +1,88 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+package <#=_package#>.Fragment;
+import <#=_package#>.Common.LoadUtil;
+import android.databinding.DataBindingUtil;
+import android.databinding.ViewDataBinding;
+import android.content.Context;
+import android.net.Uri;
+import android.os.Bundle;
+import com.example.yunjoy.Base.AppManager;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import <#=_package#>.Event.*;
+import <#=_package#>.Model.<#=_models.Code#>Model;
+import <#=_package#>.ViewModel.<#=_models.Code#>ViewModel;
+import <#=_package#>.<#=_projectName#>.R;
+import <#=_package#>.Common.Util;
+import <#=_package#>.<#=_projectName#>.<#=_projectName#>.<#=_models.Code.Substring(0, 1).ToUpper() + _models.Code.Substring(1).ToLower()#>Binding;
+import rx.subscriptions.CompositeSubscription;
+
+public class <#=_models.Code#>Fragment extends Fragment {
+
+	private LoadUtil _loading;
+	private CompositeSubscription _subscriptions;
+	private <#=_models.Code#>Event _<#=_models.Code.ToLower()#>Event;
+    public <#=_models.Code#>Fragment() {
+        // Required empty public constructor
+    }
+
+    
+    public static <#=_models.Code#>Fragment newInstance(Bundle args) {
+        <#=_models.Code#>Fragment fragment = new <#=_models.Code#>Fragment();
+		args.putBoolean("DataFlag",true);
+        fragment.setArguments(args);
+        return fragment;
+    }
+	public static <#=_models.Code#>Fragment newInstance() {
+        <#=_models.Code#>Fragment fragment = new <#=_models.Code#>Fragment();
+		Bundle args=new Bundle();
+		args.putBoolean("DataFlag",false);
+		fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        
+    }
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		saveStateToArguments();
+	}
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
+		_subscriptions = new CompositeSubscription();
+        <#=_models.Code.Substring(0, 1).ToUpper() + _models.Code.Substring(1).ToLower()#>Binding binding = DataBindingUtil.inflate(inflater,R.layout.<#=_models.Code.ToLower()#>,container,false);
+        getActivity().setTitle(getArguments().getBoolean("DataFlag",false)?"修改<#=_models.Name#>":"新增<#=_models.Name#>");
+		if (AppManager._IsLoading && _loading == null)
+            _loading = new LoadUtil(getContext(), AppManager._LoadingMessage);
+		_<#=_models.Code.ToLower()#>Event=new <#=_models.Code#>Event(binding,getContext(),_subscriptions,_loading,getActivity(),getActivity().getSupportFragmentManager(),getArguments());
+        return binding.getRoot();
+    }
+	private void saveStateToArguments() {
+		if(_<#=_models.Code.ToLower()#>Event==null){
+            return;
+        }
+		String Data=_<#=_models.Code.ToLower()#>Event.GetDataString();
+		if(getView()!=null&&!Util.IsNullOrEmpty(Data)) {
+			getArguments().putString("_<#=_models.Code.ToLower()#>Model", Data);
+		}
+    }
+	@Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Save State Here
+        _subscriptions.unsubscribe();
+		saveStateToArguments();
+    }
+}

@@ -1,0 +1,43 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="FileLoder.TemplateModel" #>
+
+using System;
+using System.Data.Entity;
+using System.Linq;
+using Edu.Data.EntityFramework;
+using Edu.Core.Infrastructure;
+using System.Data.Entity.ModelConfiguration;
+
+namespace <#=_projectName#>.Base
+{
+    public partial class <#=_projectName#>DbContext : <#=_dbContext#>
+    {
+        public <#=_projectName#>DbContext() { }
+        public <#=_projectName#>DbContext(string nameOrConnectionString)
+            : base(nameOrConnectionString)
+        {
+        }
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        {
+		<#if(_pro){#>
+			//启用执行数据库存储过程和方法
+			modelBuilder.Conventions.Add(new FunctionsConvention<<#=_projectName#>DbContext>("dbo"));
+		<#}#>
+            var typeFinder = new AppDomainTypeFinder();
+            var typesToRegister = typeFinder.FindClassesOfType(typeof(I<#=_projectName#>Mapping), false)
+                .Where(type => !String.IsNullOrEmpty(type.Namespace) && type.Namespace.StartsWith("<#=_projectName#>"))
+                .Where(type => type.BaseType != null && type.BaseType.IsGenericType&& type.BaseType.GetGenericTypeDefinition() == typeof(EntityTypeConfiguration<>));
+            foreach (var type in typesToRegister)
+            {
+                dynamic configurationInstance = Activator.CreateInstance(type);
+                modelBuilder.Configurations.Add(configurationInstance);
+            }
+
+            base.BaseOnModelCreate(modelBuilder);
+        }
+    }
+}

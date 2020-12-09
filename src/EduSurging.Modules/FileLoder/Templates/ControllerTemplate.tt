@@ -1,0 +1,109 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+using System;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Web.Http;
+using Edu.Core.Site;
+using Edu.Core.Handler;
+using <#=_projectName#>.Service.<#=_entityName#>;
+using <#=_projectName#>.Entity;
+using <#=_projectName#>.Models;
+using System.ComponentModel;
+using System.Data.Entity;
+using <#=_projectName#>.Base;
+using System.Collections.Generic;
+using Edu.Core.Data;
+using Edu.Core.Model;
+
+<# var PKData=models.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+#>
+
+namespace <#=_projectName#>.Controllers
+{
+	//<#=(models.Comment==null? "":models.Comment)#>
+    [Description("<#=(models.Comment==null?"":models.Comment)#>[<#=_columnsStr#>]")]
+    public partial class <#=_entityName#>Controller : ApiController
+    {
+        private readonly I<#=_entityName#>Service _<#=_entityName.ToLower()#>Service;
+        private readonly IWorkContext _workContext;
+        private readonly IReturn _helper;
+        public <#=_entityName#>Controller(I<#=_entityName#>Service <#=_entityName.ToLower()#>Service, IWorkContext workContext,IReturn helper)
+        {
+            _<#=_entityName.ToLower()#>Service = <#=_entityName.ToLower()#>Service;
+            _workContext = workContext;
+            _helper = helper;
+        }
+        [Description("新增/编辑")]
+        [HttpPost]
+        public async Task<HttpResponseMessage> CreateOrModify([FromBody]<#=_entityName#>Model m<#=_entityName.ToLower()#>)
+        {
+            return await _helper.ReturnAsync(async re =>
+            {
+				if (m<#=_entityName.ToLower()#>.<#=PKData.Code#> == <#=PKData.DataType.IndexOf("int")==-1?"\"\"":"0"#>)
+					re.Msg = "创建成功";
+                else
+					re.Msg = "更新成功";
+                var MenuInfo=_workContext.MenuInfo();
+				var <#=_entityName.ToLower()#>=_<#=_entityName.ToLower()#>Service.CreateOrModify(m<#=_entityName.ToLower()#>,null,_workContext.IsAuth,MenuInfo);
+                await _<#=_entityName.ToLower()#>Service.SaveChangesAsync();
+				re.Object=<#=_entityName.ToLower()#>.<#=PKData.Code#>;
+            });
+        }
+        [Description("批量删除")]
+        [HttpPost]
+        public async Task<HttpResponseMessage> RemoveList([FromBody]RequestBeachModel<<#=PKData.CodeType#>> Request)
+        {
+            return await _helper.ReturnAsync(async re =>
+            {
+                re.Msg = "全部删除成功";
+                var MenuInfo=_workContext.MenuInfo();
+                int DelCount=await _<#=_entityName.ToLower()#>Service.Delete(Request,null,null,_workContext.IsAuth,MenuInfo);
+                await _<#=_entityName.ToLower()#>Service.SaveChangesAsync();
+                re.Msg = string.Format("成功删除{0}条数据。", DelCount);
+            });
+        }
+		[Description("批量操作")]
+        [HttpPost]
+        public async Task<HttpResponseMessage> BeachOperation([FromBody]RequestBeachModel<<#=PKData.CodeType#>> Request)
+        {
+            return await _helper.ReturnAsync(async re =>
+            {
+                var MenuInfo=_workContext.MenuInfo();
+                int BeachCount=await _<#=_entityName.ToLower()#>Service.BeachOperation(Request,null,null,_workContext.IsAuth,MenuInfo);
+                await _<#=_entityName.ToLower()#>Service.SaveChangesAsync();
+                re.Msg = string.Format("成功处理{0}条数据。", BeachCount);
+            });
+        }
+        [Description("查看")]
+        [HttpPost]
+        public async Task<HttpResponseMessage> GetById([FromBody]RequestModel<<#=PKData.CodeType#>> Request)
+        {
+            return await _helper.ReturnAsync(async re =>
+            {
+                re.Msg = "查询成功";
+				var MenuInfo=_workContext.MenuInfo();
+				//re.MenuInfo=_workContext.ProcessMenuInfo(MenuInfo);
+                re.Object =await _<#=_entityName.ToLower()#>Service.GetModelById(Request,null,_workContext.IsAuth,MenuInfo);
+            });
+        }
+		//当(Page=1)时返回总页数和总记录数
+		[Description("列表管理【<#=_entityName#>】[<#=_entityName#>.CreateOrModify,<#=_entityName#>.RemoveList,<#=_entityName#>.BeachOperation,<#=_entityName#>.GetById]")]
+        [HttpPost]
+        public async Task<HttpResponseMessage> GetList([FromBody]<#=_entityName#>SearchCondition Condition)
+        {
+            return await _helper.ReturnAsync(async re =>
+            {
+				var MenuInfo=_workContext.MenuInfo();
+				if(Condition.Page==1)
+					re.MenuInfo=_workContext.ProcessMenuInfo(MenuInfo);
+                re.Object =await _<#=_entityName.ToLower()#>Service.<#=_entityName#>PageSearch(Condition,null,null,_workContext.IsAuth,MenuInfo);
+            });
+        }
+    }
+}

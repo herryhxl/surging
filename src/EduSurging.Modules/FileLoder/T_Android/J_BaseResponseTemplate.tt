@@ -1,0 +1,16 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+package <#=_projectName#>.Base;
+import android.support.annotation.Keep;
+
+@Keep
+public class BaseResponse {
+    public static final int CODE_SUCCESS = 0;
+    public String Msg;
+    public int Code;
+    public boolean Status;
+}

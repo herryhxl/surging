@@ -1,0 +1,101 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+package <#=_package#>.Fragment;
+import <#=_package#>.Common.LoadUtil;
+import android.databinding.DataBindingUtil;
+import android.databinding.ViewDataBinding;
+import android.content.Context;
+import android.net.Uri;
+import android.os.Bundle;
+import com.example.yunjoy.Base.AppManager;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import <#=_package#>.Event.*;
+import <#=_package#>.Model.<#=_models.Code#>Model;
+import <#=_package#>.ViewModel.<#=_models.Code#>ViewModel;
+import <#=_package#>.<#=_projectName#>.R;
+import <#=_package#>.Common.Util;
+import <#=_package#>.<#=_projectName#>.<#=_projectName#>.<#=_models.Code.Substring(0, 1).ToUpper() + _models.Code.Substring(1).ToLower()#>Binding;
+import rx.subscriptions.CompositeSubscription;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
+
+public class <#=_models.Code#>Fragment extends Fragment {
+
+	private LoadUtil _loading;
+	private CompositeSubscription _subscriptions;
+	private <#=_models.Code#>Event _<#=_models.Code.ToLower()#>Event;
+	private <#=_models.Code#>ViewModel _<#=_models.Code.ToLower()#>ViewModel;
+
+	private Bundle _Bundle=null;
+    public <#=_models.Code#>Fragment() {
+        // Required empty public constructor
+    }
+
+    
+    public static <#=_models.Code#>Fragment newInstance(Bundle args) {
+        <#=_models.Code#>Fragment fragment = new <#=_models.Code#>Fragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
+	public static <#=_models.Code#>Fragment newInstance() {
+        <#=_models.Code#>Fragment fragment = new <#=_models.Code#>Fragment();
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            _Bundle=getArguments();
+        }
+    }
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		if(getView()!=null) {
+			Gson gson = new Gson();
+			outState.putString("<#=_models.Code.ToLower()#>Model", gson.toJson(_<#=_models.Code.ToLower()#>ViewModel.getModel()));
+		}
+	}
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
+		if(savedInstanceState!=null)
+		{
+			String data=savedInstanceState.getString("<#=_models.Code.ToLower()#>Model", "");
+			if(Util.IsNullOrEmpty(data))
+			{
+				Gson gson = new Gson();
+				Type type = new TypeToken<<#=_models.Code#>Model>() {}.getType();
+				<#=_models.Code#>Model model = gson.fromJson(data, type);
+				_<#=_models.Code.ToLower()#>ViewModel=model.get<#=_models.Code#>ViewModel();
+			}
+			else
+				_<#=_models.Code.ToLower()#>ViewModel=new <#=_models.Code#>ViewModel();
+		}
+		else
+			_<#=_models.Code.ToLower()#>ViewModel=new <#=_models.Code#>ViewModel();
+			
+		_subscriptions = new CompositeSubscription();
+        <#=_models.Code.Substring(0, 1).ToUpper() + _models.Code.Substring(1).ToLower()#>Binding binding = DataBindingUtil.inflate(inflater,R.layout.<#=_models.Code.ToLower()#>,container,false);
+        getActivity().setTitle(_Bundle==null?"新增<#=_models.Name#>":"修改<#=_models.Name#>");
+		if (AppManager._IsLoading && _loading == null)
+            _loading = new LoadUtil(getContext(), AppManager._LoadingMessage);
+		_<#=_models.Code.ToLower()#>Event=new <#=_models.Code#>Event(binding,getContext(),_subscriptions,_loading,_<#=_models.Code.ToLower()#>ViewModel,getActivity().getSupportFragmentManager(),_Bundle);
+        return binding.getRoot();
+    }
+
+	@Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Save State Here
+        _subscriptions.unsubscribe();
+    }
+}

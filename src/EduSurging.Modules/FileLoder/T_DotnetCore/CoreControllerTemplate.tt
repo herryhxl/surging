@@ -1,0 +1,115 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Edu.Core.Site;
+using Edu.Core.Handler;
+using <#=_projectName#>.Service.<#=_entityName#>;
+using <#=_projectName#>.Entity;
+using <#=_projectName#>.Models;
+using <#=_projectName#>.ModelsCustom;
+using System.ComponentModel;
+using <#=_projectName#>.Base;
+using System.Collections.Generic;
+using Edu.Core.Data;
+using Edu.Core.Model;
+using Microsoft.AspNetCore.Mvc;
+
+<# var PKData=models.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+#>
+
+namespace <#=_projectName#>.Controllers
+{
+    /// <summary>
+    /// <#=models.Name#>
+    /// </summary>
+    [Route("[controller]/[action]")]
+    [ApiController]
+    [Description("<#=(models.Comment==null?"":models.Comment)#>")]
+    public partial class <#=_entityName#>Controller : ControllerBase
+    {
+        private readonly I<#=_entityName#>Service _<#=_entityName.ToLower()#>Service;
+        private readonly IReturn _helper;
+        public <#=_entityName#>Controller(I<#=_entityName#>Service <#=_entityName.ToLower()#>Service, IReturn helper)
+        {
+            _<#=_entityName.ToLower()#>Service = <#=_entityName.ToLower()#>Service;
+            _helper = helper;
+        }
+        /// <summary>
+        /// 新增、编辑 <#=models.Name#>
+        /// </summary>
+        [Description("<#=models.Name#>新增、编辑")]
+        [HttpPost]
+        public async Task<ResponseObject<<#=PKData.CodeType#>>> CreateOrModify([FromBody]<#=_entityName#>Dto m<#=_entityName.ToLower()#>)
+        {
+            return await _helper.ReturnObjectAsync<<#=PKData.CodeType#>>(async re =>
+            {
+				if (m<#=_entityName.ToLower()#>.<#=PKData.Code#> == <#=PKData.DataType.IndexOf("int")==-1?"\"\"":"0"#>)
+					re.Msg = "创建成功";
+                else
+					re.Msg = "更新成功";
+				var <#=_entityName.ToLower()#>=_<#=_entityName.ToLower()#>Service.CreateOrModifyAsync(m<#=_entityName.ToLower()#>);
+                await _<#=_entityName.ToLower()#>Service.SaveChangesAsync();
+				re.Data=<#=_entityName.ToLower()#>.<#=PKData.Code#>;
+            });
+        }
+        /// <summary>
+        /// 批量删除<#=models.Name#>数据
+        /// </summary>
+        [Description("批量删除<#=models.Name#>数据")]
+        [HttpPost]
+        public async Task<ResponseObject<string>> BeachRemove([FromBody]RequestBeach<<#=PKData.CodeType#>> request)
+        {
+            return await _helper.ReturnObjectAsync<string>(async re =>
+            {
+                int delCount=await _<#=_entityName.ToLower()#>Service.DeleteAsync(request);
+                await _<#=_entityName.ToLower()#>Service.SaveChangesAsync();
+                re.Msg = string.Format("成功删除{0}条数据。", delCount);
+            });
+        }
+        /// <summary>
+        /// 批量更新<#=models.Name#>字段信息
+        /// </summary>
+		[Description("批量更新<#=models.Name#>字段信息")]
+        [HttpPost]
+        public async Task<ResponseObject<string>> BeachUpdate([FromBody]RequestBeachModel<<#=PKData.CodeType#>> request)
+        {
+            return await _helper.ReturnObjectAsync<string>(async re =>
+            {
+                int beachCount=await _<#=_entityName.ToLower()#>Service.BeachOperationAsync(request);
+                await _<#=_entityName.ToLower()#>Service.SaveChangesAsync();
+                re.Msg = string.Format("成功处理{0}条数据。", beachCount);
+            });
+        }
+        /// <summary>
+        /// 获取<#=models.Name#>信息
+        /// </summary>
+        [Description("获取<#=models.Name#>信息")]
+        [HttpPost]
+        public async Task<ResponseObject<<#=_entityName#>Model>> Info([FromBody]RequestModel<<#=PKData.CodeType#>> request)
+        {
+            return await _helper.ReturnObjectAsync<<#=_entityName#>Model>(async re =>
+            {
+                re.Data =await _<#=_entityName.ToLower()#>Service.InfoAsync<<#=_entityName#>Model>(request);
+            });
+        }
+        /// <summary>
+        /// 分页获取<#=models.Name#>列表
+        /// </summary>
+        [Description("分页获取<#=models.Name#>列表")]
+        [HttpPost]
+        public async Task<ResponseObject<PageList<<#=_entityName#>ViewModel>>> GetList([FromBody]<#=_entityName#>SearchCondition condition)
+        {
+            return await _helper.ReturnObjectAsync<PageList<<#=_entityName#>ViewModel>>(async re =>
+            {
+                re.Data =await _<#=_entityName.ToLower()#>Service.PageConditionAsync<<#=_entityName#>ViewModel,<#=_entityName#>SearchCondition>(condition);
+            });
+        }
+    }
+}

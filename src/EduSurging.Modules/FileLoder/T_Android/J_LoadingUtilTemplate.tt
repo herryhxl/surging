@@ -1,0 +1,27 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+package <#=_package#>.Common;
+
+import android.content.Context;
+import android.view.View;
+
+import <#=_package#>.Dialog.MyAlertDialog;
+import <#=_package#>.Dialog.MyLoadingDialog;
+public class LoadingUtil {
+    private MyLoadingDialog loading;
+    public LoadingUtil(Context con, String Title) {
+        loading = new MyLoadingDialog(con);
+        loading.setTitle(Title);
+    }
+    public LoadingUtil(Context con) {
+        loading = new MyLoadingDialog(con);
+        loading.setTitle("加载中....");
+    }
+    public void dismiss(){
+        loading.dismiss();
+    }
+}

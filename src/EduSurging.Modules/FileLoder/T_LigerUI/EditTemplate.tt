@@ -1,0 +1,219 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+@{
+    ViewBag.Title = "AdminHome";
+    Layout = "~/Areas/Admin/Views/Shared/_layout.cshtml";
+}
+<# var PKData=models.ColumnsList.Where(t =>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+#>
+<style type="text/css">
+    body {
+        padding-left: 10px;
+        font-size: 13px;
+    }
+
+    h1 {
+        font-size: 20px;
+        font-family: Verdana;
+    }
+
+    h4 {
+        font-size: 16px;
+        margin-top: 25px;
+        margin-bottom: 10px;
+    }
+
+    .description {
+        padding-bottom: 30px;
+        font-family: Verdana;
+    }
+
+        .description h3 {
+            color: #CC0000;
+            font-size: 16px;
+            margin: 0 30px 10px 0px;
+            padding: 45px 0 8px;
+            border-bottom: solid 1px #888;
+        }
+
+    td {
+        padding: 5px;
+    }
+</style>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#<#=_entityName#>").ligerForm({
+            validate: true
+        });
+		var <#=PKData.Code#>=getQueryString("<#=PKData.Code#>");
+		if(<#=PKData.Code#>!=null){
+			$(document).attr("title","修改");
+			common.Ajax({
+				showLoading: false,
+				showMsg: false,
+                url: "/Api/<#=models.Code#>/GetById",
+                data: {"":<#=PKData.Code#>},
+                afterAjaxSuccessHandler: function (data) {
+                    var form = new liger.get("<#=_entityName#>");
+					form.setData(data);
+
+<# foreach(var pmodel in models.ColumnsList.Where(t=>t.Virtual==false)){ if(pmodel.FK){
+		var item=_AllModel.Where(t=>t.Code==pmodel.FKTable.Replace("Entity", "")).FirstOrDefault();
+		var pk=item.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+		var model3=item.ColumnsList.Where(t=>t.Virtual==false&&t.CodeType=="string").FirstOrDefault();
+		var code3=pk.Code;var comment=pk.Name;
+		if(model3!=null){
+			code3=model3.Code.Replace("?","");
+			comment=model3.Name;
+		}
+		var Code3=model3==null? pk.Code:model3.Code.Replace("?","");
+#>
+					if(data.<#=pmodel.Code#>!=null){
+						common.Ajax({
+							showLoading: false,
+							showMsg: false,
+							url: "/Api/<#=item.Code#>/GetById",
+							data: {"":data.<#=pmodel.Code#>},
+							afterAjaxSuccessHandler: function (data) {
+							$("#<#=pmodel.Code.Replace("?","")#>Text").val(data.<#=code3#>);
+							}
+						});
+					}
+<#}}#>
+                }
+            });
+		}
+		else{
+			$(document).attr("title","新增");
+		}
+
+<# foreach(var pmodel in models.ColumnsList.Where(t=>t.Virtual==false)){ if(pmodel.FK){
+		var item=_AllModel.Where(t=>t.Code==pmodel.FKTable.Replace("Entity", "")).FirstOrDefault();
+		var pk=item.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+		var model3=item.ColumnsList.Where(t=>t.Virtual==false&&t.CodeType=="string").FirstOrDefault();
+		var code3=pk.Code;var comment=pk.Name;
+		if(model3!=null){
+			code3=model3.Code.Replace("?","");
+			comment=model3.Name;
+		}
+		var Code3=model3==null? pk.Code:model3.Code.Replace("?","");
+#>
+	
+	$("#<#=pmodel.Code.Replace("?","")#>Text").ligerComboBox({
+            condition: { fields: [{ <#=code3#>: '<#=code3#>', label: '<#=comment#>', width: 120 }] },//搜索框的字段, name 必须是服务器返回的字段  
+            grid: get<#=item.Code#>Options(false),
+            valueFieldID: '<#=pmodel.Code.Replace("?","")#>',
+            valueField: '<#=pk.Code#>',//请求参数key  
+            textField: '<#=Code3#>',//搜索框输入的值  
+            width: 310,
+            selectBoxHeight: 216,
+            slide: false, //淡入淡出  
+            onSelected: function (id, name) {//id为空值，name为选择的值  
+                //$("#<#=pmodel.Code.Replace("?","")#>").val(name);//下拉框选择后文本框的值  
+            }
+        });
+        function get<#=item.Code#>Options(checkbox) {
+            var  <#=item.Code#>=
+			{
+                columns: [
+<#var data=item.ColumnsList.Where(t=>t.Virtual==false&&t.PK!=true).ToList();
+	int p=1,Count=data.Count();
+	foreach(var model in data){#>
+<# if(model.EM){#>
+					{ display: '<#=model.Name#>', name: '<#=model.Code+"String"#>', width: 100 }<#=p==Count?"":","#>
+<#}else { var render="";if(model.DataType=="bit") render=", render: readerStatus";else if(model.DataType=="datetime") render=", render: ChangeDateFormat2"; #>
+					{ display: '<#=model.Name#>', name: '<#=model.Code#>', width: 100 <#=render#> }<#=p==Count?"":","#>
+<#}p++;}#>
+					],
+                switchPageSizeApplyComboBox: false,
+                //请求地址  
+                url: "/Api/<#=item.Code#>/GetListData",
+                root: "Records",
+				record: "TotalCount",
+				pagesizeParmName: "PageCount",
+				pageParmName: "Page",
+				dateFormat: "",
+				checkbox: checkbox,
+				frozen:true  
+            };
+			return <#=item.Code#>;
+        }
+<#}}#>
+    });
+	function Save(currentDialog, saveSuccess) {
+        var form = new liger.get("<#=_entityName#>");
+        if (form.valid()) {
+            common.Ajax({
+                url: "/Api/<#=models.Code#>/CreateOrModify",
+                data: $("#<#=_entityName#>").serialize(),
+                afterAjaxSuccessHandler: function (data) {
+                    saveSuccess(data);
+                    currentDialog.close();
+                }
+            });
+        }
+    }
+</script>
+<form id="<#=_entityName#>" class="ui-form">
+    <table>
+<#foreach(var item in models.ColumnsList.Where(t=>t.Virtual==false)){
+	var Code=_entityName+item.Code;
+	if(item.CodeType=="bool"){#>
+		<tr>
+            <td>
+                <#=item.Name==null?item.Comment==null?"":item.Comment:item.Name#>：
+            </td>
+            <td>
+                <input name="<#=item.Code.Replace("?","")#>" class="ui-checkbox" type="text" text="<#=item.Name==null?item.Comment==null?"":item.Comment:item.Name#>" validate="{required:<#=item.IsNull?"false":"true"#>}" />
+            </td>
+        </tr>
+<#}else if(item.EM){#>
+		<tr>
+            <td>
+                <#=item.Name==null?item.Comment==null?"":item.Comment:item.Name#>：
+            </td>
+            <td>
+                <select name="<#=item.Code.Replace("?","")#>" validate="{required:<#=item.IsNull?"false":"true"#>}">
+					<option value="" selected="selected" >请选择...</option>
+<#foreach(var em in item.EmodelList){#>
+					<option value="<#=em.Attribute#>" ><#=em.Description#></option>
+<#}#>
+                </select>
+            </td>
+        </tr>
+<#}else if(item.FK){#>
+		<tr>
+            <td>
+                <#=item.Name==null?item.Comment==null?"":item.Comment:item.Name#>：
+            </td>
+            <td>
+                <input id="<#=item.Code.Replace("?","")#>Text" name="<#=item.Code.Replace("?","")#>Text" validate="{required:<#=item.IsNull?"false":"true"#>}" />
+            </td>
+        </tr>
+<#}else if(item.PK) {#>
+		<input id="<#=item.Code.Replace("?","")#>" type="hidden" name="<#=item.Code.Replace("?","")#>" validate="{required:false}" />
+<#}else {#>
+		<tr>
+            <td>
+                <label for="textbox1"><#=item.Name==null?item.Comment==null?"":item.Comment:item.Name#>：</label>
+            </td>
+            <td>
+			<#
+				var require=item.IsNull?"false":"true";
+			#>
+                <input  id="<#=item.Code.Replace("?","")#>" name="<#=item.Code.Replace("?","")#>" type="text" class="<#=item.CodeType=="DateTime"?"ui-datepicker":"ui-textbox"#>" validate="{required:<#=require#>}" />
+            </td>
+        </tr>
+<#}}#>
+    </table>
+</form>
+
+
+
+    
+	

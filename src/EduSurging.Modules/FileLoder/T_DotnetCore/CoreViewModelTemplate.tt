@@ -1,0 +1,119 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using <#=_projectName#>.Entity;
+using <#=_projectName#>.Base;
+using System.Xml.Linq;
+using Edu.Core.Data;
+using Edu.Core.Model;
+using System.Text;
+using System.Xml.Serialization;
+using System.IO;
+<# var PKData=_models.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+	var IsFK=PKData.FK;
+	var FkData=_models.ColumnsList.Where(t=>t.Virtual==false&&t.FK==true&&t.FKTable!=_entityName+"Entity").Select(t => t.FKTable).Distinct();
+#>
+namespace <#=_projectName#>.Models
+{
+	public class <#=_entityName#>_DataModel: BaseEntity<<#=PKData.CodeType#>>
+	{
+<# 
+var arrayFields=new List<string>{};
+foreach(var model in _models.ColumnsList.Where(t=>t.Virtual==false&&!arrayFields.Contains(t.Code))){
+#>
+		/// <summary>
+		/// <#=model.Name#>
+		/// </summary>
+<# if(model.FK){#>
+		public <#=model.C_CodeType#> <#=model.Code#> { get; set; }
+<# } else if(model.EM){#>
+		public virtual string <#=model.Code+"String"#>
+		{ 
+			get
+			{
+<# if(model.IsNull){#>
+				if(<#=model.Code#>==null) return "";
+<#}#>
+				switch((int)<#=model.Code#>)
+				{
+<# foreach(var value in model.EmodelList){#>
+					case <#=value.Attribute#>:
+						return "<#=value.Description.StartsWith("_")?value.Description.Substring(1,value.Description.Length-1).Replace("_","-"):value.Description#>";
+<#}#>
+					default:
+						return "";
+				}
+			}
+		}
+		public <#=model.EnumName#><#=model.IsNull ? "?":""#> <#=model.Code#> { get; set; }
+<# } else if(model.DataType.StartsWith("xml")){
+	var xmltype=_entityName+"_"+model.Code+"XMLModel";
+			xmltype="List<"+xmltype+">";
+#>
+		public <#=model.CodeType#> <#=model.Code#> { get; set; }
+		public virtual <#=xmltype#> Xml_<#=model.Code#>
+        {
+            get 
+			{
+				if(<#=model.Code#>!=null)
+				{
+					<#=xmltype#> cloneObject = default(<#=xmltype#>);
+                    StringBuilder buffer = new StringBuilder();
+                    buffer.Append(<#=model.Code#>);
+                    XmlSerializer serializer = new XmlSerializer(typeof(<#=xmltype#>));
+                    using (TextReader reader = new StringReader(buffer.ToString()))
+                    {
+                        Object obj = serializer.Deserialize(reader);
+                        cloneObject = (<#=xmltype#>)obj;
+                    }
+                    return cloneObject;
+				}	
+				else
+					return null;
+			}
+            set 
+			{ 
+				StringBuilder buffer = new StringBuilder();
+				XmlSerializer se = new XmlSerializer(typeof(<#=xmltype#>));
+				using (TextWriter writer = new StringWriter(buffer))
+				{
+					se.Serialize(writer, value);
+				}
+				<#=model.Code#> =buffer.ToString(); 
+			}
+        }
+<# } else{#>
+		public <#=model.C_CodeType#> <#=model.Code#> { get; set; }
+<#}}#>
+	}
+	public class <#=_entityName#>Model:<#=_entityName#>_DataModel
+	{
+		public string <#=_entityName#>Text { get; set; }
+<# foreach(var model in _models.ColumnsList){
+	if(model.Virtual){ 
+		if(model.CodeType.EndsWith("Entity")&&model.CodeType.Replace("Entity", "")==_entityName){#>
+			public <#=model.CodeType.Replace("Entity", "_DataModel")#> <#=model.Code.Replace("?", "")#> { get; set; }
+			public int <#=model.Code.Replace("?", "")#>Count { get; set; }
+		<#}else{#>
+			public <#=model.CodeType.Replace("Entity", "Model").Replace("ICollection", "List")#> <#=model.Code.Replace("?", "")#> { get; set; }
+			public int <#=model.Code.Replace("?", "")#>Count { get; set; }
+		<#}} else if(model.FK){#>
+		public string <#=model.Code.Replace("?", "")#>Text { get; set; }
+<#}}#>
+	}
+<# foreach(var model in _models.ColumnsList.Where(t=>t.DataType.StartsWith("xml")==true)){#>
+	public class <#=_entityName#>_<#=model.Code#>XMLModel
+	{
+<#if(model.XModel!=null){foreach(var item in model.XModel){#>
+		public <#=item.CodeType#> <#=item.Code#> { get; set; }
+<#}}#>
+	}
+<#}#>
+}

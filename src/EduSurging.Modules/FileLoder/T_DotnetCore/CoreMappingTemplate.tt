@@ -1,0 +1,70 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="FileLoder.Helper" #>
+
+using Edu.Core.Data.Mapping;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using <#=_projectName#>.Base;
+
+<# var PKData=_eModel.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+#>
+namespace <#=_projectName#>.Entity.Mappings.<#=_entityName.Replace("_","")#>
+{
+	public partial class <#=_entityName.Replace("_","")#>Mapping : EfEntityTypeConfiguration<<#=_entityName.Replace("_","")#>Entity,<#=PKData.CodeType#>>, <#=_mapText#>
+	{
+<# 
+	var builderName=_entityName.ToLower().Replace("_","")+"Builder";
+#>
+		public override void Configure(EntityTypeBuilder<<#=_entityName.Replace("_","")#>Entity> <#=builderName#>)
+		{
+<#if(_options.DataBaseType == DataBaseType.Oracle){#>
+			<#=builderName#>.ToTable("<#=_entityName#>","<#=_schmal#>");
+<#}else if(_options.DataBaseType == DataBaseType.MySql){#>
+			<#=builderName#>.ToTable("<#=_entityName.ToLower()#>");
+<#}else{#>
+			<#=builderName#>.ToTable("<#=_entityName#>");
+<#}#>
+			<#=builderName#>.HasKey(c =>new { 
+<# foreach(var model in _eModel.ColumnsList.Where(t=>t.PK==true&&t.Virtual==false)){#>
+				c.<#=model.Code#>,
+<#}#>
+			});
+<# foreach(var model in _eModel.ColumnsList.Where(t=>t.Virtual==false||(t.Virtual&&t.PK&&t.FK))){
+var type=model.DataType.IndexOf("(") == -1 ? model.DataType.Replace("?","") : model.DataType.Substring(0, model.DataType.IndexOf("(")).Replace("?","");
+if(model.Virtual){ if(PKData.PK&&PKData.FK){var name=model.FKCode+"_"+ _eModel.Code;#>
+			<#=builderName#>.HasOne(c=>c.<#=model.Code#>).WithOne(d=>d.<#=name#>);
+<#}}else if(model.PK){ #>
+<#if(type=="int"||type=="bigint"){#>
+		<#if(!model.FK){#>
+			
+		<#}#>
+			<#=builderName#>.Property(c => c.<#=model.Code#>)<#=model.Length==0?"":".HasMaxLength(" + model.Length +")"#><#=model.IsNull?"":".IsRequired()"#>;
+<#}else{#>
+			<#=builderName#>.Property(c => c.<#=model.Code#>)<#=model.Length==0?"":".HasMaxLength(" + model.Length +")"#><#=model.IsNull?"":".IsRequired()"#>;
+<#}#>
+
+<# }else if(model.FK){var name=model.Code+"_"+ _eModel.Code + "List";#>
+			<#=builderName#>.Property(c => c.<#=model.Code#>)<#=model.Length==0?"":".HasMaxLength(" + model.Length +")"#><#=model.IsNull?"":".IsRequired()"#>;
+			<#=builderName#>.<#=model.IsNull?"HasOne":"HasOne"#>(c=>c.<#=model.Code+"_"+model.FKTable.Replace("Entity", "")#>).WithMany(d=>d.<#=name#>).HasForeignKey(c => c.<#=model.Code#>);
+<#}else if(model.Virtual){#>
+	
+<#}else if(model.EM){#>
+			<#=builderName#>.Ignore(c => c.<#=model.Code#>String);
+			<#=builderName#>.Property(c => c.<#=model.Code#>)<#=model.Length==0?"":".HasMaxLength(" + model.Length +")"#><#=model.IsNull?"":".IsRequired()"#>;
+<#}else if(type=="xml"){#>
+			<#=builderName#>.Ignore(c => c.Xml_<#=model.Code#>);
+			<#=builderName#>.Property(c => c.<#=model.Code#>)<#=model.Length==0?"":".HasMaxLength(" + model.Length +")"#><#=model.IsNull?"":".IsRequired()"#>;
+<#}else{#>
+			<#=builderName#>.Property(c => c.<#=model.Code#>)<#=model.Length==0?"":".HasMaxLength(" + model.Length +")"#><#=model.IsNull?"":".IsRequired()"#>;
+<#}}#>
+<#if(_options.DataBaseType==DataBaseType.MSSQL){#>
+			//MapToStoredProcedures();
+<#}#>
+		}
+	}
+}

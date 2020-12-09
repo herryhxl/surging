@@ -1,0 +1,1454 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{AD0CB8EA-CC75-411D-90B2-3FCF57082469}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>FileLoder</RootNamespace>
+    <AssemblyName>FileLoder</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Aspose.Cells">
+      <HintPath>..\packages\Aspose.Cells.dll</HintPath>
+    </Reference>
+    <Reference Include="Aspose.Words, Version=14.3.0.0, Culture=neutral, PublicKeyToken=716fcc553a201e56, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Aspose.Words.dll</HintPath>
+    </Reference>
+    <Reference Include="AWSSDK, Version=2.3.55.2, Culture=neutral, PublicKeyToken=9f476d3089b52be3, processorArchitecture=MSIL">
+      <HintPath>..\packages\AWSSDK.2.3.55.2\lib\net45\AWSSDK.dll</HintPath>
+    </Reference>
+    <Reference Include="BouncyCastle.Crypto, Version=1.8.3.0, Culture=neutral, PublicKeyToken=0e99375e54769942">
+      <HintPath>..\packages\BouncyCastle.1.8.3.1\lib\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Protobuf, Version=3.11.4.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Protobuf.3.11.4\lib\net45\Google.Protobuf.dll</HintPath>
+    </Reference>
+    <Reference Include="K4os.Compression.LZ4, Version=1.1.11.0, Culture=neutral, PublicKeyToken=2186fa9121ef231d, processorArchitecture=MSIL">
+      <HintPath>..\packages\K4os.Compression.LZ4.1.1.11\lib\net46\K4os.Compression.LZ4.dll</HintPath>
+    </Reference>
+    <Reference Include="K4os.Compression.LZ4.Streams, Version=1.1.11.0, Culture=neutral, PublicKeyToken=2186fa9121ef231d, processorArchitecture=MSIL">
+      <HintPath>..\packages\K4os.Compression.LZ4.Streams.1.1.11\lib\net46\K4os.Compression.LZ4.Streams.dll</HintPath>
+    </Reference>
+    <Reference Include="K4os.Hash.xxHash, Version=1.0.6.0, Culture=neutral, PublicKeyToken=32cd54395057cec3, processorArchitecture=MSIL">
+      <HintPath>..\packages\K4os.Hash.xxHash.1.0.6\lib\net46\K4os.Hash.xxHash.dll</HintPath>
+    </Reference>
+    <Reference Include="MySql.Data, Version=8.0.22.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <HintPath>..\packages\MySql.Data.8.0.22\lib\net452\MySql.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="MySql.Data.Entity.EF6, Version=6.10.9.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <HintPath>..\packages\MySql.Data.Entity.6.10.9\lib\net452\MySql.Data.Entity.EF6.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Renci.SshNet, Version=2016.1.0.0, Culture=neutral, PublicKeyToken=1cee9f8bde3db106, processorArchitecture=MSIL">
+      <HintPath>..\packages\SSH.NET.2016.1.0\lib\net40\Renci.SshNet.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ComponentModel" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.5.3\lib\netstandard2.0\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.4.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.2\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Ubiety.Dns.Core, Version=2.2.1.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <HintPath>..\packages\MySql.Data.8.0.22\lib\net452\Ubiety.Dns.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Z.EntityFramework.Extensions, Version=5.1.2.0, Culture=neutral, PublicKeyToken=59b66d028979105b, processorArchitecture=MSIL">
+      <HintPath>..\packages\Z.EntityFramework.Extensions.5.1.2\lib\net45\Z.EntityFramework.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="Zstandard.Net, Version=1.1.7.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <HintPath>..\packages\MySql.Data.8.0.22\lib\net452\Zstandard.Net.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AWS\AmazonUpload.cs" />
+    <Compile Include="DataAccess\MSSqlDbHelper.cs" />
+    <Compile Include="DataAccess\MySqlDbHelper.cs" />
+    <Compile Include="DataSource.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DataSource.Designer.cs">
+      <DependentUpon>DataSource.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ExcelFrom.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ExcelFrom.Designer.cs">
+      <DependentUpon>ExcelFrom.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Helper\DataHelper.cs" />
+    <Compile Include="Helper\Helper.cs" />
+    <Compile Include="Helper\NewFileFactory.cs" />
+    <Compile Include="Helper\XmlLoder.cs" />
+    <Compile Include="Link_DataBase.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Link_DataBase.Designer.cs">
+      <DependentUpon>Link_DataBase.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ObjectTest.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ObjectTest.Designer.cs">
+      <DependentUpon>ObjectTest.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SaveCode.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SaveCode.Designer.cs">
+      <DependentUpon>SaveCode.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ModifyCol.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ModifyCol.Designer.cs">
+      <DependentUpon>ModifyCol.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Modify.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Modify.Designer.cs">
+      <DependentUpon>Modify.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Helper\PdmReader.cs" />
+    <Compile Include="Excel.cs" />
+    <Compile Include="Model.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SaveLigerUICode.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SaveLigerUICode.Designer.cs">
+      <DependentUpon>SaveLigerUICode.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TemplateModel\EntityModel.cs" />
+    <Compile Include="TemplateModel\EnumModel.cs" />
+    <Compile Include="TemplateModel\MappingModel.cs" />
+    <Compile Include="TemplateModel\SearchModel.cs" />
+    <Compile Include="Templates\BaseAutoMapperTemplate.cs">
+      <DependentUpon>BaseAutoMapperTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\BaseAutoMapperTemplatePartial.cs" />
+    <Compile Include="Templates\ChangeServiceTemplate.cs">
+      <DependentUpon>ChangeServiceTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\ChangeServiceTemplatePartial.cs" />
+    <Compile Include="Templates\DepencyTemplate.cs">
+      <DependentUpon>DepencyTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\DepencyTemplatePartial.cs" />
+    <Compile Include="Templates\ConfigurationTemplate.cs">
+      <DependentUpon>ConfigurationTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\IChangeServiceTemplate.cs">
+      <DependentUpon>IChangeServiceTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\IChangeServiceTemplatePartial.cs" />
+    <Compile Include="Templates\IBaseServiceTemplate.cs">
+      <DependentUpon>IBaseServiceTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\IBaseServiceTemplatePartial.cs" />
+    <Compile Include="Templates\BaseServiceTemplate.cs">
+      <DependentUpon>BaseServiceTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\BaseServiceTemplatePartial.cs" />
+    <Compile Include="Templates\ViewModelDoTemplate.cs">
+      <DependentUpon>ViewModelDoTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\ViewModelDoTemplatePartial.cs" />
+    <Compile Include="Templates\ViewModelVoTemplate.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ViewModelVoTemplate.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Templates\ViewModelVoTemplatePartial.cs" />
+    <Compile Include="T_AdoNet\BugServiceTemplate.cs">
+      <DependentUpon>BugServiceTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_AdoNet\BugServiceTemplatePartial.cs" />
+    <Compile Include="T_AdoNet\NewConditionTemplate.cs">
+      <DependentUpon>NewConditionTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_AdoNet\NewConditionTemplatePartial.cs" />
+    <Compile Include="T_Android\J_AdapterListTemplate.cs">
+      <DependentUpon>J_AdapterListTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_AdapterListTemplatePartial.cs" />
+    <Compile Include="T_Android\J_DataViewMainEventTemplate.cs">
+      <DependentUpon>J_DataViewMainEventTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_DataViewMainEventTemplatePartial.cs" />
+    <Compile Include="T_Android\J_RecycleAdapterTemplate.cs">
+      <DependentUpon>J_RecycleAdapterTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_RecycleAdapterTemplatePartial.cs" />
+    <Compile Include="T_Android\J_DialogSubscriberTemplate.cs">
+      <DependentUpon>J_DialogSubscriberTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_ErrorCheckerTransformerTemplate.cs">
+      <DependentUpon>J_ErrorCheckerTransformerTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_ErrorResponseExceptionTemplate.cs">
+      <DependentUpon>J_ErrorResponseExceptionTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_MyDialogTemplate.cs">
+      <DependentUpon>J_MyDialogTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_MyDialogTemplatePartial.cs" />
+    <Compile Include="T_Android\J_DialogUtilTemplate.cs">
+      <DependentUpon>J_DialogUtilTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_DialogUtilTemplatePartial.cs" />
+    <Compile Include="T_Android\J_DataViewMainTemplate.cs">
+      <DependentUpon>J_DataViewMainTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_EventMainTemplate.cs">
+      <DependentUpon>J_EventMainTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_DataViewMainTemplatePartial.cs" />
+    <Compile Include="T_Android\J_EventMainTemplatePartial.cs" />
+    <Compile Include="T_Android\J_AdapterTemplate.cs">
+      <DependentUpon>J_AdapterTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_AdapterTemplatePartial.cs" />
+    <Compile Include="T_Android\J_ItemEventTemplate.cs">
+      <DependentUpon>J_ItemEventTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_ItemEventTemplatePartial.cs" />
+    <Compile Include="T_Android\J_FragmentTemplate.cs">
+      <DependentUpon>J_FragmentTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_FragmentTemplatePartial.cs" />
+    <Compile Include="T_Android\J_LayoutListItemTemplate.cs">
+      <DependentUpon>J_LayoutListItemTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_LayoutListItemTemplatePartial.cs" />
+    <Compile Include="T_Android\J_LayoutMainTemplate.cs">
+      <DependentUpon>J_LayoutMainTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_LayoutMainTemplatePartial.cs" />
+    <Compile Include="T_Android\J_LayoutItemTemplate.cs">
+      <DependentUpon>J_LayoutItemTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_LayoutItemTemplatePartial.cs" />
+    <Compile Include="T_Android\J_LoadingUtilTemplate.cs">
+      <DependentUpon>J_LoadingUtilTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_LoadingUtilTemplatePartial.cs" />
+    <Compile Include="T_Android\J_LoadUtilTemplate.cs">
+      <DependentUpon>J_LoadUtilTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_LoadUtilTemplatePartial.cs" />
+    <Compile Include="T_Android\J_ModelListTemplate.cs">
+      <DependentUpon>J_ModelListTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_ModelListTemplatePartial.cs" />
+    <Compile Include="T_Android\J_DBOpenHelperTemplate.cs">
+      <DependentUpon>J_DBOpenHelperTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_DBOpenHelperTemplatePartial.cs" />
+    <Compile Include="T_Android\J_DAOTemplate.cs">
+      <DependentUpon>J_DAOTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_DAOTemplatePartial.cs" />
+    <Compile Include="T_Android\J_AESCryptoTemplate.cs">
+      <DependentUpon>J_AESCryptoTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_AESCryptoTemplatePartial.cs" />
+    <Compile Include="T_Android\J_AppManageTemplate.cs">
+      <DependentUpon>J_AppManageTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_AppManageTemplatePartial.cs" />
+    <Compile Include="T_Android\J_LayoutTemplate.cs">
+      <DependentUpon>J_LayoutTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_LayoutTemplatePartial.cs" />
+    <Compile Include="T_Android\J_EventTemplate.cs">
+      <DependentUpon>J_EventTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_EventTemplatePartial.cs" />
+    <Compile Include="T_Android\J_MsgResponseTemplate.cs">
+      <DependentUpon>J_MsgResponseTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_MsgResponseTemplatePartial.cs" />
+    <Compile Include="T_Android\J_AddCookieTemplate.cs">
+      <DependentUpon>J_AddCookieTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_AddCookieTemplatePartial.cs" />
+    <Compile Include="T_Android\J_PageListTemplate.cs">
+      <DependentUpon>J_PageListTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_PageListTemplatePartial.cs" />
+    <Compile Include="T_Android\J_UtilTemplate.cs">
+      <DependentUpon>J_UtilTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_UtilTemplatePartial.cs" />
+    <Compile Include="T_Android\J_ReciveCookieTemplate.cs">
+      <DependentUpon>J_ReciveCookieTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_ReciveCookieTemplatePartial.cs" />
+    <Compile Include="T_Android\J_NoneDataResponseTemplate.cs">
+      <DependentUpon>J_NoneDataResponseTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_NoneDataResponseTemplatePartial.cs" />
+    <Compile Include="T_Android\J_ViewModelTemplate.cs">
+      <DependentUpon>J_ViewModelTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_ViewModelTemplatePartial.cs" />
+    <Compile Include="T_Android\J_MyLoadingDialogTemplate.cs">
+      <DependentUpon>J_MyLoadingDialogTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_MyLoadingDialogTemplatePartial.cs" />
+    <Compile Include="T_Android\J_ListViewDialogTemplate.cs">
+      <DependentUpon>J_ListViewDialogTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_ListViewDialogTemplatePartial.cs" />
+    <Compile Include="T_Android\J_ToastUtilTemplate.cs">
+      <DependentUpon>J_ToastUtilTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_ToastUtilTemplatePartial.cs" />
+    <Compile Include="T_Android\J_RetrofitManagerTemplate.cs">
+      <DependentUpon>J_RetrofitManagerTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_RetrofitManagerTemplatePartial.cs" />
+    <Compile Include="T_Android\J_ToastSubscriberTemplate.cs">
+      <DependentUpon>J_ToastSubscriberTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_ToastSubscriberTemplatePartial.cs" />
+    <Compile Include="T_Android\J_ServiceFactoryTemplate.cs">
+      <DependentUpon>J_ServiceFactoryTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_ServiceFactoryTemplatePartial.cs" />
+    <Compile Include="T_Android\J_SchedulerTransformerTemplate.cs">
+      <DependentUpon>J_SchedulerTransformerTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_SchedulerTransformerTemplatePartial.cs" />
+    <Compile Include="T_Android\J_NoneDataTransformerTemplate.cs">
+      <DependentUpon>J_NoneDataTransformerTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_NoneDataTransformerTemplatePartial.cs" />
+    <Compile Include="T_Android\J_MySubscriberTemplate.cs">
+      <DependentUpon>J_MySubscriberTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_MsgTemplate.cs">
+      <DependentUpon>J_MsgTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_DialogSubscriberTemplatePartial.cs" />
+    <Compile Include="T_Android\J_ErrorCheckerTransformerTemplatePartial.cs" />
+    <Compile Include="T_Android\J_ErrorResponseExceptionTemplatePartial.cs" />
+    <Compile Include="T_Android\J_MySubscriberTemplatePartial.cs" />
+    <Compile Include="T_Android\J_MsgTemplatePartial.cs" />
+    <Compile Include="T_Android\J_DefaultTransformerTemplate.cs">
+      <DependentUpon>J_DefaultTransformerTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_BaseSubscriberTemplate.cs">
+      <DependentUpon>J_BaseSubscriberTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_BaseResponseTemplate.cs">
+      <DependentUpon>J_BaseResponseTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_BaseMsgTemplate.cs">
+      <DependentUpon>J_BaseMsgTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_DefaultTransformerTemplatePartial.cs" />
+    <Compile Include="T_Android\J_BaseSubscriberTemplatePartial.cs" />
+    <Compile Include="T_Android\J_BaseResponseTemplatePartial.cs" />
+    <Compile Include="T_Android\J_BaseMsgTemplatePartial.cs" />
+    <Compile Include="T_Android\J_IServiceTemplate.cs">
+      <DependentUpon>J_IServiceTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_IServiceTemplatePartial.cs" />
+    <Compile Include="T_AdoNet\NewBLLTemplate.cs">
+      <DependentUpon>NewBLLTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_AdoNet\NewBLLTemplatePartial.cs" />
+    <Compile Include="T_AdoNet\NewModelTemplate.cs">
+      <DependentUpon>NewModelTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_AdoNet\NewServiceTemplate.cs">
+      <DependentUpon>NewServiceTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_AdoNet\NewIServiceTemplate.cs">
+      <DependentUpon>NewIServiceTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_AdoNet\NewModelTemplatePartial.cs" />
+    <Compile Include="T_AdoNet\NewServiceTemplatePartial.cs" />
+    <Compile Include="Templates\IServiceTemplate.cs">
+      <DependentUpon>IServiceTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_AdoNet\NewIServiceTemplatePartial.cs" />
+    <Compile Include="T_Android\J_ServiceTemplate.cs">
+      <DependentUpon>J_ServiceTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\ServiceTemplate.cs">
+      <DependentUpon>ServiceTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\BaseContextTemplate.cs">
+      <DependentUpon>BaseContextTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_ServiceTemplatePartial.cs" />
+    <Compile Include="Templates\SqlFunctionTemplate.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SqlFunctionTemplate.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Templates\SqlFunctionTemplatePartial.cs" />
+    <Compile Include="Templates\IBaseContextTemplate.cs">
+      <DependentUpon>IBaseContextTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\BaseContextTemplatePartial.cs" />
+    <Compile Include="Templates\ConditionTemplate.cs">
+      <DependentUpon>ConditionTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\ConditionTemplatePartial.cs" />
+    <Compile Include="Templates\ControllerTemplate.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ControllerTemplate.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Templates\ControllerTemplatePartial.cs" />
+    <Compile Include="Templates\EnumTemplate.cs">
+      <DependentUpon>EnumTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\EnumTemplatePartial.cs" />
+    <Compile Include="Templates\IBaseContextTemplatePartial.cs" />
+    <Compile Include="Templates\RepositoryTemplate.cs">
+      <DependentUpon>RepositoryTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\DbContextTemplate.cs">
+      <DependentUpon>DbContextTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\RepositoryTemplatePartial.cs" />
+    <Compile Include="Templates\DbContextTemplatePartial.cs" />
+    <Compile Include="Templates\ConfigurationTemplatePartial.cs" />
+    <Compile Include="Templates\IRepositoryTemplatePartial.cs" />
+    <Compile Include="Templates\IServiceTemplatePartial.cs" />
+    <Compile Include="Templates\MappingTemplate.cs">
+      <DependentUpon>MappingTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\IMappingTemplatePartial.cs" />
+    <Compile Include="Templates\MappingTemplatePartial.cs" />
+    <Compile Include="Templates\IMappingTemplate.cs">
+      <DependentUpon>IMappingTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\IRepositoryTemplate.cs">
+      <DependentUpon>IRepositoryTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\ModelTemplate.cs">
+      <DependentUpon>ModelTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\ModelTemplatePartial.cs" />
+    <Compile Include="Templates\ServiceTemplatePartial.cs" />
+    <Compile Include="T_Android\J_ModelTemplate.cs">
+      <DependentUpon>J_ModelTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\ViewModelTemplate.cs">
+      <DependentUpon>ViewModelTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_Android\J_ModelTemplatePartial.cs" />
+    <Compile Include="Templates\ViewModelTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreApplicationServiceTemplate.cs">
+      <DependentUpon>CoreApplicationServiceTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreAppicationServiceTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreIApplicationServiceTemplate.cs">
+      <DependentUpon>CoreIApplicationServiceTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreIApplicationServiceTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreViewModelTemplate.cs">
+      <DependentUpon>CoreViewModelTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreViewModelTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreSqlFunctionTemplate.cs">
+      <DependentUpon>CoreSqlFunctionTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreSqlFunctionTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreServiceTemplate.cs">
+      <DependentUpon>CoreServiceTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreServiceTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreRepositoryTemplate.cs">
+      <DependentUpon>CoreRepositoryTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreRepositoryTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreModelTemplate.cs">
+      <DependentUpon>CoreModelTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreModelTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreMappingTemplate.cs">
+      <DependentUpon>CoreMappingTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreMappingTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreIServiceTemplate.cs">
+      <DependentUpon>CoreIServiceTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreIServiceTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreIRepositoryTemplate.cs">
+      <DependentUpon>CoreIRepositoryTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreIRepositoryTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreIMappingTemplate.cs">
+      <DependentUpon>CoreIMappingTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreIMappingTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreIChangeServiceTemplate.cs">
+      <DependentUpon>CoreIChangeServiceTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreIChangeServiceTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreIBaseServiceTemplate.cs">
+      <DependentUpon>CoreIBaseServiceTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreIBaseServiceTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreIBaseContextTemplate.cs">
+      <DependentUpon>CoreIBaseContextTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreIBaseContextTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreEnumTemplate.cs">
+      <DependentUpon>CoreEnumTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreEnumTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreDtoModelTemplate.cs">
+      <DependentUpon>CoreDtoModelTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreDtoModelTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreDbContextTemplate.cs">
+      <DependentUpon>CoreDbContextTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreDbContextTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreDataBaseScriptTemplate.cs">
+      <DependentUpon>CoreDataBaseScriptTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreDataBaseScriptTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreControllerTemplate.cs">
+      <DependentUpon>CoreControllerTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreControllerTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreConfigurationTemplate.cs">
+      <DependentUpon>CoreConfigurationTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreConfigurationTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreConditionTemplate.cs">
+      <DependentUpon>CoreConditionTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreConditionTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreChangeServiceTemplate.cs">
+      <DependentUpon>CoreChangeServiceTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreChangeServiceTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreBaseServiceTemplate.cs">
+      <DependentUpon>CoreBaseServiceTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreBaseExtensionsTemplate.cs">
+      <DependentUpon>CoreBaseExtensionsTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreBaseAutoMapperTemplate.cs">
+      <DependentUpon>CoreBaseAutoMapperTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreBaseServiceTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreBaseExtensionsTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreViewModelVoTemplate.cs">
+      <DependentUpon>CoreViewModelVoTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_DotnetCore\CoreBaseAutoMapperTemplatePartial.cs" />
+    <Compile Include="T_DotnetCore\CoreViewModelVoTemplatePartial.cs" />
+    <Compile Include="T_LigerUI\EditTemplate.cs">
+      <DependentUpon>EditTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_LigerUI\ViewTemplate.cs">
+      <DependentUpon>ViewTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_LigerUI\ControllerTemplate.cs">
+      <DependentUpon>ControllerTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_LigerUI\EditTemplatePartial.cs" />
+    <Compile Include="T_LigerUI\ViewTemplatePartial.cs" />
+    <Compile Include="T_LigerUI\ControllerTemplatePartial.cs" />
+    <Compile Include="T_WebStorm\addTemplate.cs">
+      <DependentUpon>addTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_WebStorm\ListJsTemplate.cs">
+      <DependentUpon>ListJsTemplate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="T_WebStorm\addTemplatePartial.cs" />
+    <Compile Include="T_WebStorm\ListJsTemplatePartial.cs" />
+    <Compile Include="Main.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Main.Designer.cs">
+      <DependentUpon>Main.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="DataSource.resx">
+      <DependentUpon>DataSource.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ExcelFrom.resx">
+      <DependentUpon>ExcelFrom.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Link_DataBase.resx">
+      <DependentUpon>Link_DataBase.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ObjectTest.resx">
+      <DependentUpon>ObjectTest.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SaveCode.resx">
+      <DependentUpon>SaveCode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ModifyCol.resx">
+      <DependentUpon>ModifyCol.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Modify.resx">
+      <DependentUpon>Modify.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <EmbeddedResource Include="SaveLigerUICode.resx">
+      <DependentUpon>SaveLigerUICode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main.resx">
+      <DependentUpon>Main.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\ConditionTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ConditionTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\ControllerTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ControllerTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\EnumTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EnumTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\MappingTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>MappingTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\ModelTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ModelTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\ViewModelTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ViewModelTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\IMappingTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>IMappingTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\IRepositoryTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>IRepositoryTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\DbContextTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>DbContextTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\RepositoryTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>RepositoryTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\IBaseContextTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>IBaseContextTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\BaseContextTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>BaseContextTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\SqlFunctionTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>SqlFunctionTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\ServiceTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ServiceTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\IServiceTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>IServiceTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\ConfigurationTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ConfigurationTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="T_AdoNet\NewIServiceTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>NewIServiceTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="T_AdoNet\NewServiceTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>NewServiceTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="T_AdoNet\NewModelTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>NewModelTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="T_AdoNet\NewBLLTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>NewBLLTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="icon.ico" />
+    <None Include="T_DotnetCore\CoreIApplicationServiceTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreIApplicationServiceTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreApplicationServiceTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreApplicationServiceTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreViewModelTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreViewModelTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreSqlFunctionTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreSqlFunctionTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreServiceTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreServiceTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreRepositoryTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreRepositoryTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreModelTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreModelTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreMappingTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreMappingTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreIServiceTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreIServiceTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreIRepositoryTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreIRepositoryTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreIMappingTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreIMappingTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreIChangeServiceTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreIChangeServiceTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreIBaseServiceTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreIBaseServiceTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreIBaseContextTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreIBaseContextTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreEnumTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreEnumTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreDtoModelTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreDtoModelTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreDbContextTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreDbContextTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreDataBaseScriptTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreDataBaseScriptTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreControllerTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreControllerTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreConfigurationTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreConfigurationTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreConditionTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreConditionTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreChangeServiceTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreChangeServiceTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreBaseServiceTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreBaseServiceTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreBaseExtensionsTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreBaseExtensionsTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreBaseAutoMapperTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreBaseAutoMapperTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_DotnetCore\CoreViewModelVoTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CoreViewModelVoTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\BaseAutoMapperTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>BaseAutoMapperTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\ViewModelDoTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ViewModelDoTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\ViewModelVoTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ViewModelVoTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\BaseServiceTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>BaseServiceTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\IBaseServiceTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>IBaseServiceTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\IChangeServiceTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>IChangeServiceTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\ChangeServiceTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ChangeServiceTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\DepencyTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>DepencyTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_WebStorm\addTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>addTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_WebStorm\ListJsTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ListJsTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_LigerUI\EditTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EditTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_LigerUI\ViewTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ViewTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_LigerUI\ControllerTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ControllerTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_DataViewMainEventTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_DataViewMainEventTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_RecycleAdapterTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_RecycleAdapterTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_PageListTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_PageListTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_LayoutListItemTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_LayoutListItemTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_AdapterListTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_AdapterListTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_UtilTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_UtilTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_AddCookieTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_AddCookieTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_ReciveCookieTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_ReciveCookieTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_AdapterTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_AdapterTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_ItemEventTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_ItemEventTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_AdoNet\NewConditionTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>NewConditionTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_AdoNet\BugServiceTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>BugServiceTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_LayoutItemTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_LayoutItemTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_DataViewMainTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_DataViewMainTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_EventMainTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_EventMainTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_LayoutMainTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_LayoutMainTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_FragmentTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_FragmentTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_EventTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_EventTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_LayoutTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_LayoutTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_NoneDataResponseTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_NoneDataResponseTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_MsgResponseTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_MsgResponseTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_AppManageTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_AppManageTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_AESCryptoTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_AESCryptoTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_DAOTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_DAOTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_DBOpenHelperTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_DBOpenHelperTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_ViewModelTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_ViewModelTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_ModelListTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_ModelListTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_MyLoadingDialogTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_MyLoadingDialogTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_ListViewDialogTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_ListViewDialogTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_ToastUtilTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_ToastUtilTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_LoadUtilTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_LoadUtilTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_LoadingUtilTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_LoadingUtilTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_DialogUtilTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_DialogUtilTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_MyDialogTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_MyDialogTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_RetrofitManagerTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_RetrofitManagerTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_ToastSubscriberTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_ToastSubscriberTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_ServiceFactoryTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_ServiceFactoryTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_SchedulerTransformerTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_SchedulerTransformerTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_NoneDataTransformerTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_NoneDataTransformerTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_MySubscriberTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_MySubscriberTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_ErrorResponseExceptionTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_ErrorResponseExceptionTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_ErrorCheckerTransformerTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_ErrorCheckerTransformerTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_DialogSubscriberTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_DialogSubscriberTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_MsgTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_MsgTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_DefaultTransformerTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_DefaultTransformerTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_BaseSubscriberTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_BaseSubscriberTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_BaseResponseTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_BaseResponseTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_BaseMsgTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_BaseMsgTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_ServiceTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_ServiceTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_IServiceTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_IServiceTemplate.cs</LastGenOutput>
+    </None>
+    <None Include="T_Android\J_ModelTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>J_ModelTemplate.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>这台计算机上缺少此项目引用的 NuGet 程序包。使用“NuGet 程序包还原”可下载这些程序包。有关更多信息，请参见 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的文件是 {0}。</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.props'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.targets'))" />
+  </Target>
+  <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

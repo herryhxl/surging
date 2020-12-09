@@ -1,0 +1,397 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+package <#=_package#>.Event;
+import android.app.Activity;
+import android.content.Context;
+import android.database.Cursor;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import android.databinding.DataBindingUtil;
+import <#=_package#>.Dialog.ListViewDialog;
+import <#=_package#>.Dialog.MyDialog;
+import <#=_package#>.Common.Util;
+import android.os.Bundle;
+import android.os.StrictMode;
+import android.support.v4.app.Fragment;
+import android.support.v4.widget.SimpleCursorAdapter;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import <#=_package#>.Common.LoadUtil;
+import <#=_package#>.ViewModel.*;
+import <#=_package#>.Fragment.*;
+import <#=_package#>.Model.*;
+import <#=_package#>.Service.*;
+import <#=_package#>.Data.*;
+import <#=_package#>.Base.*;
+import <#=_package#>.Adapter.*;
+import <#=_package#>.Event.*;
+import <#=_package#>.<#=_projectName#>.R;
+import <#=_package#>.<#=_projectName#>.<#=_projectName#>.DataLayoutBinding;
+import <#=_package#>.Common.ToastUtil;
+import rx.Subscriber;
+import android.widget.AdapterView;
+import rx.subscriptions.CompositeSubscription;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.FragmentManager;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
+
+public class DataViewEvent{
+
+	private LoadUtil _loading;
+	private CompositeSubscription _subscriptions;
+	private DataLayoutBinding _binding;
+    private Bundle _bundle;
+	private FragmentManager _manage;
+    private ListViewDialog _ListViewDialog;
+	private RecyclerView.LayoutManager _LayoutManager;
+    private MyDialog _mydialog;
+    private ActionService _actionService;
+	private Activity _activity;
+	private int Page=1,PageCount=20,OrderBy=0,TotalPage=0,TotalCount=0;
+	private boolean IsDescending=true,isLoading=false;
+	private int ClickID;
+	private Context _context;
+
+	public DataViewEvent(DataLayoutBinding binding,Context context,CompositeSubscription subscriptions,LoadUtil loading,Activity activity,FragmentManager manage,Bundle bundle) {
+        this._binding=binding;
+		this._context=context;
+		this._subscriptions=subscriptions;
+		this._loading=loading;
+		this._activity=activity;
+		this._manage=manage;
+		this._bundle=bundle;
+		this._mydialog=new MyDialog(_context,new MyDialogViewModel("提示","确定要删除么?","确定","取消"),deletelistener);
+        this._ListViewDialog=new ListViewDialog(_context);
+        this._actionService = new ActionService(_context, _loading);
+		this._LayoutManager=new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+		this.ClickID=_bundle.getInt("ID");
+		Init();
+    }
+
+	public String GetDataString(){
+		Gson gson = new Gson();
+		String Data="";
+		switch (ClickID) {
+<#foreach(var item in _models){#>
+<# var PKData=item.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+#>
+			case R.id.<#=item.Code.Replace("?","")#>_List:
+				PageList<<#=item.Code.Replace("?","")#>Model> <#=item.Code.Replace("?","")#>Data=new PageList<<#=item.Code.Replace("?","")#>Model>();
+				Recycle<#=item.Code.Replace("?","")#>Adapter <#=item.Code.Replace("?","")#>Adapter = (Recycle<#=item.Code.Replace("?","")#>Adapter)_binding.DataView.getAdapter();
+				List<<#=item.Code.Replace("?","")#>ViewModel> <#=item.Code.Replace("?","")#>=<#=item.Code.Replace("?","")#>Adapter.getData();
+				List<<#=item.Code.Replace("?","")#>Model> <#=item.Code.Replace("?","")#>Model=new ArrayList<>();
+				if(<#=item.Code.Replace("?","")#>!=null&&<#=item.Code.Replace("?","")#>.size()>0){
+					for (<#=item.Code.Replace("?","")#>ViewModel item : <#=item.Code.Replace("?","")#>) {
+                            <#=item.Code.Replace("?","")#>Model.add(item.getModel());
+                    }
+				}
+				<#=item.Code.Replace("?","")#>Data.TotalCount=TotalCount;
+				<#=item.Code.Replace("?","")#>Data.Records= <#=item.Code.Replace("?","")#>Model;
+				<#=item.Code.Replace("?","")#>Data.TotalPage=TotalPage;
+				<#=item.Code.Replace("?","")#>Data.Page=Page;
+				<#=item.Code.Replace("?","")#>Data.PageCount=PageCount;
+				Data=gson.toJson(<#=item.Code.Replace("?","")#>Data);
+				break;
+<#}#>
+		} 
+		return Data;
+	}
+
+	private void Init()
+	{
+		_binding.DataAdd.setOnClickListener(listener);
+		_binding.DataRefresh.setOnRefreshListener(RefreshListener);
+		_binding.DataRefresh.setColorSchemeResources(android.R.color.holo_blue_bright, android.R.color.holo_green_light,
+			android.R.color.holo_orange_light, android.R.color.holo_red_light);
+		_binding.DataView.setLayoutManager(_LayoutManager);
+		_binding.DataView.addOnScrollListener(liser);
+		
+		String data = _bundle.getString("_DataViewModel", "");
+		Gson gson = new Gson();
+		switch (ClickID)
+		{
+<#foreach(var item in _models){#>
+<# var PKData=item.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+#>
+            case R.id.<#=item.Code.Replace("?","")#>_List:
+<# if(item.Code=="Action") {#>
+			_binding.DataAdd.setImageResource(android.R.drawable.ic_menu_preferences);
+<# }#>
+			_activity.setTitle("<#=item.Name#>");
+			if (!Util.IsNullOrEmpty(data)) 
+			{	
+				Type type = new TypeToken<PageList<<#=item.Code.Replace("?","")#>Model>>() {
+				}.getType();
+				PageList<<#=item.Code.Replace("?","")#>Model> <#=item.Code.Replace("?","")#>Model = gson.fromJson(data, type);
+
+				List<<#=item.Code.Replace("?","")#>ViewModel> <#=item.Code.Replace("?","")#> = new ArrayList<>();
+                for (<#=item.Code.Replace("?","")#>Model item : <#=item.Code.Replace("?","")#>Model.Records) {
+                    <#=item.Code.Replace("?","")#>.add(item.get<#=item.Code.Replace("?","")#>ViewModel());
+                }
+				TotalCount=<#=item.Code.Replace("?","")#>Model.TotalCount;
+				TotalPage=<#=item.Code.Replace("?","")#>Model.TotalPage;
+				Page=<#=item.Code.Replace("?","")#>Model.Page;
+				PageCount=<#=item.Code.Replace("?","")#>Model.PageCount;
+				final Recycle<#=item.Code.Replace("?","")#>Adapter <#=item.Code.Replace("?","")#>Adapter = new Recycle<#=item.Code.Replace("?","")#>Adapter(<#=item.Code.Replace("?","")#>);
+                _binding.DataView.setAdapter(<#=item.Code.Replace("?","")#>Adapter);
+				<#=item.Code.Replace("?","")#>Adapter.setOnItemActionListener(new Recycle<#=item.Code.Replace("?","")#>Adapter.OnItemActionListener() {
+						@Override
+						public boolean onItemLongClickListener(View v, int pos) {
+							Bundle myDialogBundle=new Bundle();
+							myDialogBundle.putInt("position",pos);
+							<#=item.Code.Replace("?","")#>ViewModel  <#=item.Code.Replace("?","")#>=<#=item.Code.Replace("?","")#>Adapter.getItem(pos);
+							myDialogBundle.put<#=PKData.CodeType.Substring(0, 1).ToUpper() +PKData.CodeType.Substring(1).ToLower()#>("<#=PKData.Code#>",<#=item.Code.Replace("?","")#>.get<#=item.Code.Replace("?","")#><#=PKData.Code#>());
+							_mydialog.setBundle(myDialogBundle);
+							_mydialog.Show();
+							return true;
+						}
+
+						@Override
+						public void onItemClickListener(View v, int pos) {
+							<#=item.Code.Replace("?","")#>ViewModel  <#=item.Code.Replace("?","")#>=<#=item.Code.Replace("?","")#>Adapter.getItem(pos);
+							//ToastUtil.Show(_context,<#=item.Code.Replace("?","")#>.toString());
+							FragmentTransaction <#=item.Code.Replace("?","")#>Transaction = _manage.beginTransaction();
+							Bundle <#=item.Code.Replace("?","")#>Bundle=new Bundle();
+							<#=item.Code.Replace("?","")#>Bundle.put<#=PKData.CodeType.Substring(0, 1).ToUpper() +PKData.CodeType.Substring(1).ToLower()#>("<#=PKData.Code#>",<#=item.Code.Replace("?","")#>.get<#=item.Code.Replace("?","")#><#=PKData.Code#>());
+							<#=item.Code.Replace("?","")#>Transaction.replace(R.id.content,
+							<#=item.Code.Replace("?","")#>Fragment.newInstance(<#=item.Code.Replace("?","")#>Bundle), "<#=item.Code.Replace("?","")#>").addToBackStack("<#=item.Code.Replace("?","")#>").commitAllowingStateLoss();
+						}
+					});
+			}
+			else
+			{
+				_subscriptions.add(new <#=item.Code.Replace("?","")#>Service(_context, _loading).GetList(IsDescending,OrderBy,Page,PageCount).subscribe(new MySubscriber<Msg<PageList<<#=item.Code.Replace("?","")#>Model>>>(_context, _loading) {
+                    @Override
+                    public void onNext(Msg<PageList<<#=item.Code.Replace("?","")#>Model>> pageListMsg) {
+						if (!pageListMsg.Status) 
+						{
+							ToastUtil.Show(_context,pageListMsg.Msg);
+							return;
+						}
+						if(Page==1){
+							TotalCount=pageListMsg.Object.TotalCount;
+							TotalPage=pageListMsg.Object.TotalPage;
+							ToastUtil.Show(_context, "总条数:"+pageListMsg.Object.TotalCount+"总页数:"+pageListMsg.Object.TotalPage);
+						}
+                        List<<#=item.Code.Replace("?","")#>ViewModel> <#=item.Code.Replace("?","")#> = new ArrayList<>();
+                        for (<#=item.Code.Replace("?","")#>Model item : pageListMsg.Object.Records) {
+                            <#=item.Code.Replace("?","")#>.add(item.get<#=item.Code.Replace("?","")#>ViewModel());
+                        }
+                        final Recycle<#=item.Code.Replace("?","")#>Adapter <#=item.Code.Replace("?","")#>Adapter = new Recycle<#=item.Code.Replace("?","")#>Adapter(<#=item.Code.Replace("?","")#>);
+                        _binding.DataView.setAdapter(<#=item.Code.Replace("?","")#>Adapter);
+						<#=item.Code.Replace("?","")#>Adapter.setOnItemActionListener(new Recycle<#=item.Code.Replace("?","")#>Adapter.OnItemActionListener() {
+							@Override
+							public boolean onItemLongClickListener(View v, int pos) {
+								Bundle myDialogBundle=new Bundle();
+								myDialogBundle.putInt("position",pos);
+								<#=item.Code.Replace("?","")#>ViewModel  <#=item.Code.Replace("?","")#>=<#=item.Code.Replace("?","")#>Adapter.getItem(pos);
+								myDialogBundle.put<#=PKData.CodeType.Substring(0, 1).ToUpper() +PKData.CodeType.Substring(1).ToLower()#>("<#=PKData.Code#>",<#=item.Code.Replace("?","")#>.get<#=item.Code.Replace("?","")#><#=PKData.Code#>());
+								_mydialog.setBundle(myDialogBundle);
+								_mydialog.Show();
+								return true;
+							}
+
+							@Override
+							public void onItemClickListener(View v, int pos) {
+								<#=item.Code.Replace("?","")#>ViewModel  <#=item.Code.Replace("?","")#>=<#=item.Code.Replace("?","")#>Adapter.getItem(pos);
+								//ToastUtil.Show(_context,<#=item.Code.Replace("?","")#>.toString());
+								FragmentTransaction <#=item.Code.Replace("?","")#>Transaction = _manage.beginTransaction();
+								Bundle <#=item.Code.Replace("?","")#>Bundle=new Bundle();
+								<#=item.Code.Replace("?","")#>Bundle.put<#=PKData.CodeType.Substring(0, 1).ToUpper() +PKData.CodeType.Substring(1).ToLower()#>("<#=PKData.Code#>",<#=item.Code.Replace("?","")#>.get<#=item.Code.Replace("?","")#><#=PKData.Code#>());
+								<#=item.Code.Replace("?","")#>Transaction.replace(R.id.content,
+								<#=item.Code.Replace("?","")#>Fragment.newInstance(<#=item.Code.Replace("?","")#>Bundle), "<#=item.Code.Replace("?","")#>").addToBackStack("<#=item.Code.Replace("?","")#>").commitAllowingStateLoss();
+							}
+						});
+                    }
+                }));
+			}
+            break;
+<#}#>
+        }
+	}
+
+    
+	private View.OnClickListener deletelistener=new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+			_mydialog.Dismiss();
+            switch (v.getId()){
+                case R.id.MyDialog_SureText:
+				final Bundle myDialogBundle=_mydialog.getBundle();
+				MySubscriber mySubscriber=new MySubscriber<Msg<Object>>(_context, _loading) {
+                    @Override
+                    public void onNext(Msg<Object> Msg) {
+						if(Msg.Status)
+						{
+						switch (ClickID) {
+<#foreach(var item in _models){#>
+
+<# var PKData=item.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+#>
+				case R.id.<#=item.Code.Replace("?","")#>_List:
+					Recycle<#=item.Code.Replace("?","")#>Adapter <#=item.Code.Replace("?","")#>Adapter = (Recycle<#=item.Code.Replace("?","")#>Adapter)_binding.DataView.getAdapter();
+					List<<#=item.Code.Replace("?","")#>ViewModel> <#=item.Code.Replace("?","")#>=<#=item.Code.Replace("?","")#>Adapter.getData();
+					<#=item.Code.Replace("?","")#>.remove(myDialogBundle.getInt("position"));
+					<#=item.Code.Replace("?","")#>Adapter.setData(<#=item.Code.Replace("?","")#>);
+					break;
+<#}#>
+						}
+						ToastUtil.Show(_context, Msg.Msg);
+                    }
+					}
+                };
+				switch (ClickID) {
+<#foreach(var item in _models){#>
+<# var PKData=item.ColumnsList.Where(t=>t.PK==true).FirstOrDefault();
+	if(PKData==null) throw new Exception("未包含主键字段");
+#>
+				case R.id.<#=item.Code.Replace("?","")#>_List:
+					<#=PKData.CodeType=="string"?"String":PKData.CodeType#> <#=item.Code.Replace("?","")#>=myDialogBundle.get<#=PKData.CodeType.Substring(0, 1).ToUpper() +PKData.CodeType.Substring(1).ToLower()#>("<#=PKData.Code#>");
+					List<<#=PKData.CodeType=="string"?"String":"Integer"#>> <#=item.Code.Replace("?","")#>List=new ArrayList();
+					<#=item.Code.Replace("?","")#>List.add(<#=item.Code.Replace("?","")#>);
+					new <#=item.Code.Replace("?","")#>Service(_context, _loading).RemoveList(<#=item.Code.Replace("?","")#>List).subscribe(mySubscriber);
+				break;
+<#}#>
+				}
+				break;
+                case R.id.MyDialog_ChanelText:
+				
+				break;
+            }
+        }
+    };
+
+
+
+	private View.OnClickListener listener=new View.OnClickListener(){
+        @Override
+        public void onClick(View v) {
+            if(v.getId()==R.id.Data_Add) {
+				switch (ClickID) {
+<#foreach(var item in _models){#>
+					case R.id.<#=item.Code.Replace("?","")#>_List:
+<# if(item.Code=="Action") {#>
+						_subscriptions.add(_actionService.Init().subscribe(new MySubscriber<Msg<Object>>(_context, true, _loading) {
+                            @Override
+                            public void onNext(Msg<Object> msg) {
+                                if (msg.Status) {
+                                    ToastUtil.Show(_context, msg.Msg);
+                                } else {
+                                    ToastUtil.Show(_context, msg.Msg);
+                                }
+                            }
+                        }));
+						break;
+<#}else{#>
+						FragmentTransaction <#=item.Code.Replace("?","")#>Transaction = _manage.beginTransaction();
+						<#=item.Code.Replace("?","")#>Transaction.replace(R.id.content,
+						<#=item.Code.Replace("?","")#>Fragment.newInstance(), "<#=item.Code.Replace("?","")#>").addToBackStack("<#=item.Code.Replace("?","")#>").commitAllowingStateLoss();
+						break;
+<#}}#>
+				}
+			}
+        }
+    };
+
+	private RecyclerView.OnScrollListener liser=new RecyclerView.OnScrollListener() {
+		@Override
+		public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+			super.onScrollStateChanged(recyclerView, newState);
+			int currentCount = 0;
+			if (_LayoutManager instanceof LinearLayoutManager) {
+				currentCount = ((LinearLayoutManager) _LayoutManager).findLastVisibleItemPosition() + 1;
+			} else if (_LayoutManager instanceof StaggeredGridLayoutManager) {
+				int[] lastVisibleItemPositions = ((StaggeredGridLayoutManager) _LayoutManager).findLastVisibleItemPositions(null);
+				Arrays.sort(lastVisibleItemPositions);
+				currentCount = lastVisibleItemPositions[lastVisibleItemPositions.length - 1] + 1;
+			}
+			int itemCount = _binding.DataView.getAdapter().getItemCount();
+			if (TotalPage>Page&&!isLoading && newState == RecyclerView.SCROLL_STATE_IDLE
+					&& currentCount == itemCount) {
+				Page++;
+				_binding.LoadingMore.setVisibility(View.VISIBLE);
+				LoadingData();
+			}
+		}
+	};
+
+	private SwipeRefreshLayout.OnRefreshListener RefreshListener= new SwipeRefreshLayout.OnRefreshListener() {
+		@Override
+		public void onRefresh() {
+			Page=1;
+			LoadingData();
+		}
+	};
+	private void LoadingData(){
+		isLoading=true;
+		switch (ClickID) {
+<#foreach(var item in _models){#>
+					case R.id.<#=item.Code.Replace("?","")#>_List:
+							_subscriptions.add(new <#=item.Code.Replace("?","")#>Service(_context, null).GetList(IsDescending,OrderBy,Page,PageCount).subscribe(new Subscriber<Msg<PageList<<#=item.Code.Replace("?","")#>Model>>>() {
+								@Override
+								public void onCompleted() {
+									isLoading = false;
+								}
+
+								@Override
+								public void onError(Throwable e) {
+									isLoading = false;
+									if(Page==1)
+										_binding.DataRefresh.setRefreshing(false);
+									else
+										_binding.LoadingMore.setVisibility(View.GONE);
+								}
+								@Override
+								public void onNext(Msg<PageList<<#=item.Code.Replace("?","")#>Model>> pageListMsg) {
+									isLoading=false;
+									if (!pageListMsg.Status) 
+									{
+										ToastUtil.Show(_context,pageListMsg.Msg);
+										return;
+									}
+									Recycle<#=item.Code.Replace("?","")#>Adapter <#=item.Code.Replace("?","")#>Adapter = (Recycle<#=item.Code.Replace("?","")#>Adapter)_binding.DataView.getAdapter();
+									List<<#=item.Code.Replace("?","")#>ViewModel> <#=item.Code.Replace("?","")#> ;
+									if(Page==1)
+										<#=item.Code.Replace("?","")#>= new ArrayList<>();
+									else
+									{
+										<#=item.Code.Replace("?","")#>=<#=item.Code.Replace("?","")#>Adapter.getData();
+									}
+									for (<#=item.Code.Replace("?","")#>Model item : pageListMsg.Object.Records) {
+										<#=item.Code.Replace("?","")#>.add(item.get<#=item.Code.Replace("?","")#>ViewModel());
+									}
+									<#=item.Code.Replace("?","")#>Adapter.setData( <#=item.Code.Replace("?","")#>);
+									if(Page==1){
+										_binding.DataRefresh.setRefreshing(false);
+										TotalCount=pageListMsg.Object.TotalCount;
+										TotalPage=pageListMsg.Object.TotalPage;
+										ToastUtil.Show(_context, "总条数:"+pageListMsg.Object.TotalCount+"总页数:"+pageListMsg.Object.TotalPage);
+									}
+									else
+									{
+										_binding.LoadingMore.setVisibility(View.GONE);
+									}
+								}
+							}));
+						break;
+<#}#>
+				}
+	}
+}

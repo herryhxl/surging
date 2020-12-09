@@ -34,7 +34,7 @@ namespace Surging.Modules.Common.Domain
 
         public async Task<string> GetUserName(int id)
         {
-            var text = await GetService<IManagerService>().SayHello("fanly"); 
+            var text = await GetService<IManagerService>().SayHello($"fanly_{id}"); 
             return await Task.FromResult<string>(text);
         }
 

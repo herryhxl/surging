@@ -1,0 +1,44 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+package <#=_package#>.Dialog;
+
+import android.app.AlertDialog;
+import android.content.Context;
+import android.graphics.Color;
+import android.support.v7.widget.LinearLayoutCompat;
+import android.view.View;
+import android.view.Window;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import <#=_package#>.<#=_projectName#>.R;
+
+public class MyLoadingDialog {
+    Context context;
+    AlertDialog ad;
+    TextView titleView;
+    public MyLoadingDialog(Context context) {
+        // TODO Auto-generated constructor stub
+        this.context=context;
+        ad=new AlertDialog.Builder(context).create();
+        ad.show();
+
+        //关键在下面的两行,使用window.setContentView,替换整个对话框窗口的布局
+        Window window = ad.getWindow();
+        window.setContentView(R.layout.base_loading);
+        titleView=(TextView) window.findViewById(R.id.BaseTitle);
+    }
+    public void setTitle(int resId)
+    {
+        titleView.setText(resId);
+    }
+    public void setTitle(String title) {
+        titleView.setText(title);
+    }
+    public void dismiss() {
+        ad.dismiss();
+    }
+}

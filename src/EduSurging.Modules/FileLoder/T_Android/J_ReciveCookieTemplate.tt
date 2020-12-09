@@ -1,0 +1,88 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+package <#=_projectName#>.Base;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.support.annotation.NonNull;
+import android.util.Log;
+
+import com.example.yunjoy.Common.Util;
+import com.example.yunjoy.Model.CookieModel;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+
+import okhttp3.Interceptor;
+import okhttp3.Response;
+import rx.Observable;
+import rx.functions.Action1;
+import rx.functions.Func1;
+
+import static android.R.attr.type;
+
+public class ReceivedCookiesInterceptor implements Interceptor {
+    private Context context;
+
+    public ReceivedCookiesInterceptor(Context context) {
+        super();
+        this.context = context;
+
+    }
+
+    @Override
+    public Response intercept(Chain chain) throws IOException {
+
+        Response originalResponse = chain.proceed(chain.request());
+        SharedPreferences sharedPreferences = context.getSharedPreferences("cookie", Context.MODE_PRIVATE);
+
+        List<CookieModel> OldCookieData = new ArrayList<CookieModel>();
+        Gson gson = new Gson();
+
+        String Cookie = sharedPreferences.getString("cookie", "");
+        if(!Cookie.equals("")) {
+            Type type = new TypeToken<List<CookieModel>>() {
+            }.getType();
+            OldCookieData = gson.fromJson(Cookie, type);
+        }
+        final List<CookieModel> NewCookieData = new ArrayList<CookieModel>();
+
+        if (!originalResponse.headers("Set-Cookie").isEmpty()) {
+            Observable.from(originalResponse.headers("Set-Cookie"))
+                    .map(new Func1<String, String>() {
+                        @Override
+                        public String call(String s) {
+                            String[] cookieArray = s.split(";");
+                            return cookieArray[0];
+                        }
+                    })
+                    .subscribe(new Action1<String>() {
+                        @Override
+                        public void call(String cookie) {
+                            String Key = cookie.split("=")[0];
+                            NewCookieData.add(new CookieModel(Key, cookie));
+                        }
+                    });
+            List<CookieModel> model= Util.ProceeeCookie(OldCookieData,NewCookieData);
+
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            String cookie=gson.toJson(model);
+            editor.putString("cookie",cookie );
+            //Log.i("yunjoy", "写入Cookie:" + cookie);
+            editor.commit();
+        }
+
+        return originalResponse;
+    }
+}
+

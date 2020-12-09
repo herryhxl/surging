@@ -1,0 +1,77 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+package <#=_package#>.Adapter;
+import android.content.Context;
+import android.databinding.DataBindingUtil;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import <#=_package#>.Common.ToastUtil;
+import <#=_package#>.ViewModel.<#=_models.Code#>ViewModel;
+import <#=_package#>.<#=_projectName#>.R;
+import <#=_package#>.<#=_projectName#>.<#=_projectName#>.<#=_models.Code.Substring(0, 1).ToUpper() + _models.Code.Substring(1).ToLower()#>ListitemBinding;
+import java.util.List;
+
+
+public class <#=_models.Code#>ListAdapter extends BaseAdapter {
+    private Context mContext;
+    private LayoutInflater inflater;
+    private List<<#=_models.Code#>ViewModel> Data;
+    private <#=_models.Code.Substring(0, 1).ToUpper() + _models.Code.Substring(1).ToLower()#>ListitemBinding binding;
+    private int _position;
+
+    public <#=_models.Code#>ListAdapter(Context context,List<<#=_models.Code#>ViewModel> Data) {
+        this.mContext = context;
+        this.Data=Data;
+        inflater = LayoutInflater.from(context);
+    }
+    //更新数据
+    public void SetData(List<<#=_models.Code#>ViewModel> Data) {
+        this.Data = Data;
+        this.notifyDataSetChanged();
+    }
+    @Override
+    public int getCount() {
+        return Data == null ? 0 : Data.size();
+    }
+
+    @Override
+    public Object getItem(int position) {
+        return Data.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+		_position=position;
+        if (convertView == null) {
+            binding = DataBindingUtil.inflate(inflater, R.layout.<#=_models.Code.ToLower()#>_listitem, parent, false);
+            convertView = binding.getRoot();
+            convertView.setTag(binding);
+        } else {
+            binding = (<#=_models.Code.Substring(0, 1).ToUpper() + _models.Code.Substring(1).ToLower()#>ListitemBinding) convertView.getTag();
+        }
+        binding.set<#=_models.Code#>ListViewModel(Data.get(position));
+        binding.set<#=_models.Code#>ListAdapter(this);
+        return convertView;
+    }
+	public View.OnClickListener <#=_models.Code#>_Liser=new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+			<#=_models.Code#>ViewModel <#=_models.Code.ToLower()#>=Data.get(_position);
+			switch (v.getId()){
+                case R.id.<#=_models.Code#>_ListCardView:
+					ToastUtil.Show(mContext,<#=_models.Code.ToLower()#>.toString());
+                    break;
+            }
+        }
+    };
+}

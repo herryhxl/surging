@@ -1,0 +1,107 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+package <#=_package#>.Adapter;
+import android.content.Context;
+import android.databinding.DataBindingUtil;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.support.v7.widget.RecyclerView;
+import <#=_package#>.ViewModel.<#=_models.Code#>ViewModel;
+import <#=_package#>.Common.ToastUtil;
+import <#=_package#>.<#=_projectName#>.R;
+import <#=_package#>.<#=_projectName#>.<#=_projectName#>.<#=_models.Code.Substring(0, 1).ToUpper() + _models.Code.Substring(1).ToLower()#>ItemBinding;
+import java.util.List;
+
+
+public class Recycle<#=_models.Code#>Adapter extends RecyclerView.Adapter<Recycle<#=_models.Code#>Adapter.ViewHolder> {
+    private List<<#=_models.Code#>ViewModel> Data;
+	private OnItemActionListener mOnItemActionListener;
+
+    public Recycle<#=_models.Code#>Adapter(List<<#=_models.Code#>ViewModel> Data) {
+        this.Data=Data;
+    }
+    //更新数据
+    public void setData(List<<#=_models.Code#>ViewModel> Data) {
+        this.Data = Data;
+        this.notifyDataSetChanged();
+    }
+	//更新数据
+    public List<<#=_models.Code#>ViewModel> getData() {
+        return this.Data;
+    }
+
+	public <#=_models.Code#>ViewModel getItem(int i) {
+        return Data.get(i);
+    }
+    
+	@Override
+    public int getItemCount() {
+        return Data == null ? 0 : Data.size();
+    }
+
+    @Override
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+		<#=_models.Code.Substring(0, 1).ToUpper() + _models.Code.Substring(1).ToLower()#>ItemBinding binding = DataBindingUtil.inflate(LayoutInflater
+                .from(parent.getContext()), R.layout.<#=_models.Code.ToLower()#>_item, parent, false);
+        ViewHolder holder = new ViewHolder(binding.getRoot());
+        holder.setBinding(binding);
+        return holder;
+    }
+
+    @Override
+    public void onBindViewHolder(final ViewHolder viewHolder, int position) {
+        viewHolder.getBinding().set<#=_models.Code#>Model(Data.get(position));
+        viewHolder.getBinding().executePendingBindings();
+        if (mOnItemActionListener != null) {
+            viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //注意这里必须使用viewHolder.getPosition()而不能用i，因为为了保证动画，没有使用NotifyDatasetChanged更新位置数据
+                    mOnItemActionListener.onItemClickListener(v, viewHolder.getAdapterPosition());
+                }
+            });
+            viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    //注意这里必须使用viewHolder.getPosition()而不能用i，因为为了保证动画，没有使用NotifyDatasetChanged更新位置数据
+                    return mOnItemActionListener.onItemLongClickListener(v, viewHolder.getAdapterPosition());
+                }
+            });
+        }
+    }
+
+    public interface OnItemActionListener {
+        public void onItemClickListener(View v, int pos);
+        public boolean onItemLongClickListener(View v, int pos);
+    }
+
+    public void setOnItemActionListener(OnItemActionListener onItemActionListener) {
+        this.mOnItemActionListener = onItemActionListener;
+    }
+
+
+
+	class ViewHolder extends RecyclerView.ViewHolder {
+
+        private <#=_models.Code.Substring(0, 1).ToUpper() + _models.Code.Substring(1).ToLower()#>ItemBinding binding;
+
+        public ViewHolder(View itemView) {
+            super(itemView);
+        }
+
+        public void setBinding(<#=_models.Code.Substring(0, 1).ToUpper() + _models.Code.Substring(1).ToLower()#>ItemBinding binding) {
+            this.binding = binding;
+        }
+
+        public <#=_models.Code.Substring(0, 1).ToUpper() + _models.Code.Substring(1).ToLower()#>ItemBinding getBinding() {
+            return this.binding;
+        }
+    }
+	
+    
+}
