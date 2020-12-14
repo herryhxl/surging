@@ -6,12 +6,12 @@ using System.Linq;
 
 namespace Surging.Core.AutoMapper
 {
-    public class AutoMapperBootstrap : IAutoMapperBootstrap
+    public class AutoMapperBootstrap
     {
-        public void Initialize()
+        public static IMapper Initialize()
         {
-            var logger = ServiceLocator.GetService<ILogger<AutoMapperBootstrap>>();
-            Mapper.Initialize(config => {
+            return new MapperConfiguration(config =>
+            {
                 if (AppConfig.Assemblies.Any())
                 {
                     foreach (var assembly in AppConfig.Assemblies)
@@ -25,12 +25,11 @@ namespace Surging.Core.AutoMapper
                 {
                     foreach (var profile in profiles)
                     {
-                        logger.LogDebug($"解析到{profile.GetType().FullName}映射关系");
+                        //logger.LogDebug($"解析到{profile.GetType().FullName}映射关系");
                         config.AddProfile(profile);
                     }
                 }
-
-            });
+            }).CreateMapper();
         }
 
     }

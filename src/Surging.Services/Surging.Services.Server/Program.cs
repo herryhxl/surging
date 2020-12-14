@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Microsoft.Extensions.Logging;
+using Surging.Core.AutoMapper;
 using Surging.Core.Caching;
 using Surging.Core.Caching.Configurations;
 using Surging.Core.Codec.MessagePack;
@@ -49,11 +50,13 @@ namespace Surging.Services.Server
                         Core.CPlatform.AppConfig.GetSection("Logging"));
                 })
                 .UseServer(options => { })
+                .UseAutoMapper()
                 .UseConsoleLifetime()
                 .Configure(build =>
                 build.AddCacheFile("${cachepath}|cacheSettings.json", basePath: AppContext.BaseDirectory, optional: false, reloadOnChange: true))
-                  .Configure(build =>
-                build.AddCPlatformFile("${surgingpath}|surgingSettings.json", optional: false, reloadOnChange: true))
+                   .Configure(build =>
+                build.AddCPlatformFile("${surgingpath}|dataSourceSettings.json", optional: false, reloadOnChange: true))
+                   .Configure(build => build.AddCPlatformFile("${surgingpath}|surgingSettings.json", optional: false, reloadOnChange: true))
                 .UseStartup<Startup>()
                 .Build();
 

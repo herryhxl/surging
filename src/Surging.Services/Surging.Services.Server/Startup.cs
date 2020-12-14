@@ -2,8 +2,11 @@
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using SuperUser.Base;
 using Surging.Core.Caching.Configurations;
 using Surging.Core.CPlatform.Utilities;
+using Surging.Core.EventBusRabbitMQ.Configurations;
 
 namespace Surging.Services.Server
 {
@@ -11,22 +14,28 @@ namespace Surging.Services.Server
     {
         public Startup(IConfigurationBuilder config)
         {
-          ConfigureEventBus(config);
-          //  ConfigureCache(config);
+            ConfigureEventBus(config);
+            ConfigureCache(config);
         }
 
         public IContainer ConfigureServices(ContainerBuilder builder)
         {
             var services = new ServiceCollection();
             ConfigureLogging(services);
+
+
+            services.RegisterSuperUserModuleDbContext();
+            builder.RegisterSuperUserModuleService();
+
             builder.Populate(services);
+
             ServiceLocator.Current = builder.Build();
             return ServiceLocator.Current;
         }
 
         public void Configure(IContainer app)
         {
-   
+            
         }
 
         #region 私有方法
@@ -36,13 +45,12 @@ namespace Surging.Services.Server
         /// <param name="services"></param>
         private void ConfigureLogging(IServiceCollection services)
         {
-           // services.AddLogging();
+            services.AddLogging();
         }
 
         private static void ConfigureEventBus(IConfigurationBuilder build)
         {
-          //  build
-           // .AddEventBusFile("eventBusSettings.json", optional: false);
+            build.AddEventBusFile("eventBusSettings.json", optional: false);
         }
 
         /// <summary>
@@ -50,8 +58,7 @@ namespace Surging.Services.Server
         /// </summary>
         private void ConfigureCache(IConfigurationBuilder build)
         {
-            build
-              .AddCacheFile("cacheSettings.json", optional: false);
+            build.AddCacheFile("cacheSettings.json", optional: false);
         }
         #endregion
 

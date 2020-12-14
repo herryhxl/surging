@@ -28,7 +28,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="4.9.4" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="4.5.0" />
     <PackageReference Include="Volo.Abp.EventBus" Version="0.18.1" />
   </ItemGroup>
@@ -37,6 +36,7 @@
     <ProjectReference Include="..\..\Surging.Apm\Surging.Apm.Skywalking\Surging.Apm.Skywalking.csproj" />
     <ProjectReference Include="..\..\Surging.Core\Surging.Core.Abp\Surging.Core.Abp.csproj" />
     <ProjectReference Include="..\..\Surging.Core\Surging.Core.ApiGateWay\Surging.Core.ApiGateWay.csproj" />
+    <ProjectReference Include="..\..\Surging.Core\Surging.Core.AutoMapper\Surging.Core.AutoMapper.csproj" />
     <ProjectReference Include="..\..\Surging.Core\Surging.Core.Caching\Surging.Core.Caching.csproj" />
     <ProjectReference Include="..\..\Surging.Core\Surging.Core.Codec.MessagePack\Surging.Core.Codec.MessagePack.csproj" />
     <ProjectReference Include="..\..\Surging.Core\Surging.Core.Codec.ProtoBuffer\Surging.Core.Codec.ProtoBuffer.csproj" />
@@ -75,6 +75,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="dataSourceSettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="apollo.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -21,7 +21,7 @@ namespace Surging.Core.AutoMapper
             get
             {
                 var assemblies = new List<Assembly>();
-                var referenceAssemblies = GetAllReferenceAssemblies();
+                var referenceAssemblies = GetReferenceAssembly();//GetAllReferenceAssemblies();
                 foreach (var assembiyString in AssembliesStrings)
                 {
                     assemblies.AddRange(referenceAssemblies.Where(p => p.FullName == assembiyString || Regex.IsMatch(p.FullName, assembiyString)));
@@ -34,9 +34,9 @@ namespace Surging.Core.AutoMapper
         {
             get
             {
-                var logger = ServiceLocator.GetService<ILogger<AppConfig>>();
+                //var logger = ServiceLocator.GetService<ILogger<AppConfig>>();
                 var profiles = new List<Profile>();
-                var referenceAssemblies = GetAllReferenceAssemblies();
+                var referenceAssemblies = GetReferenceAssembly();//GetAllReferenceAssemblies();
                 foreach (var assembly in referenceAssemblies)
                 {
                     var profileTypes = assembly.DefinedTypes.Select(p => p.AsType()).Where(p => typeof(Profile).IsAssignableFrom(p) && !p.IsAbstract).ToList();
@@ -51,8 +51,8 @@ namespace Surging.Core.AutoMapper
                             }
                             catch (Exception e)
                             {
-                                if (logger.IsEnabled(LogLevel.Warning))
-                                    logger.LogWarning($"构建profile失败,profile类型为{profileType.FullName}");
+                                //if (logger.IsEnabled(LogLevel.Warning))
+                                //    logger.LogWarning($"构建profile失败,profile类型为{profileType.FullName}");
                             }
 
                         }

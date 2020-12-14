@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using AutoMapper;
 using Surging.Core.ServiceHosting.Internal;
 
 namespace Surging.Core.AutoMapper
@@ -9,8 +10,7 @@ namespace Surging.Core.AutoMapper
         {
             return hostBuilder.MapServices(mapper =>
             {
-                var autoMapperBootstrap = mapper.Resolve<IAutoMapperBootstrap>();
-                autoMapperBootstrap.Initialize();
+                
             });
         }
     }

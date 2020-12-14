@@ -33,7 +33,7 @@ namespace SuperUser.Entity.Mappings.SuperUserInfo
 			superuserinfoBuilder.Property(c => c.LinkPhone).HasMaxLength(11);
 			superuserinfoBuilder.Ignore(c => c.SexString);
 			superuserinfoBuilder.Property(c => c.Sex);
-			superuserinfoBuilder.HasOne(c=>c.Id_SuperUser).WithOne(d=>d.Id_SuperUserInfo);
+			superuserinfoBuilder.HasOne(c=>c.Id_SuperUser).WithOne(d=>d.Id_SuperUserInfo).HasForeignKey<SuperUserEntity>(c => c.Id); 
 			superuserinfoBuilder.Property(c => c.AddTime).IsRequired();
 			superuserinfoBuilder.Property(c => c.UpTime).IsRequired();
 			superuserinfoBuilder.Property(c => c.AddUser);

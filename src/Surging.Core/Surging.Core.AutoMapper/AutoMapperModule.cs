@@ -1,19 +1,20 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using AutoMapper;
+using AutoMapper.Attributes;
+using Microsoft.Extensions.Configuration;
 using Surging.Core.CPlatform;
 using Surging.Core.CPlatform.Module;
+using System.Linq;
 using CPlatformAppConfig = Surging.Core.CPlatform.AppConfig;
 
 namespace Surging.Core.AutoMapper
 {
     public class AutoMapperModule : EnginePartModule
     {
-
+        private IMapper mapper;
         public override void Initialize(AppModuleContext context)
         {
             base.Initialize(context);
-            context.ServiceProvoider.GetInstances<IAutoMapperBootstrap>().Initialize();
         }
-
         protected override void RegisterBuilder(ContainerBuilderWrapper builder)
         {
             var configAssembliesStr = CPlatformAppConfig.GetSection("Automapper:Assemblies").Get<string>();
@@ -21,9 +22,8 @@ namespace Surging.Core.AutoMapper
             {
                 AppConfig.AssembliesStrings = configAssembliesStr.Split(";");
             }
-            builder.RegisterType<AutoMapperBootstrap>().As<IAutoMapperBootstrap>();
+            var mapperConfig=AutoMapperBootstrap.Initialize();
+            builder.RegisterInstance(mapperConfig).As<IMapper>();
         }
-
-
     }
 }
