@@ -9,6 +9,7 @@ namespace Surging.Core.ApiGateWay
         Success=200,
         RequestError =400,
         AuthorizationFailed=401,
-        Http405Endpoint=405
+        HttpNotFound = 404,
+        Http405Endpoint =405
     }
 }

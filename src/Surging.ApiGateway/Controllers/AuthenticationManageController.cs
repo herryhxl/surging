@@ -17,7 +17,7 @@ namespace Surging.ApiGateway.Controllers
 
         public async Task<IActionResult> EditServiceToken([FromServices]IServiceDiscoveryProvider serviceDiscoveryProvider, string address)
         {
-            var list = await serviceDiscoveryProvider.GetAddressAsync(address); ;
+            var list = await serviceDiscoveryProvider.GetAddressAsync(address); 
             return View(list.FirstOrDefault());
         }
 

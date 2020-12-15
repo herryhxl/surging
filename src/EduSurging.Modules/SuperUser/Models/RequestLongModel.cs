@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Surging.IModuleServices.Manager.Models
+namespace SuperUser.Models
 {
     [ProtoContract]
     public class RequestLongModel

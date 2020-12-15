@@ -52,6 +52,10 @@ namespace Surging.ApiGateway.Controllers
             path = String.Compare(path.ToLower(), GateWayAppConfig.TokenEndpointPath, true) == 0 ?
               GateWayAppConfig.AuthorizationRoutePath : path.ToLower();
             var route = await _serviceRouteProvider.GetRouteByPathRegex(path);
+            if (route == null)
+            {
+                return new ServiceResult<object> { IsSucceed = false, StatusCode = (int)ServiceStatusCode.HttpNotFound, Message = "404 Not Found" };
+            }
             var httpMethods = route.ServiceDescriptor.HttpMethod();
             if (!string.IsNullOrEmpty(httpMethods) &&
                 !httpMethods.Contains(Request.Method))

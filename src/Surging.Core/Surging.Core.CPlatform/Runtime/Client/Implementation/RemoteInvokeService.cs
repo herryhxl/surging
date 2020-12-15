@@ -85,10 +85,10 @@ namespace Surging.Core.CPlatform.Runtime.Client.Implementation
                     return await client.SendAsync(invokeMessage, cts.Token).WithCancellation(cts, requestTimeout);
                 }
             }
-            catch (CommunicationException)
+            catch (CommunicationException e)
             {
                 await _healthCheckService.MarkFailure(address);
-                throw;
+                throw e;
             }
             catch (Exception exception)
             {
