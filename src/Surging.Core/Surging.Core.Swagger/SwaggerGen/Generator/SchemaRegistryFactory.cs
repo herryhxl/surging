@@ -9,11 +9,11 @@ namespace Surging.Core.SwaggerGen
         private readonly JsonSerializerSettings _jsonSerializerSettings;
         private readonly SchemaRegistryOptions _schemaRegistryOptions;
 
-        public SchemaRegistryFactory(
-            IOptions<MvcJsonOptions> mvcJsonOptionsAccessor,
-            IOptions<SchemaRegistryOptions> schemaRegistryOptionsAccessor)
-            : this(mvcJsonOptionsAccessor.Value.SerializerSettings, schemaRegistryOptionsAccessor.Value)
-        { }
+        //public SchemaRegistryFactory(
+        //    IOptions<MvcJsonOptions> mvcJsonOptionsAccessor,
+        //    IOptions<SchemaRegistryOptions> schemaRegistryOptionsAccessor)
+        //    : this(mvcJsonOptionsAccessor.Value.SerializerSettings, schemaRegistryOptionsAccessor.Value)
+        //{ }
 
         public SchemaRegistryFactory(
             JsonSerializerSettings jsonSerializerSettings,

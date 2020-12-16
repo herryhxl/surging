@@ -18,21 +18,12 @@ namespace Surging.Core.Swagger
         private readonly TemplateMatcher _requestMatcher;
 
         public SwaggerMiddleware(
-            RequestDelegate next,
-            IOptions<MvcJsonOptions> mvcJsonOptionsAccessor,
-            IOptions<SwaggerOptions> optionsAccessor)
-            : this(next, mvcJsonOptionsAccessor, optionsAccessor.Value)
-        { }
-
-        public SwaggerMiddleware(
-            RequestDelegate next,
-            IOptions<MvcJsonOptions> mvcJsonOptions,
-            SwaggerOptions options)
+            RequestDelegate next
+            )
         {
             _next = next;
-            _swaggerSerializer = SwaggerSerializerFactory.Create(mvcJsonOptions);
-            _options = options ?? new SwaggerOptions();
-            _requestMatcher = new TemplateMatcher(TemplateParser.Parse(options.RouteTemplate), new RouteValueDictionary());
+            _options =  new SwaggerOptions();
+            _requestMatcher = new TemplateMatcher(TemplateParser.Parse(_options.RouteTemplate), new RouteValueDictionary());
         }
 
         public async Task Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
