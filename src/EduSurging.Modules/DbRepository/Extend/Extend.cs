@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
+using Surging.Core.CPlatform.Exceptions;
 
 namespace EFRepository.Extend
 {

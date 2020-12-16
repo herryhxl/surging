@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using EFRepository.Extend;
+using Surging.Core.CPlatform.Exceptions;
 
 namespace EFRepository
 {

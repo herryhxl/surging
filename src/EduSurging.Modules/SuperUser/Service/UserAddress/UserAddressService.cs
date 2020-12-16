@@ -8,6 +8,7 @@ using SuperUser.ChangeService.UserAddress;
 using SuperUser.Repository.UserAddress;
 using EFRepository;
 using EFRepository.Extend;
+using Surging.Core.CPlatform.Exceptions;
 
 namespace SuperUser.Service.UserAddress
 {

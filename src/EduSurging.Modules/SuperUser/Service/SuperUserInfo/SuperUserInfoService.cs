@@ -9,6 +9,7 @@ using EFRepository;
 using SuperUser.ChangeService.SuperUserInfo;
 using SuperUser.Repository.SuperUserInfo;
 using EFRepository.Extend;
+using Surging.Core.CPlatform.Exceptions;
 
 namespace SuperUser.Service.SuperUserInfo
 {
