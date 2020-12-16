@@ -30,7 +30,7 @@ namespace Surging.Core.Stage
         }
 
         public override void RegisterBuilder(WebHostContext context)
-        {  
+        {
             _listener.Listen(context);
         }
 
@@ -41,8 +41,8 @@ namespace Surging.Core.Stage
             {
                 context.Builder.UseCors(builder =>
                 {
-                    if(policy.Origins!=null)
-                    builder.WithOrigins(policy.Origins);
+                    if (policy.Origins != null)
+                        builder.WithOrigins(policy.Origins);
                     if (policy.AllowAnyHeader)
                         builder.AllowAnyHeader();
                     if (policy.AllowAnyMethod)
@@ -62,37 +62,35 @@ namespace Surging.Core.Stage
             {
                 ApiGateWay.AppConfig.CacheMode = apiConfig.CacheMode;
                 ApiGateWay.AppConfig.AuthorizationServiceKey = apiConfig.AuthorizationServiceKey;
-                ApiGateWay.AppConfig.AccessTokenExpireTimeSpan =TimeSpan.FromMinutes(apiConfig.AccessTokenExpireTimeSpan);
+                ApiGateWay.AppConfig.AccessTokenExpireTimeSpan = TimeSpan.FromMinutes(apiConfig.AccessTokenExpireTimeSpan);
                 ApiGateWay.AppConfig.AuthorizationRoutePath = apiConfig.AuthorizationRoutePath;
                 ApiGateWay.AppConfig.TokenEndpointPath = apiConfig.TokenEndpointPath;
             }
-            context.Services.AddMvc().AddJsonOptions(options => {
-                options.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm:ss";
+            context.Services.AddMvc().AddJsonOptions(options =>
+            {
+                var dateTimeFromat = "yyyy-MM-dd HH:mm:ss";
+                options.SerializerSettings.DateFormatString = dateTimeFromat;
+                JsonConvert.DefaultSettings = new Func<JsonSerializerSettings>(() =>
+                {
+                    var setting = new JsonSerializerSettings();
+                    setting.DateFormatString = dateTimeFromat;
+                    if (AppConfig.Options.IsCamelCaseResolver)
+                        setting.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                    else
+                        setting.ContractResolver = new DefaultContractResolver();
+                    return setting;
+                });
                 if (AppConfig.Options.IsCamelCaseResolver)
                 {
-                    JsonConvert.DefaultSettings= new Func<JsonSerializerSettings>(() =>
-                    {
-                       JsonSerializerSettings setting = new Newtonsoft.Json.JsonSerializerSettings();
-                        setting.DateFormatString = "yyyy-MM-dd HH:mm:ss";
-                        setting.ContractResolver = new CamelCasePropertyNamesContractResolver();
-                        return setting;
-                    });
                     options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                 }
                 else
                 {
-                    JsonConvert.DefaultSettings = new Func<JsonSerializerSettings>(() =>
-                    {
-                        JsonSerializerSettings setting = new JsonSerializerSettings();
-                        setting.DateFormatString = "yyyy-MM-dd HH:mm:ss";
-                        setting.ContractResolver= new DefaultContractResolver();
-                        return setting;
-                    });
                     options.SerializerSettings.ContractResolver = new DefaultContractResolver();
                 }
             });
-          
-            context.Services.AddSingleton<IIPChecker,IPAddressChecker>();
+
+            context.Services.AddSingleton<IIPChecker, IPAddressChecker>();
             context.Services.AddFilters(typeof(AuthorizationFilterAttribute));
             context.Services.AddFilters(typeof(ActionFilterAttribute));
             context.Services.AddFilters(typeof(IPFilterAttribute));
@@ -106,8 +104,8 @@ namespace Surging.Core.Stage
             {
                 AppConfig.Options = section.Get<StageOption>();
             }
-            
-            builder.RegisterType<WebServerListener>().As<IWebServerListener>().SingleInstance(); 
+
+            builder.RegisterType<WebServerListener>().As<IWebServerListener>().SingleInstance();
         }
     }
 }
