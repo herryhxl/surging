@@ -2,6 +2,7 @@
 using SuperUser.Models;
 using SuperUser.ModelsCustom;
 using SuperUser.Service.SuperUser;
+using Surging.Core.CPlatform.Exceptions;
 using Surging.Core.ProxyGenerator;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ namespace SuperUser.Domain
         }
         public Task<string> SayHello(string name)
         {
+            throw new ValidateException("你错了", 999);
             return Task.FromResult($"你好！{name}");
         }
 

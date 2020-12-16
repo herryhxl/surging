@@ -17,10 +17,8 @@ namespace Surging.Core.Stage.Internal.Implementation
         {
             _logger = logger;
         }
-
         void IWebServerListener.Listen(WebHostContext context)
         {
-
             var httpsPorts = AppConfig.Options.HttpsPort?.Split(",") ?? new string[] { "443" };
             var httpPorts = AppConfig.Options.HttpPorts?.Split(",");
             if (AppConfig.Options.EnableHttps)
@@ -32,34 +30,33 @@ namespace Surging.Core.Stage.Internal.Implementation
                     if (port > 0)
                     {
                         context.KestrelOptions.Listen(context.Address, port, listOptions =>
-                    {
-                        X509Certificate2 certificate2 = null;
-                        listOptions.Protocols = AppConfig.Options.Protocols;
-                        var fileName = AppConfig.Options.CertificateFileName;
-                        var password = AppConfig.Options.CertificatePassword;
-                        if (fileName != null && password != null)
                         {
-                            var pfxFile = Path.Combine(AppContext.BaseDirectory, AppConfig.Options.CertificateFileName);
-                            if (File.Exists(pfxFile))
-                                certificate2 = new X509Certificate2(pfxFile, AppConfig.Options.CertificatePassword);
-                            else
+                            X509Certificate2 certificate2 = null;
+                            listOptions.Protocols = AppConfig.Options.Protocols;
+                            var fileName = AppConfig.Options.CertificateFileName;
+                            var password = AppConfig.Options.CertificatePassword;
+                            if (fileName != null && password != null)
                             {
-                                var paths = GetPaths(AppConfig.Options.CertificateLocation);
-                                foreach (var path in paths)
+                                var pfxFile = Path.Combine(AppContext.BaseDirectory, AppConfig.Options.CertificateFileName);
+                                if (File.Exists(pfxFile))
+                                    certificate2 = new X509Certificate2(pfxFile, AppConfig.Options.CertificatePassword);
+                                else
                                 {
-                                    pfxFile = Path.Combine(path, AppConfig.Options.CertificateFileName);
-                                    if (File.Exists(pfxFile))
-                                        certificate2 = new X509Certificate2(pfxFile, AppConfig.Options.CertificatePassword);
+                                    var paths = GetPaths(AppConfig.Options.CertificateLocation);
+                                    foreach (var path in paths)
+                                    {
+                                        pfxFile = Path.Combine(path, AppConfig.Options.CertificateFileName);
+                                        if (File.Exists(pfxFile))
+                                            certificate2 = new X509Certificate2(pfxFile, AppConfig.Options.CertificatePassword);
 
+                                    }
                                 }
                             }
-                        }
-                        listOptions = certificate2 == null ? listOptions.UseHttps() : listOptions.UseHttps(certificate2);
-                    });
+                            listOptions = certificate2 == null ? listOptions.UseHttps() : listOptions.UseHttps(certificate2);
+                        });
                     }
                 }
             }
-
             if (httpPorts != null)
             {
                 foreach (var httpPort in httpPorts)
@@ -76,7 +73,7 @@ namespace Surging.Core.Stage.Internal.Implementation
         {
             var result = new List<string>();
             string rootPath = string.IsNullOrEmpty(CPlatform.AppConfig.ServerOptions.RootPath) ?
-                AppContext.BaseDirectory : CPlatform.AppConfig.ServerOptions.RootPath; 
+                AppContext.BaseDirectory : CPlatform.AppConfig.ServerOptions.RootPath;
             foreach (var virtualPath in virtualPaths)
             {
                 var path = Path.Combine(rootPath, virtualPath);
@@ -85,7 +82,7 @@ namespace Surging.Core.Stage.Internal.Implementation
                 if (Directory.Exists(path))
                 {
                     var dirs = Directory.GetDirectories(path);
-                    result.AddRange(dirs.Select(dir => Path.Combine(rootPath,virtualPath, new DirectoryInfo(dir).Name)));
+                    result.AddRange(dirs.Select(dir => Path.Combine(rootPath, virtualPath, new DirectoryInfo(dir).Name)));
                 }
                 else
                 {

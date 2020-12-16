@@ -56,7 +56,6 @@ namespace Surging.Core.ApiGateWay.OAuth
             var jwtToken = token.Split('.');
             if (jwtToken.Length == 3)
             {
-
                 result =  Encoding.UTF8.GetString(Convert.FromBase64String(jwtToken[1]));
             }
             return result;

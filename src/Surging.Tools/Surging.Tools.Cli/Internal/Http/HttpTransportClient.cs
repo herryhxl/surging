@@ -57,7 +57,7 @@ namespace Surging.Tools.Cli.Internal.Http
             return new RemoteInvokeResultMessage
             {
                 ExceptionMessage = httpMessage.Message,
-                Result = httpMessage.Entity,
+                Result = httpMessage.Data,
                 StatusCode = httpMessage.StatusCode
             };
         }

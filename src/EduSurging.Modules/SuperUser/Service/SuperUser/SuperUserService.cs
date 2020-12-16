@@ -7,9 +7,9 @@ using SuperUser.Base;
 using System.Collections.Generic;
 using SuperUser.ChangeService.SuperUser;
 using SuperUser.Repository.SuperUser;
-using AutoMapper;
 using EFRepository;
 using EFRepository.Extend;
+using Surging.Core.CPlatform.Exceptions;
 
 namespace SuperUser.Service.SuperUser
 {

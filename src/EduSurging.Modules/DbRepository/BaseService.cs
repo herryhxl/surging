@@ -1,5 +1,6 @@
 ﻿using EFRepository.Extend;
 using Microsoft.EntityFrameworkCore;
+using Surging.Core.CPlatform.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;

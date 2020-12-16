@@ -55,7 +55,7 @@ namespace Surging.Core.KestrelHttpServer
             {
                 serviceRoute = await _serviceRouteProvider.GetRouteByPathRegex(path);
             }
-            IDictionary<string, object> parameters = context.Request.Query.ToDictionary(p => p.Key, p => (object)p.Value.ToString());
+            var parameters = context.Request.Query.ToDictionary(p => p.Key, p => (object)p.Value.ToString());
             object serviceKey = null;
             foreach (var key in _serviceKeys)
             {
@@ -67,7 +67,7 @@ namespace Surging.Core.KestrelHttpServer
                 }
             }
 
-            if (String.Compare(serviceRoute.ServiceDescriptor.RoutePath, path, true) != 0)
+            if (string.Compare(serviceRoute.ServiceDescriptor.RoutePath, path, true) != 0)
             {
                 var @params = RouteTemplateSegmenter.Segment(serviceRoute.ServiceDescriptor.RoutePath, path);
                 foreach (var param in @params)
