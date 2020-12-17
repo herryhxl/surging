@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Globalization;
+using Newtonsoft.Json.Serialization;
 
 namespace Surging.Core.Swagger
 {
@@ -22,6 +24,11 @@ namespace Surging.Core.Swagger
             )
         {
             _next = next;
+            _swaggerSerializer = SwaggerSerializerFactory.Create(new JsonSerializerSettings
+            {
+                DateFormatString = "yyyy-MM-dd HH:mm:ss",
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            });
             _options =  new SwaggerOptions();
             _requestMatcher = new TemplateMatcher(TemplateParser.Parse(_options.RouteTemplate), new RouteValueDictionary());
         }

@@ -21,6 +21,7 @@ using Surging.Core.CPlatform.Messages;
 using Surging.Core.CPlatform.Runtime.Server.Implementation.ServiceDiscovery.Attributes;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Surging.Core.SwaggerGen
 {
@@ -35,7 +36,7 @@ namespace Surging.Core.SwaggerGen
             IApiDescriptionGroupCollectionProvider apiDescriptionsProvider,
             ISchemaRegistryFactory schemaRegistryFactory,
             IOptions<SwaggerGeneratorOptions> optionsAccessor)
-            : this (apiDescriptionsProvider, schemaRegistryFactory, optionsAccessor.Value)
+            : this(apiDescriptionsProvider, schemaRegistryFactory, optionsAccessor.Value)
         { }
 
         public SwaggerGenerator(
@@ -75,8 +76,12 @@ namespace Surging.Core.SwaggerGen
             }
             entries = entries
        .Where(apiDesc => _options.DocInclusionPredicateV2(documentName, apiDesc));
-
-            var schemaRegistry = _schemaRegistryFactory.Create();
+            var jsonSettings = new JsonSerializerSettings
+            {
+                DateFormatString = "yyyy-MM-dd HH:mm:ss",
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
+            var schemaRegistry = _schemaRegistryFactory.Create(jsonSettings);
 
             var swaggerDoc = new SwaggerDocument
             {
@@ -182,9 +187,9 @@ namespace Surging.Core.SwaggerGen
             foreach (var entry in serviceEntries)
             {
                 var methodInfo = entry.Type.GetTypeInfo().DeclaredMethods.Where(p => p.Name == entry.MethodName).FirstOrDefault();
-                var parameterInfo = methodInfo.GetParameters(); 
+                var parameterInfo = methodInfo.GetParameters();
 
-                if (entry.Methods.Count() ==0)
+                if (entry.Methods.Count() == 0)
                 {
                     if (parameterInfo != null && parameterInfo.Any(p =>
                   !UtilityType.ConvertibleType.GetTypeInfo().IsAssignableFrom(p.ParameterType)))
@@ -227,9 +232,9 @@ namespace Surging.Core.SwaggerGen
         }
 
         private Operation CreateOperation(ServiceEntry serviceEntry, MethodInfo methodInfo, ISchemaRegistry schemaRegistry)
-        { 
-            var customAttributes = Enumerable.Empty<object>(); 
-            if (methodInfo !=null)
+        {
+            var customAttributes = Enumerable.Empty<object>();
+            if (methodInfo != null)
             {
                 customAttributes = methodInfo.GetCustomAttributes(true)
                     .Union(methodInfo.DeclaringType.GetTypeInfo().GetCustomAttributes(true));
@@ -239,17 +244,17 @@ namespace Surging.Core.SwaggerGen
             var operation = new Operation
             {
                 Tags = new[] { serviceEntry.Type.Name },
-                OperationId = serviceEntry.Descriptor.Id, 
-                Parameters= CreateParameters(serviceEntry, methodInfo,schemaRegistry),
+                OperationId = serviceEntry.Descriptor.Id,
+                Parameters = CreateParameters(serviceEntry, methodInfo, schemaRegistry),
                 Deprecated = isDeprecated ? true : (bool?)null,
-                Responses = CreateResponses(serviceEntry,methodInfo, schemaRegistry),
+                Responses = CreateResponses(serviceEntry, methodInfo, schemaRegistry),
 
             };
 
             var filterContext = new OperationFilterContext(
              null,
              schemaRegistry,
-             methodInfo,serviceEntry);
+             methodInfo, serviceEntry);
 
             foreach (var filter in _options.OperationFilters)
             {
@@ -258,9 +263,9 @@ namespace Surging.Core.SwaggerGen
             return operation;
         }
 
-            private Operation CreateOperation(
-            ApiDescription apiDescription,
-            ISchemaRegistry schemaRegistry)
+        private Operation CreateOperation(
+        ApiDescription apiDescription,
+        ISchemaRegistry schemaRegistry)
         {
             // Try to retrieve additional metadata that's not provided by ApiExplorer
             MethodInfo methodInfo;
@@ -370,18 +375,18 @@ namespace Surging.Core.SwaggerGen
             }
         }
 
-        private IParameter CreateBodyParameter(ParameterInfo  parameterInfo, ISchemaRegistry schemaRegistry)
+        private IParameter CreateBodyParameter(ParameterInfo parameterInfo, ISchemaRegistry schemaRegistry)
         {
-            
-            var schema = schemaRegistry.GetOrRegister(parameterInfo.Name,typeof(IDictionary<,>).MakeGenericType(typeof(string), parameterInfo.ParameterType));
-            return  new BodyParameter { Name = parameterInfo.Name,Schema=schema, Required = true };
+
+            var schema = schemaRegistry.GetOrRegister(parameterInfo.Name, typeof(IDictionary<,>).MakeGenericType(typeof(string), parameterInfo.ParameterType));
+            return new BodyParameter { Name = parameterInfo.Name, Schema = schema, Required = true };
         }
 
         private IParameter CreateBodyParameter(ParameterInfo[] parameterInfo, ISchemaRegistry schemaRegistry)
         {
             var schema = schemaRegistry.GetOrRegister(parameterInfo[0].Name, typeof(IDictionary<,>).MakeGenericType(typeof(string), parameterInfo[0].ParameterType));
             for (int i = 1; i < parameterInfo.Length; i++)
-                schema.Properties.Add(parameterInfo[i].Name, (schemaRegistry.GetOrRegister(null,  parameterInfo[i].ParameterType)));
+                schema.Properties.Add(parameterInfo[i].Name, (schemaRegistry.GetOrRegister(null, parameterInfo[i].ParameterType)));
             return new BodyParameter { Name = "parameters", Schema = schema, Required = true };
         }
 
@@ -418,7 +423,7 @@ namespace Surging.Core.SwaggerGen
                 nonBodyParam.Type = "string";
             }
             else if (typeof(IEnumerable<KeyValuePair<string, StringValues>>).IsAssignableFrom(parameterInfo.ParameterType) &&
-                parameterInfo.ParameterType.Name== "HttpFormCollection")
+                parameterInfo.ParameterType.Name == "HttpFormCollection")
             {
                 nonBodyParam.Type = "file";
                 nonBodyParam.In = "formData";
@@ -599,12 +604,12 @@ namespace Surging.Core.SwaggerGen
     MethodInfo methodInfo,
     ISchemaRegistry schemaRegistry)
         {
-            return  new Dictionary<string, Response> {
+            return new Dictionary<string, Response> {
                 { "200", CreateResponse(apiDescription,methodInfo, schemaRegistry) }
             };
         }
 
-        private Response CreateResponse(ServiceEntry apiResponseType,MethodInfo methodInfo, ISchemaRegistry schemaRegistry)
+        private Response CreateResponse(ServiceEntry apiResponseType, MethodInfo methodInfo, ISchemaRegistry schemaRegistry)
         {
             var description = ResponseDescriptionMap
                 .FirstOrDefault((entry) => Regex.IsMatch("200", entry.Key))

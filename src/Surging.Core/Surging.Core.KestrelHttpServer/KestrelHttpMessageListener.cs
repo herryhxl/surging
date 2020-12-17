@@ -100,7 +100,7 @@ namespace Surging.Core.KestrelHttpServer
                 });
 
             }
-            catch
+            catch(Exception e)
             {
                 _logger.LogError($"http服务主机启动失败，监听地址：{address}:{port}。 ");
             }

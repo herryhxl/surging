@@ -1,7 +1,9 @@
-﻿namespace Surging.Core.SwaggerGen
+﻿using Newtonsoft.Json;
+
+namespace Surging.Core.SwaggerGen
 {
     public interface ISchemaRegistryFactory
     {
-        ISchemaRegistry Create();
+        ISchemaRegistry Create(JsonSerializerSettings jsonSerializerSettings);
     }
 }

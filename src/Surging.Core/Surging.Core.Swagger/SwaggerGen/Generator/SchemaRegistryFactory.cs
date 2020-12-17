@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using Surging.Core.CPlatform;
 
 namespace Surging.Core.SwaggerGen
 {
@@ -9,23 +11,15 @@ namespace Surging.Core.SwaggerGen
         private readonly JsonSerializerSettings _jsonSerializerSettings;
         private readonly SchemaRegistryOptions _schemaRegistryOptions;
 
-        //public SchemaRegistryFactory(
-        //    IOptions<MvcJsonOptions> mvcJsonOptionsAccessor,
-        //    IOptions<SchemaRegistryOptions> schemaRegistryOptionsAccessor)
-        //    : this(mvcJsonOptionsAccessor.Value.SerializerSettings, schemaRegistryOptionsAccessor.Value)
-        //{ }
-
-        public SchemaRegistryFactory(
-            JsonSerializerSettings jsonSerializerSettings,
-            SchemaRegistryOptions schemaRegistryOptions)
+        public SchemaRegistryFactory(IOptions<SchemaRegistryOptions> schemaRegistryOptionsAccessor)
         {
-            _jsonSerializerSettings = jsonSerializerSettings;
-            _schemaRegistryOptions = schemaRegistryOptions;
+
+            _schemaRegistryOptions = schemaRegistryOptionsAccessor.Value;
+
         }
-
-        public ISchemaRegistry Create()
+        public ISchemaRegistry Create(JsonSerializerSettings jsonSerializerSettings)
         {
-            return new SchemaRegistry(_jsonSerializerSettings, _schemaRegistryOptions);
+            return new SchemaRegistry(jsonSerializerSettings, _schemaRegistryOptions);
         }
     }
 }
