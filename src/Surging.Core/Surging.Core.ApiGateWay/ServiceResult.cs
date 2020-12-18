@@ -14,7 +14,7 @@ namespace Surging.Core.ApiGateWay
         /// <summary>
         /// 数据集
         /// </summary>
-        public T Entity { get; set; }
+        public T Data { get; set; }
 
         /// <summary>
         /// 生成自定义服务数据集
@@ -29,7 +29,7 @@ namespace Surging.Core.ApiGateWay
             {
                 IsSucceed = successd,
                 Message = message,
-                Entity = entity
+                Data = entity
             };
         }
 
@@ -44,7 +44,7 @@ namespace Surging.Core.ApiGateWay
             return new ServiceResult<T>()
             {
                 IsSucceed = successd,
-                Entity = entity
+                Data = entity
             };
         }
     }

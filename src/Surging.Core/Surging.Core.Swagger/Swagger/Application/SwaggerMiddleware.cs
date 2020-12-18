@@ -1,13 +1,10 @@
 ﻿using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System.Globalization;
 using Newtonsoft.Json.Serialization;
 
 namespace Surging.Core.Swagger
@@ -19,9 +16,7 @@ namespace Surging.Core.Swagger
         private readonly SwaggerOptions _options;
         private readonly TemplateMatcher _requestMatcher;
 
-        public SwaggerMiddleware(
-            RequestDelegate next
-            )
+        public SwaggerMiddleware(RequestDelegate next)
         {
             _next = next;
             _swaggerSerializer = SwaggerSerializerFactory.Create(new JsonSerializerSettings

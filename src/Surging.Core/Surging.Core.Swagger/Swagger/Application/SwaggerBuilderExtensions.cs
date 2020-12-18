@@ -5,8 +5,7 @@ namespace Surging.Core.Swagger.Builder
 {
     public static class SwaggerBuilderExtensions
     {
-        public static IApplicationBuilder UseSwagger(
-            this IApplicationBuilder app,
+        public static IApplicationBuilder UseSwagger(this IApplicationBuilder app,
             Action<SwaggerOptions> setupAction = null)
         {
             if (setupAction == null)
