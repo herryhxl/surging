@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Surging.Core.CPlatform.Module;
+using Surging.Core.CPlatform.Serialization.JsonConverters;
 using Surging.Core.KestrelHttpServer;
 using Surging.Core.KestrelHttpServer.Extensions;
 using Surging.Core.KestrelHttpServer.Filters;
@@ -69,6 +70,11 @@ namespace Surging.Core.Stage
             context.Services.AddMvc().AddJsonOptions(options =>
             {
                 var dateTimeFromat = "yyyy-MM-dd HH:mm:ss";
+                options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter(dateTimeFromat));
+                options.JsonSerializerOptions.Converters.Add(new DateTimeNullJsonConverter(dateTimeFromat));
+                options.JsonSerializerOptions.PropertyNamingPolicy = null;
+                options.JsonSerializerOptions.DictionaryKeyPolicy = null;
                 JsonConvert.DefaultSettings = new Func<JsonSerializerSettings>(() =>
                 {
                     var setting = new JsonSerializerSettings();

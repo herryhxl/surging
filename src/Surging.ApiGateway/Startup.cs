@@ -12,6 +12,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Surging.ApiGateway;
 using Surging.Apm.Skywalking;
 using Surging.Apm.Skywalking.Abstractions;
@@ -64,13 +66,25 @@ namespace Surging.ApiGateway
         private IServiceProvider RegisterAutofac(IServiceCollection services)
         {
             var registerConfig = ApiGateWayConfig.Register;
-            services.AddMvc(options => {
+            services.AddMvc(options =>
+            {
                 options.Filters.Add(typeof(CustomExceptionFilterAttribute));
                 options.EnableEndpointRouting = false;
-            }).AddJsonOptions(options => {
-                options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter("yyyy-MM-dd HH:mm:ss"));
+            }).AddJsonOptions(options =>
+            {
+                var dateTimeFromat = "yyyy-MM-dd HH:mm:ss";
+                options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter(dateTimeFromat));
+                options.JsonSerializerOptions.Converters.Add(new DateTimeNullJsonConverter(dateTimeFromat));
                 options.JsonSerializerOptions.PropertyNamingPolicy = null;
                 options.JsonSerializerOptions.DictionaryKeyPolicy = null;
+                JsonConvert.DefaultSettings = new Func<JsonSerializerSettings>(() =>
+                {
+                    var setting = new JsonSerializerSettings();
+                    setting.DateFormatString = dateTimeFromat;
+                    setting.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                    return setting;
+                });
             });
             services.AddLogging(opt =>
             {
