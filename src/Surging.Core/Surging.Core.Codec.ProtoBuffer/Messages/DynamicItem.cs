@@ -5,6 +5,7 @@ using Surging.Core.Codec.ProtoBuffer.Utilities;
 using Surging.Core.CPlatform.Utilities;
 using System;
 using System.Reflection;
+using System.Text.Json;
 
 namespace Surging.Core.Codec.ProtoBuffer.Messages
 {
@@ -29,7 +30,7 @@ namespace Surging.Core.Codec.ProtoBuffer.Messages
                 TypeName = valueType.FullName;
             else
                 TypeName = valueType.AssemblyQualifiedName;
-            if (valueType == UtilityType.JObjectType || valueType == UtilityType.JArrayType)
+            if (valueType == UtilityType.JObjectType || valueType == UtilityType.JArrayType || valueType == typeof(JsonElement))
                 Content = SerializerUtilitys.Serialize(value.ToString());
             else
                 Content = SerializerUtilitys.Serialize(value);
@@ -56,11 +57,15 @@ namespace Surging.Core.Codec.ProtoBuffer.Messages
                 var content = SerializerUtilitys.Deserialize<string>(Content);
                 return JsonConvert.DeserializeObject(content, typeName);
             }
+            else if (typeName == typeof(JsonElement))
+            {
+                return SerializerUtilitys.Deserialize<string>(Content);
+            }
             else
             {
                 return SerializerUtilitys.Deserialize(Content, typeName);
             }
-            
+
         }
         #endregion Public Method
     }

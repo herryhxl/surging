@@ -4,6 +4,7 @@ using Surging.Core.AutoMapper;
 using Surging.Core.Caching;
 using Surging.Core.Caching.Configurations;
 using Surging.Core.Codec.MessagePack;
+using Surging.Core.Codec.ProtoBuffer;
 using Surging.Core.Consul;
 using Surging.Core.Consul.Configurations;
 using Surging.Core.CPlatform;
@@ -42,6 +43,7 @@ namespace Surging.Services.Server
                         //option.UseZooKeeperManager(new ConfigInfo("127.0.0.1:2181")); 
                         .AddServiceEngine(typeof(SurgingServiceEngine));
                         builder.Register(p => new CPlatformContainer(ServiceLocator.Current));
+                        option.UseProtoBufferCodec();
                     });
                 })
                 .ConfigureLogging(logger =>

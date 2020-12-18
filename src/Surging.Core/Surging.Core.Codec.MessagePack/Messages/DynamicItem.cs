@@ -31,7 +31,6 @@ namespace Surging.Core.Codec.MessagePack.Messages
                 TypeName = valueType.FullName;
             else
                 TypeName = valueType.AssemblyQualifiedName;
-
             if (valueType == UtilityType.JObjectType || valueType == UtilityType.JArrayType|| valueType == typeof(JsonElement))
                 Content = SerializerUtilitys.Serialize(value.ToString());
             else if(valueType != typeof(CancellationToken))
@@ -64,7 +63,7 @@ namespace Surging.Core.Codec.MessagePack.Messages
             }
             else if(typeName == typeof(JsonElement))
             {
-                return SerializerUtilitys.Deserialize<object>(Content);
+                return SerializerUtilitys.Deserialize<string>(Content);
             }
             else
             {
