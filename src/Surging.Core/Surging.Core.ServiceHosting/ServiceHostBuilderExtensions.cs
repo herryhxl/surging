@@ -13,7 +13,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Surging.Core.ServiceHosting
 {
-   public static   class ServiceHostBuilderExtensions
+   public static class ServiceHostBuilderExtensions
     {
         public static IServiceHostBuilder UseStartup(this IServiceHostBuilder hostBuilder, Type startupType)
         {

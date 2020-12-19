@@ -57,15 +57,9 @@ namespace Surging.ApiGateway
 
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        public IServiceProvider ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
-            return RegisterAutofac(services);
-        }
-
-        private IServiceProvider RegisterAutofac(IServiceCollection services)
-        {
-            var registerConfig = ApiGateWayConfig.Register;
             services.AddMvc(options =>
             {
                 options.Filters.Add(typeof(CustomExceptionFilterAttribute));
@@ -91,8 +85,11 @@ namespace Surging.ApiGateway
                 opt.AddConsole();
             });
             services.AddCors();
-            var builder = new ContainerBuilder();
-            builder.Populate(services);
+        }
+
+        public void ConfigureContainer(ContainerBuilder builder)
+        {
+            var registerConfig = ApiGateWayConfig.Register;
             builder.AddMicroService(option =>
             {
                 option.AddClient();
@@ -107,13 +104,14 @@ namespace Surging.ApiGateway
                 //option.AddRpcTransportDiagnostic();
                 //option.UseSkywalking();
                 option.AddFilter(new ServiceExceptionFilter());
-                option.UseProtoBufferCodec();
-                //option.UseMessagePackCodec();
+                //option.UseProtoBufferCodec();
+                option.UseMessagePackCodec();
                 builder.Register(m => new CPlatformContainer(ServiceLocator.Current));
             });
-            ServiceLocator.Current = builder.Build();
-            return new AutofacServiceProvider(ServiceLocator.Current);
-
+            builder.RegisterBuildCallback(container =>
+            {
+                ServiceLocator.Current = container;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -174,11 +172,8 @@ namespace Surging.ApiGateway
             });
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
-
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
