@@ -1,5 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Surging.Core.CPlatform.Serialization.JsonConverters;
 using System;
+using System.Text.Json;
 
 namespace Surging.Core.CPlatform.Serialization.Implementation
 {
@@ -8,6 +11,22 @@ namespace Surging.Core.CPlatform.Serialization.Implementation
     /// </summary>
     public sealed class JsonSerializer : ISerializer<string>
     {
+        private readonly ILogger<JsonSerializer> _logger;
+        private readonly JsonSerializerOptions _options;
+        public JsonSerializer(ILogger<JsonSerializer> logger, IOptions<System.Text.Json.JsonSerializerOptions> options)
+        {
+            _logger = logger;
+            _options = options.Value;
+            if (_options == null) _options = new JsonSerializerOptions();
+            if (!_options.PropertyNameCaseInsensitive) _options.PropertyNameCaseInsensitive = true;
+            _options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            _options.WriteIndented = true;
+            if (_options.Converters == null)
+            {
+                _options.Converters.Add(new DateTimeJsonConverter());
+                _options.Converters.Add(new DateTimeNullJsonConverter());
+            }
+        }
         #region Implementation of ISerializer<string>
 
         /// <summary>
@@ -17,7 +36,7 @@ namespace Surging.Core.CPlatform.Serialization.Implementation
         /// <returns>序列化之后的结果。</returns>
         public string Serialize(object instance)
         {
-            return JsonConvert.SerializeObject(instance);
+            return System.Text.Json.JsonSerializer.Serialize(instance, _options);//JsonConvert.SerializeObject(instance);
         }
 
         /// <summary>
@@ -28,9 +47,8 @@ namespace Surging.Core.CPlatform.Serialization.Implementation
         /// <returns>一个对象实例。</returns>
         public object Deserialize(string content, Type type)
         {
-            return JsonConvert.DeserializeObject(content, type);
+            return System.Text.Json.JsonSerializer.Deserialize(content, type, _options);// JsonConvert.DeserializeObject(content, type);
         }
-
         #endregion Implementation of ISerializer<string>
     }
 }

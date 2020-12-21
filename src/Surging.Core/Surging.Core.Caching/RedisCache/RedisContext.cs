@@ -210,7 +210,7 @@ namespace Surging.Core.Caching.RedisCache
                     {
                         Type = targetType,
                         Host = endpoints[0],
-                        Port = endpoints[1],
+                        Port = int.Parse(endpoints[1]),
                         UserName = username,
                         Password = password,
                         MaxSize = this._maxSize,

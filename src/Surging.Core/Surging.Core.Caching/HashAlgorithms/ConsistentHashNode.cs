@@ -27,23 +27,23 @@ namespace Surging.Core.Caching.HashAlgorithms
             set;
         }
 
-        /// <summary>
-        /// 主机
-        /// </summary>
-        /// <remarks>
-        /// 	<para>创建：范亮</para>
-        /// 	<para>日期：2016/4/2</para>
-        /// </remarks>
-        public new string Host { get; set; }
+        ///// <summary>
+        ///// 主机
+        ///// </summary>
+        ///// <remarks>
+        ///// 	<para>创建：范亮</para>
+        ///// 	<para>日期：2016/4/2</para>
+        ///// </remarks>
+        //public new string Host { get; set; }
 
-        /// <summary>
-        /// 端口
-        /// </summary>
-        /// <remarks>
-        /// 	<para>创建：范亮</para>
-        /// 	<para>日期：2016/4/2</para>
-        /// </remarks>
-        public new string Port { get; set; }
+        ///// <summary>
+        ///// 端口
+        ///// </summary>
+        ///// <remarks>
+        ///// 	<para>创建：范亮</para>
+        ///// 	<para>日期：2016/4/2</para>
+        ///// </remarks>
+        //public new string Port { get; set; }
 
         /// <summary>
         /// 用户名

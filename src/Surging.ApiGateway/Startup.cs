@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
@@ -70,7 +71,7 @@ namespace Surging.ApiGateway
                 options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
                 options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter(dateTimeFromat));
                 options.JsonSerializerOptions.Converters.Add(new DateTimeNullJsonConverter(dateTimeFromat));
-                options.JsonSerializerOptions.PropertyNamingPolicy = null;
+                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                 options.JsonSerializerOptions.DictionaryKeyPolicy = null;
                 JsonConvert.DefaultSettings = new Func<JsonSerializerSettings>(() =>
                 {
@@ -104,8 +105,8 @@ namespace Surging.ApiGateway
                 //option.AddRpcTransportDiagnostic();
                 //option.UseSkywalking();
                 option.AddFilter(new ServiceExceptionFilter());
-                //option.UseProtoBufferCodec();
-                option.UseMessagePackCodec();
+                option.UseProtoBufferCodec();
+                //option.UseMessagePackCodec();
                 builder.Register(m => new CPlatformContainer(ServiceLocator.Current));
             });
             builder.RegisterBuildCallback(container =>

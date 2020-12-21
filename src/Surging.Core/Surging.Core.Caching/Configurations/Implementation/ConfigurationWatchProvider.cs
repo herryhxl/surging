@@ -14,6 +14,7 @@ using Surging.Core.CPlatform.Configurations.Watch;
 using Surging.Core.CPlatform.Configurations;
 using Surging.Core.CPlatform;
 using Newtonsoft.Json;
+using Surging.Core.CPlatform.Serialization;
 
 namespace Surging.Core.Caching.Configurations.Implementation
 {
@@ -26,15 +27,16 @@ namespace Surging.Core.Caching.Configurations.Implementation
         private readonly ILogger<ConfigurationWatchProvider> _logger;
         private readonly IServiceCacheManager _serviceCacheManager;
         private readonly CachingProvider _cachingProvider;
+        private readonly ISerializer<string> _serializer;
         private Queue<bool> queue = new Queue<bool>();
         #endregion
 
-        public ConfigurationWatchProvider(CPlatformContainer serviceProvider, ILogger<ConfigurationWatchProvider> logger, IServiceCacheManager serviceCacheManager)
+        public ConfigurationWatchProvider(CPlatformContainer serviceProvider, ILogger<ConfigurationWatchProvider> logger, IServiceCacheManager serviceCacheManager, ISerializer<string> serializer)
         {
-           
             if (serviceProvider.IsRegistered<IConfigurationWatchManager>())
                 serviceProvider.GetInstances<IConfigurationWatchManager>().Register(this);
             _logger = logger;
+            _serializer = serializer;
             _cachingProvider = AppConfig.Configuration.Get<CachingProvider>();
             _serviceCacheManager = serviceCacheManager;
             _serviceCacheManager.Changed += ServiceCacheManager_Removed;
@@ -91,7 +93,7 @@ namespace Surging.Core.Caching.Configurations.Implementation
         { 
             if (this.queue.Count>0 && this.queue.Dequeue())
             {
-                var jsonString = JsonConvert.SerializeObject(_cachingProvider);
+                var jsonString = _serializer.Serialize(_cachingProvider);
                 await System.IO.File.WriteAllTextAsync(AppConfig.Path, jsonString);
             }
         }

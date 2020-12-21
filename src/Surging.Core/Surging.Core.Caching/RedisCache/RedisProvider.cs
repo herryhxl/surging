@@ -161,7 +161,7 @@ namespace Surging.Core.Caching.RedisCache
                 DbIndex = int.Parse(node.Db),
                 Host = node.Host,
                 Password = node.Password,
-                Port = int.Parse(node.Port),
+                Port = node.Port,
                 MinSize = int.Parse(node.MinSize),
                 MaxSize = int.Parse(node.MaxSize),
             });
@@ -205,7 +205,7 @@ namespace Surging.Core.Caching.RedisCache
                     DbIndex = int.Parse(node.Db),
                     Host = node.Host,
                     Password = node.Password,
-                    Port = int.Parse(node.Port),
+                    Port = node.Port,
                     MinSize = int.Parse(node.MinSize),
                     MaxSize = int.Parse(node.MaxSize),
                 });
@@ -236,7 +236,7 @@ namespace Surging.Core.Caching.RedisCache
                     DbIndex = int.Parse(node.Db),
                     Host = node.Host,
                     Password = node.Password,
-                    Port = int.Parse(node.Port),
+                    Port = node.Port,
                     MinSize = int.Parse(node.MinSize),
                     MaxSize = int.Parse(node.MaxSize),
                 });
@@ -290,7 +290,7 @@ namespace Surging.Core.Caching.RedisCache
                 DbIndex = int.Parse(node.Db),
                 Host = node.Host,
                 Password = node.Password,
-                Port = int.Parse(node.Port),
+                Port = node.Port,
                 MinSize = int.Parse(node.MinSize),
                 MaxSize = int.Parse(node.MaxSize),
             });
@@ -314,7 +314,7 @@ namespace Surging.Core.Caching.RedisCache
                 DbIndex = int.Parse(node.Db),
                 Host = node.Host,
                 Password = node.Password,
-                Port = int.Parse(node.Port),
+                Port = node.Port,
                 MinSize = int.Parse(node.MinSize),
                 MaxSize = int.Parse(node.MaxSize),
             });
@@ -358,7 +358,7 @@ namespace Surging.Core.Caching.RedisCache
                 DbIndex = int.Parse(node.Db),
                 Host = node.Host,
                 Password = node.Password,
-                Port = int.Parse(node.Port),
+                Port = node.Port,
                 MinSize = int.Parse(node.MinSize),
                 MaxSize = int.Parse(node.MaxSize),
             });
