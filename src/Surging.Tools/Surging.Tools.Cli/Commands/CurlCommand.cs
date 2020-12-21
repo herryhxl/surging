@@ -1,15 +1,11 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using Surging.Tools.Cli.Utilities;
 using System;
-using Autofac;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
 using Surging.Tools.Cli.Internal;
 using System.Net;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using System.Collections.Generic;
+using System.Text.Json;
 
 namespace Surging.Tools.Cli.Commands
 {
@@ -77,11 +73,11 @@ namespace Surging.Tools.Cli.Commands
 
                     var message = await transportClient.SendAsync(new System.Threading.CancellationToken());
                     if (message.StatusCode == 200)
-                        console.WriteLine(JsonConvert.SerializeObject(message.Result));
+                        console.WriteLine(JsonSerializer.Serialize(message.Result));
                     else
                     {
                         console.ForegroundColor = ConsoleColor.Red;
-                        console.WriteLine(JsonConvert.SerializeObject(message.Result));
+                        console.WriteLine(JsonSerializer.Serialize(message.Result));
                     }
                 }
                 console.ForegroundColor = ConsoleColor.White;

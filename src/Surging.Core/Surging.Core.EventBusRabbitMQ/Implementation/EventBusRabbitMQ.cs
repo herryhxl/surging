@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Polly;
 using Polly.Retry;
 using RabbitMQ.Client;
@@ -18,6 +17,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using static Surging.Core.CPlatform.Utilities.FastInvoke;
 
@@ -96,7 +96,7 @@ namespace Surging.Core.EventBusRabbitMQ.Implementation
                                     type: "direct");
                 var properties = channel.CreateBasicProperties();
                 properties.Persistent = true;
-                var message = JsonConvert.SerializeObject(@event);
+                var message = JsonSerializer.Serialize(@event);
                 var body = Encoding.UTF8.GetBytes(message);
 
                 policy.Execute(() =>
@@ -344,7 +344,7 @@ namespace Surging.Core.EventBusRabbitMQ.Implementation
             if (_subsManager.HasSubscriptionsForEvent(eventName))
             {
                 var eventType = _subsManager.GetEventTypeByName(eventName);
-                var integrationEvent = JsonConvert.DeserializeObject(message, eventType);
+                var integrationEvent = JsonSerializer.Deserialize(message, eventType);
                 var handlers = _subsManager.GetHandlersForEvent(eventName);
                  var concreteType = typeof(IIntegrationEventHandler<>).MakeGenericType(eventType);
                 foreach (var handlerfactory in handlers)

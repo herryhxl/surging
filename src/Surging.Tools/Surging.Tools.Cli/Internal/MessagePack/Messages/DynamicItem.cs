@@ -1,8 +1,8 @@
 using MessagePack;
-using Newtonsoft.Json;
 using Surging.Tools.Cli.Utilities;
 using System;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 
 namespace Surging.Tools.Cli.Internal.MessagePack.Messages
@@ -57,7 +57,7 @@ namespace Surging.Tools.Cli.Internal.MessagePack.Messages
             if (typeName == UtilityType.JObjectType || typeName == UtilityType.JArrayType)
             {
                 var content = SerializerUtilitys.Deserialize<string>(Content);
-                return JsonConvert.DeserializeObject(content, typeName);
+                return JsonSerializer.Deserialize(content, typeName);
             }
             else
             {

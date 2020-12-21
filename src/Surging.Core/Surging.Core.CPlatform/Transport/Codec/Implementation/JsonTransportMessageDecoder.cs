@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json;
-using Surging.Core.CPlatform.Messages;
+﻿using Surging.Core.CPlatform.Messages;
 using System.Text;
+using System.Text.Json;
 
 namespace Surging.Core.CPlatform.Transport.Codec.Implementation
 {
@@ -11,14 +11,14 @@ namespace Surging.Core.CPlatform.Transport.Codec.Implementation
         public TransportMessage Decode(byte[] data)
         {
             var content = Encoding.UTF8.GetString(data);
-            var message = JsonConvert.DeserializeObject<TransportMessage>(content);
+            var message = JsonSerializer.Deserialize<TransportMessage>(content);
             if (message.IsInvokeMessage())
             {
-                message.Content = JsonConvert.DeserializeObject<RemoteInvokeMessage>(message.Content.ToString());
+                message.Content = JsonSerializer.Deserialize<RemoteInvokeMessage>(message.Content.ToString());
             }
             if (message.IsInvokeResultMessage())
             {
-                message.Content = JsonConvert.DeserializeObject<RemoteInvokeResultMessage>(message.Content.ToString());
+                message.Content = JsonSerializer.Deserialize<RemoteInvokeResultMessage>(message.Content.ToString());
             }
             return message;
         }

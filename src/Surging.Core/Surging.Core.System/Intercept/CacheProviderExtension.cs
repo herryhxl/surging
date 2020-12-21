@@ -1,7 +1,6 @@
-﻿using Newtonsoft.Json;
-using Surging.Core.Caching;
-using Surging.Core.CPlatform.Cache;
+﻿using Surging.Core.CPlatform.Cache;
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Surging.Core.System.Intercept
@@ -19,7 +18,7 @@ namespace Surging.Core.System.Intercept
                     returnValue = await getFromPersistence();
                     if (returnValue != null)
                     {
-                        resultJson = JsonConvert.SerializeObject(returnValue);
+                        resultJson = JsonSerializer.Serialize(returnValue);
                         if (storeTime.HasValue)
                         {
                             cacheProvider.Remove(key);
@@ -34,7 +33,7 @@ namespace Surging.Core.System.Intercept
                 }
                 else
                 {
-                    returnValue = JsonConvert.DeserializeObject(resultJson, returnType);
+                    returnValue = JsonSerializer.Deserialize(resultJson, returnType);
                 }
                 return returnValue as T;
             }
@@ -56,9 +55,9 @@ namespace Surging.Core.System.Intercept
                     returnValue = await getFromPersistence();
                     if (returnValue != null)
                     {
-                        var resultJson = JsonConvert.SerializeObject(returnValue);
+                        var resultJson = JsonSerializer.Serialize(returnValue);
                         var sign = Guid.NewGuid();
-                        signJson = JsonConvert.SerializeObject(sign);
+                        signJson = JsonSerializer.Serialize(sign);
                         if (l2Key == key)
                         {
                             SetCache(cacheProvider, key, signJson, storeTime);
@@ -74,13 +73,13 @@ namespace Surging.Core.System.Intercept
                         returnValue = await getFromPersistence();
                         if (returnValue != null)
                         {
-                            var resultJson = JsonConvert.SerializeObject(returnValue);
+                            var resultJson = JsonSerializer.Serialize(returnValue);
                             SetCache(l2cacheProvider, l2Key, new ValueTuple<string, string>(signJson, resultJson), storeTime);
                         }
                     }
                     else
                     { 
-                       returnValue = JsonConvert.DeserializeObject(l2Cache.Item2, returnType);
+                       returnValue = JsonSerializer.Deserialize(l2Cache.Item2, returnType);
                     }
                 }
                 return returnValue as T;

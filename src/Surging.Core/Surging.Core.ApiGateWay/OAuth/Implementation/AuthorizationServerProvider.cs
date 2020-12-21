@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using Surging.Core.CPlatform;
+﻿using Surging.Core.CPlatform;
 using Surging.Core.CPlatform.Routing;
 using Surging.Core.ProxyGenerator;
 using System;
@@ -11,6 +10,7 @@ using System.Linq;
 using Surging.Core.Caching;
 using System.Text.RegularExpressions;
 using Surging.Core.CPlatform.Cache;
+using System.Text.Json;
 
 namespace Surging.Core.ApiGateWay.OAuth
 {
@@ -39,8 +39,8 @@ namespace Surging.Core.ApiGateWay.OAuth
             var payload = await _serviceProxyProvider.Invoke<object>(parameters,AppConfig.AuthorizationRoutePath, AppConfig.AuthorizationServiceKey);
             if (payload!=null && !payload.Equals("null") )
             {
-                var jwtHeader = JsonConvert.SerializeObject(new JWTSecureDataHeader() { TimeStamp = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss") });
-                var base64Payload = ConverBase64String(JsonConvert.SerializeObject(payload));
+                var jwtHeader = JsonSerializer.Serialize(new JWTSecureDataHeader() { TimeStamp = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss") });
+                var base64Payload = ConverBase64String(JsonSerializer.Serialize(payload));
                 var encodedString = $"{ConverBase64String(jwtHeader)}.{base64Payload}";
                 var route = await _serviceRouteProvider.GetRouteByPath(AppConfig.AuthorizationRoutePath);
                 var signature = HMACSHA256(encodedString, route.ServiceDescriptor.Token);

@@ -1,6 +1,5 @@
 ﻿using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Polly;
 using Polly.Retry;
 using Surging.Core.CPlatform;
@@ -10,6 +9,7 @@ using Surging.Core.CPlatform.EventBus.Implementation;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -66,7 +66,7 @@ namespace Surging.Core.EventBusKafka.Implementation
             }
             var eventName = @event.GetType()
                    .Name;
-            var body = JsonConvert.SerializeObject(@event);
+            var body = JsonSerializer.Serialize(@event);
             var policy = RetryPolicy.Handle<KafkaException>()
                .WaitAndRetry(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), (ex, time) =>
                {
@@ -108,7 +108,7 @@ namespace Surging.Core.EventBusKafka.Implementation
             if (_subsManager.HasSubscriptionsForEvent(eventName))
             {
                 var eventType = _subsManager.GetEventTypeByName(eventName);
-                var integrationEvent = JsonConvert.DeserializeObject(message, eventType);
+                var integrationEvent = JsonSerializer.Deserialize(message, eventType);
                 var handlers = _subsManager.GetHandlersForEvent(eventName);
 
                 foreach (var handlerfactory in handlers)

@@ -1,10 +1,10 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
-using Newtonsoft.Json;
 using Surging.Core.CPlatform.Messages;
 using Surging.Tools.Cli.Commands;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -39,10 +39,10 @@ namespace Surging.Tools.Cli.Internal.Netty
                 var transportMessage = TransportMessage.CreateInvokeMessage(new RemoteInvokeMessage
                 {
                     DecodeJOject = true,
-                    Parameters = string.IsNullOrEmpty(command.Data) ? def : JsonConvert.DeserializeObject<IDictionary<string, object>>(command.Data),
+                    Parameters = string.IsNullOrEmpty(command.Data) ? def : JsonSerializer.Deserialize<IDictionary<string, object>>(command.Data),
                     ServiceId = command.ServiceId,
                     ServiceKey = command.ServiceKey,
-                    Attachments = string.IsNullOrEmpty(command.Attachments) ? def : JsonConvert.DeserializeObject<IDictionary<string, object>>(command.Attachments)
+                    Attachments = string.IsNullOrEmpty(command.Attachments) ? def : JsonSerializer.Deserialize<IDictionary<string, object>>(command.Attachments)
                 });
 
                 var callbackTask = RegisterResultCallbackAsync(transportMessage.Id);
