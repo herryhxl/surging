@@ -105,8 +105,8 @@ namespace Surging.ApiGateway
                 //option.AddRpcTransportDiagnostic();
                 //option.UseSkywalking();
                 option.AddFilter(new ServiceExceptionFilter());
-                option.UseProtoBufferCodec();
-                //option.UseMessagePackCodec();
+                //option.UseProtoBufferCodec();
+                option.UseMessagePackCodec();
                 builder.Register(m => new CPlatformContainer(ServiceLocator.Current));
             });
             builder.RegisterBuildCallback(container =>

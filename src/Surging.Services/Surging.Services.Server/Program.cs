@@ -12,6 +12,7 @@ using Surging.Core.CPlatform.Configurations;
 using Surging.Core.CPlatform.Utilities;
 using Surging.Core.DotNetty;
 using Surging.Core.EventBusKafka.Configurations;
+using Surging.Core.EventBusRabbitMQ;
 //using Surging.Core.EventBusKafka;
 using Surging.Core.Log4net;
 using Surging.Core.Nlog;
@@ -19,6 +20,7 @@ using Surging.Core.Protocol.Http;
 using Surging.Core.ProxyGenerator;
 using Surging.Core.ServiceHosting;
 using Surging.Core.ServiceHosting.Internal.Implementation;
+using Surging.Core.System.Ioc;
 using Surging.Core.Zookeeper.Configurations;
 using System;
 //using Surging.Core.Zookeeper;
@@ -40,10 +42,12 @@ namespace Surging.Services.Server
                         option.AddServiceRuntime()
                         .AddRelateService()
                         .AddConfigurationWatch()
+                        .UseRabbitMQTransport()//使用rabbitmq 传输
+                        .AddRabbitMQAdapt()//基于rabbitmq的消费的服务适配
+                        //.UseProtoBufferCodec()
                         //option.UseZooKeeperManager(new ConfigInfo("127.0.0.1:2181")); 
                         .AddServiceEngine(typeof(SurgingServiceEngine));
                         builder.Register(p => new CPlatformContainer(ServiceLocator.Current));
-                        option.UseProtoBufferCodec();
                     });
                 })
                 .ConfigureLogging(logger =>
@@ -52,7 +56,7 @@ namespace Surging.Services.Server
                         Core.CPlatform.AppConfig.GetSection("Logging"));
                 })
                 .UseServer(options => { })
-                .UseAutoMapper()
+                .SubscribeAt()
                 .UseConsoleLifetime()
                 .Configure(build =>
                 build.AddCacheFile("${cachepath}|cacheSettings.json", basePath: AppContext.BaseDirectory, optional: false, reloadOnChange: true))
