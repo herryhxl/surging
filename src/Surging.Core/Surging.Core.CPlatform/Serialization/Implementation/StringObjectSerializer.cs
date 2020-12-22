@@ -42,6 +42,8 @@ namespace Surging.Core.CPlatform.Serialization.Implementation
         /// <returns>一个对象实例。</returns>
         public object Deserialize(object content, Type type)
         {
+            if(content is string contentStr)
+                return _serializer.Deserialize(contentStr, type);
             return _serializer.Deserialize(content.ToString(), type);
         }
 

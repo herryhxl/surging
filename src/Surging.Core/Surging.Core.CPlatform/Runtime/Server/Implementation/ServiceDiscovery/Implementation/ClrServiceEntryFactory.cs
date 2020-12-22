@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using Surging.Core.CPlatform.Validation;
 using static Surging.Core.CPlatform.Utilities.FastInvoke;
 using System.Threading;
-
+using Surging.Core.CPlatform.Exceptions;
 namespace Surging.Core.CPlatform.Runtime.Server.Implementation.ServiceDiscovery.Implementation
 {
     /// <summary>
@@ -57,9 +57,9 @@ namespace Surging.Core.CPlatform.Runtime.Server.Implementation.ServiceDiscovery.
                 var serviceRoute = methodInfo.GetCustomAttribute<ServiceRouteAttribute>();
                 var routeTemplateVal = routeTemplate.RouteTemplate;
                 if (!routeTemplate.IsPrefix && serviceRoute != null)
-                     routeTemplateVal = serviceRoute.Template;
+                    routeTemplateVal = serviceRoute.Template;
                 else if (routeTemplate.IsPrefix && serviceRoute != null)
-                   routeTemplateVal = $"{ routeTemplate.RouteTemplate}/{ serviceRoute.Template}";
+                    routeTemplateVal = $"{ routeTemplate.RouteTemplate}/{ serviceRoute.Template}";
                 yield return Create(methodInfo, service.Name, routeTemplateVal);
             }
         }
@@ -88,7 +88,7 @@ namespace Surging.Core.CPlatform.Runtime.Server.Implementation.ServiceDiscovery.
             {
                 httpMethods.AddRange(attribute.HttpMethods);
                 if (attribute.IsRegisterMetadata)
-                    httpMethod.AppendJoin(',',attribute.HttpMethods).Append(",");
+                    httpMethod.AppendJoin(',', attribute.HttpMethods).Append(",");
             }
             if (httpMethod.Length > 0)
             {
@@ -106,13 +106,13 @@ namespace Surging.Core.CPlatform.Runtime.Server.Implementation.ServiceDiscovery.
             var fastInvoker = GetHandler(serviceId, method);
 
             var methodValidateAttribute = attributes.Where(p => p is ValidateAttribute)
-                .Cast<ValidateAttribute>().FirstOrDefault();  
+                .Cast<ValidateAttribute>().FirstOrDefault();
 
             return new ServiceEntry
             {
                 Descriptor = serviceDescriptor,
                 RoutePath = serviceDescriptor.RoutePath,
-                Methods=httpMethods,
+                Methods = httpMethods,
                 MethodName = method.Name,
                 Type = method.DeclaringType,
                 Attributes = attributes,
@@ -133,15 +133,17 @@ namespace Surging.Core.CPlatform.Runtime.Server.Implementation.ServiceDiscovery.
                          list.Add(parameterInfo.DefaultValue);
                          continue;
                      }
-                     else if(parameterInfo.ParameterType == typeof(CancellationToken))
+                     else if (parameterInfo.ParameterType == typeof(CancellationToken))
                      {
                          list.Add(new CancellationToken());
                          continue;
                      }
+                     if (!parameters.ContainsKey(parameterInfo.Name))
+                         throw new ValidateException($"²ÎÊýÎ´°üº¬{parameterInfo.Name}");
                      var value = parameters[parameterInfo.Name];
 
-                     if(methodValidateAttribute !=null)
-                     _validationProcessor.Validate(parameterInfo, value);
+                     if (methodValidateAttribute != null)
+                         _validationProcessor.Validate(parameterInfo, value);
 
                      var parameterType = parameterInfo.ParameterType;
                      var parameter = _typeConvertibleService.Convert(value, parameterType);
@@ -152,7 +154,7 @@ namespace Surging.Core.CPlatform.Runtime.Server.Implementation.ServiceDiscovery.
              }
             };
         }
-        
+
         private FastInvokeHandler GetHandler(string key, MethodInfo method)
         {
             var objInstance = ServiceResolver.Current.GetService(null, key);

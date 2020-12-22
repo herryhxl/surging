@@ -80,7 +80,16 @@ namespace Surging.Core.CPlatform.Convertibles.Implementation
             }
             catch
             {
-                return null;
+                try
+                {
+                    if(instance is string instanceStr)
+                        return Newtonsoft.Json.JsonConvert.DeserializeObject(instanceStr, conversionType);
+                    return Newtonsoft.Json.JsonConvert.DeserializeObject(instance.ToString(), conversionType);
+                }
+                catch
+                {
+                    return null;
+                }
             }
         }
 

@@ -29,7 +29,10 @@ namespace SuperUser.Base
                 var dataSource = Surging.Core.CPlatform.AppConfig.GetSection("DataSource");
                 var source = dataSource.Get<Dictionary<string, string>>();
                 var connection = source["SuperUserConnection"];
-                dbContextOptionsBuilder.UseMySql(connection, new MySqlServerVersion(new Version(8, 0, 21)));
+                dbContextOptionsBuilder.UseMySql(connection, new MySqlServerVersion(new Version(8, 0, 21)),mig=>
+                {
+                    mig.MigrationsAssembly("SuperUser");
+                });
             });
         }
         public static void RegisterSuperUserModuleService(this ContainerBuilder builder)

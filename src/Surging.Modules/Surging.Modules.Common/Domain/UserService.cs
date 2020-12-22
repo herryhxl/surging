@@ -12,6 +12,7 @@ using Surging.Core.ProxyGenerator;
 using Surging.Core.Thrift.Attributes;
 using Surging.IModuleServices.Common;
 using Surging.IModuleServices.Common.Models;
+using Surging.IModuleServices.Common.Models.Events;
 using Surging.IModuleServices.User;
 using Surging.Modules.Common.Repositories;
 using System;
@@ -98,7 +99,7 @@ namespace Surging.Modules.Common.Domain
             throw new Exception("用户Id非法！");
         }
 
-        public async Task PublishThroughEventBusAsync(IntegrationEvent evt)
+        public async Task PublishThroughEventBusAsync(UserEvent evt)
         {
             Publish(evt);
             await Task.CompletedTask;

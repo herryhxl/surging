@@ -123,8 +123,8 @@
   },
   "EventBus": {
     "EventBusConnection": "${EventBusConnection}|localhost",
-    "EventBusUserName": "${EventBusUserName}|herry",
-    "EventBusPassword": "${EventBusPassword}|562321",
+    "EventBusUserName": "${EventBusUserName}|guest",
+    "EventBusPassword": "${EventBusPassword}|guest",
     "VirtualHost": "${VirtualHost}|/",
     "MessageTTL": "${MessageTTL}|30000",
     "RetryCount": "${RetryCount}|1",

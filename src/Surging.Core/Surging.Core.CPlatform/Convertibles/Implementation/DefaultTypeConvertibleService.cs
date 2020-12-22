@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 
 namespace Surging.Core.CPlatform.Convertibles.Implementation
 {
@@ -46,10 +47,8 @@ namespace Surging.Core.CPlatform.Convertibles.Implementation
                 throw new ArgumentNullException(nameof(instance));
             if (conversionType == null)
                 throw new ArgumentNullException(nameof(conversionType));
-
             if (conversionType.GetTypeInfo().IsInstanceOfType(instance))
                 return instance;
-
             if (_logger.IsEnabled(LogLevel.Debug))
                 _logger.LogDebug($"准备将 {instance.GetType()} 转换为：{conversionType}。");
 

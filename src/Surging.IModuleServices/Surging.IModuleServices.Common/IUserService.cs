@@ -17,6 +17,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Surging.Core.CPlatform.Validation; 
 using Metadatas=Surging.Core.ProxyGenerator.Interceptors.Implementation.Metadatas;
+using Surging.IModuleServices.Common.Models.Events;
 
 namespace Surging.IModuleServices.Common
 {
@@ -138,7 +139,7 @@ new Surging.IModuleServices.Common.Models.UserModel
         /// </summary>
         /// <param name="evt1">Event 模型</param>
         /// <returns></returns>
-        Task PublishThroughEventBusAsync(IntegrationEvent evt1);
+        Task PublishThroughEventBusAsync(UserEvent evt1);
 
         /// <summary>
         /// 测试无参调用，返回泛型结果

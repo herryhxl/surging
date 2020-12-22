@@ -16,6 +16,7 @@ using Surging.Core.KestrelHttpServer;
 using Surging.Core.Common;
 using Surging.Core.Thrift.Attributes;
 using static ThriftCore.Calculator;
+using Surging.IModuleServices.Common.Models.Events;
 
 namespace Surging.Modules.Common.Domain
 {
@@ -95,7 +96,7 @@ namespace Surging.Modules.Common.Domain
             throw new Exception("用户Id非法！");
         }
 
-        public async Task PublishThroughEventBusAsync(IntegrationEvent evt)
+        public async Task PublishThroughEventBusAsync(UserEvent evt)
         {
             await Task.CompletedTask;
         }

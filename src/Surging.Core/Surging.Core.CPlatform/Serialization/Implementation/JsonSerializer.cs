@@ -13,7 +13,7 @@ namespace Surging.Core.CPlatform.Serialization.Implementation
     {
         private readonly ILogger<JsonSerializer> _logger;
         private readonly JsonSerializerOptions _options;
-        public JsonSerializer(ILogger<JsonSerializer> logger, IOptions<System.Text.Json.JsonSerializerOptions> options)
+        public JsonSerializer(ILogger<JsonSerializer> logger, IOptions<JsonSerializerOptions> options)
         {
             _logger = logger;
             _options = options.Value;
