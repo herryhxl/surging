@@ -1,6 +1,6 @@
 using System;
 
-namespace EFRepository
+namespace Edu.Surging.EntityFramework
 {
     /// <summary>
     /// Base class for entities

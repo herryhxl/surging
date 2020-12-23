@@ -1,12 +1,9 @@
 using AutoMapper;
-using SuperUser.Models;
-using SuperUser.ModelsCustom;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using SuperUser.Entity;
+using Edu.Surging.EFServices.SuperUser.Entity;
+using Edu.Surging.Models.SuperUser.Models;
+using Edu.Surging.Models.SuperUser.ModelsCustom;
 
-namespace SuperUser.Base
+namespace Edu.Surging.EFServices.SuperUser.Base
 {
     public class SuperUserMapper : Profile
     {

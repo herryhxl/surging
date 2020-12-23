@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
-namespace EFRepository
+namespace Edu.Surging.EntityFramework
 {
     /// <summary>
     /// Represents DB context

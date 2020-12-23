@@ -1,8 +1,8 @@
-using EFRepository;
+using Edu.Surging.EntityFramework;
 using System;
 using System.Collections.Generic;
 
-namespace SuperUser.Entity
+namespace Edu.Surging.EFServices.SuperUser.Entity
 {   /// <summary>
     /// SuperUser搜索
     /// </summary>

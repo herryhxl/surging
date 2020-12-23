@@ -1,5 +1,6 @@
-﻿using EFRepository;
-using SuperUser.Models;
+﻿using Edu.Surging.EntityFramework;
+using Edu.Surging.IModuleService.SuperUser;
+using Edu.Surging.Models.Common.Models;
 using SuperUser.ModelsCustom;
 using SuperUser.Service.SuperUser;
 using Surging.Core.CPlatform.Exceptions;
@@ -10,7 +11,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SuperUser.Domain
+namespace Edu.Surging.ModuleServices.SuperUser.Domain
 {
     public class SuperUserDomainService :  ProxyServiceBase, ISuperUserDomainService
     {

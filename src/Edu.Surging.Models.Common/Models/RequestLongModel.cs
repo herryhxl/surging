@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SuperUser.Models
+namespace Edu.Surging.Models.Common.Models
 {
     [ProtoContract]
     public class RequestLongModel

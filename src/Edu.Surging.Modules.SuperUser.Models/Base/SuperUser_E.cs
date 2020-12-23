@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-namespace SuperUser.Base
+namespace Edu.Surging.Models.SuperUser.Base
 {
 
 	public class SuperUser_E

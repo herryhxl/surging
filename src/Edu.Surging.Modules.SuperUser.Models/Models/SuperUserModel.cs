@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using SuperUser.Base;
-using EFRepository;
+using Edu.Surging.Models.SuperUser.Base;
+using Edu.Surging.EntityFramework;
 
-namespace SuperUser.Models
+namespace Edu.Surging.Models.SuperUser.Models
 {
     public class SuperUser_DataModel: BaseEntity<long>
 	{

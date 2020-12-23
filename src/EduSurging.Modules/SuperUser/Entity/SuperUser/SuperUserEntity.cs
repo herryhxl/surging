@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using SuperUser.Models;
+using Edu.Surging.Models.SuperUser.Models;
 
-namespace SuperUser.Entity
+namespace Edu.Surging.EFServices.SuperUser.Entity
 {
     public class SuperUserEntity :SuperUser_DataModel
 	{

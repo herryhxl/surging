@@ -2,8 +2,6 @@
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using SuperUser.Base;
 using Surging.Core.Caching.Configurations;
 using Surging.Core.CPlatform.Utilities;
 using Surging.Core.EventBusRabbitMQ.Configurations;
@@ -22,10 +20,6 @@ namespace Surging.Services.Server
         {
             var services = new ServiceCollection();
             ConfigureLogging(services);
-
-
-            services.RegisterSuperUserModuleDbContext();
-            builder.RegisterSuperUserModuleService();
 
             builder.Populate(services);
 

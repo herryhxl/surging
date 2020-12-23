@@ -1,10 +1,10 @@
 
-using SuperUser.Base;
-using EFRepository;
+using Edu.Surging.EFServices.SuperUser.Base;
+using Edu.Surging.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace SuperUser.Entity.Mappings.UserAddress
+namespace Edu.Surging.EFServices.SuperUser.Entity.Mappings.UserAddress
 {
 	public partial class UserAddressMapping : EfEntityTypeConfiguration<UserAddressEntity,long>, ISuperUserMapping
 	{

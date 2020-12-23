@@ -1,7 +1,6 @@
+using Edu.Surging.Models.SuperUser.Models;
 
-using SuperUser.Models;
-
-namespace SuperUser.Entity
+namespace Edu.Surging.EFServices.SuperUser.Entity
 {
 	public class UserAddressEntity :UserAddress_DataModel
 	{

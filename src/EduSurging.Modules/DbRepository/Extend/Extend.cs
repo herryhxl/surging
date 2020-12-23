@@ -10,7 +10,7 @@ using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Surging.Core.CPlatform.Exceptions;
 
-namespace EFRepository.Extend
+namespace Edu.Surging.EntityFramework.Extend
 {
     public static class Extend
     {

@@ -1,4 +1,4 @@
-﻿using EFRepository.Extend;
+﻿using Edu.Surging.EntityFramework.Extend;
 using Microsoft.EntityFrameworkCore;
 using Surging.Core.CPlatform.Exceptions;
 using System;
@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EFRepository
+namespace Edu.Surging.EntityFramework
 {
     public abstract class BaseService<TEntity, T, TRepository, TChange> : Service<TEntity, T, TRepository>, IBaseService<TEntity, T> where TEntity : BaseEntity<T> where TRepository : IRepository<TEntity, T> where TChange : IChangeService<TEntity, T>
     {

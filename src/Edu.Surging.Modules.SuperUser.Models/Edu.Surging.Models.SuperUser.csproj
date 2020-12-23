@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Edu.Surging.Models.Common\Edu.Surging.Models.Common.csproj" />
+    <ProjectReference Include="..\EduSurging.Modules\DbRepository\Edu.Surging.EntityFramework.csproj" />
+  </ItemGroup>
+
+</Project>

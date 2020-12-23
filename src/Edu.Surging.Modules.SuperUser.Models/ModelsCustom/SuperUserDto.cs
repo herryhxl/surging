@@ -1,8 +1,8 @@
 using System;
-using System.Collections.Generic;
-using SuperUser.Base;
-using EFRepository;
-namespace SuperUser.ModelsCustom
+using Edu.Surging.EntityFramework;
+using Edu.Surging.Models.SuperUser.Base;
+
+namespace Edu.Surging.Models.SuperUser.ModelsCustom
 {
 	public class SuperUserDto:BaseEntity<long>
 	{

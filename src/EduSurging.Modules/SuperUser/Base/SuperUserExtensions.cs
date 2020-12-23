@@ -1,23 +1,22 @@
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
-using SuperUser.ChangeService.SuperUser;
-using SuperUser.Repository.SuperUser;
-using SuperUser.Service.SuperUser;
-using SuperUser.ChangeService.SuperUserInfo;
-using SuperUser.Repository.SuperUserInfo;
-using SuperUser.Service.SuperUserInfo;
-using SuperUser.ChangeService.UserAddress;
-using SuperUser.Repository.UserAddress;
-using SuperUser.Service.UserAddress;
+using Edu.Surging.EFServices.SuperUser.ChangeService.SuperUser;
+using Edu.Surging.EFServices.SuperUser.Repository.SuperUser;
+using Edu.Surging.EFServices.SuperUser.Service.SuperUser;
+using Edu.Surging.EFServices.SuperUser.ChangeService.SuperUserInfo;
+using Edu.Surging.EFServices.SuperUser.Repository.SuperUserInfo;
+using Edu.Surging.EFServices.SuperUser.Service.SuperUserInfo;
+using Edu.Surging.EFServices.SuperUser.ChangeService.UserAddress;
+using Edu.Surging.EFServices.SuperUser.Repository.UserAddress;
+using Edu.Surging.EFServices.SuperUser.Service.UserAddress;
 using Autofac;
 using System;
 using System.Collections.Generic;
-using EFRepository;
-using SuperUser.Service;
-
-namespace SuperUser.Base
+using Edu.Surging.EntityFramework;
+using Surging.Core.CPlatform;
+using Edu.Surging.EFServices.SuperUser.Service;
+namespace Edu.Surging.EFServices.SuperUser.Base
 {
     public static class SuperUserExtensions
     {
@@ -31,7 +30,7 @@ namespace SuperUser.Base
                 var connection = source["SuperUserConnection"];
                 dbContextOptionsBuilder.UseMySql(connection, new MySqlServerVersion(new Version(8, 0, 21)),mig=>
                 {
-                    mig.MigrationsAssembly("SuperUser");
+                    mig.MigrationsAssembly("Edu.Surging.EFServices.SuperUser");
                 });
             });
         }

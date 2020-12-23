@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace EFRepository
+namespace Edu.Surging.EntityFramework
 {
     /// <summary>
     /// Represents base entity mapping configuration

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Debug;
 
-namespace EFRepository
+namespace Edu.Surging.EntityFramework
 {
     /// <summary>
     /// Represents base object context

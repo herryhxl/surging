@@ -1,13 +1,11 @@
-using SuperUser.Entity;
 using Microsoft.Extensions.Logging;
-using SuperUser.Repository.UserAddress;
+using Edu.Surging.EntityFramework;
+using Edu.Surging.EntityFramework.Extend;
+using Edu.Surging.EFServices.SuperUser.Entity;
+using Edu.Surging.EFServices.SuperUser.Repository.UserAddress;
+using Edu.Surging.EFServices.SuperUser.Repository.SuperUser;
 
-
-using SuperUser.Repository.SuperUser;
-using EFRepository;
-using EFRepository.Extend;
-
-namespace SuperUser.ChangeService.UserAddress
+namespace Edu.Surging.EFServices.SuperUser.ChangeService.UserAddress
 {
     public class UserAddressChangeService : ChangeService<UserAddressEntity,long>,IUserAddressChangeService
     {

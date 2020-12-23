@@ -2,15 +2,15 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using System;
 using System.Linq;
-using SuperUser.Entity;
+using Edu.Surging.EFServices.SuperUser.Entity;
 using System.Collections.Generic;
-using SuperUser.ChangeService.UserAddress;
-using SuperUser.Repository.UserAddress;
-using EFRepository;
-using EFRepository.Extend;
+using Edu.Surging.EFServices.SuperUser.ChangeService.UserAddress;
+using Edu.Surging.EFServices.SuperUser.Repository.UserAddress;
+using Edu.Surging.EntityFramework;
+using Edu.Surging.EntityFramework.Extend;
 using Surging.Core.CPlatform.Exceptions;
 
-namespace SuperUser.Service.UserAddress
+namespace Edu.Surging.EFServices.SuperUser.Service.UserAddress
 {
     public class UserAddressService: BaseService<UserAddressEntity,long,IUserAddressRepository, IUserAddressChangeService>,  IUserAddressService
 	{

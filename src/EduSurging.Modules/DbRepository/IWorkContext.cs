@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace EFRepository
+namespace Edu.Surging.EntityFramework
 {
     public interface IWorkContext
     {

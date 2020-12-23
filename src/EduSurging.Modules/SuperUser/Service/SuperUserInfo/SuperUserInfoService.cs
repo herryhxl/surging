@@ -2,16 +2,17 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using System;
 using System.Linq;
-using SuperUser.Entity;
-using SuperUser.Base;
+using Edu.Surging.EFServices.SuperUser.Entity;
+using Edu.Surging.Models.SuperUser;
 using System.Collections.Generic;
-using EFRepository;
-using SuperUser.ChangeService.SuperUserInfo;
-using SuperUser.Repository.SuperUserInfo;
-using EFRepository.Extend;
+using Edu.Surging.EntityFramework;
+using Edu.Surging.EFServices.SuperUser.ChangeService.SuperUserInfo;
+using Edu.Surging.EFServices.SuperUser.Repository.SuperUserInfo;
+using Edu.Surging.EntityFramework.Extend;
 using Surging.Core.CPlatform.Exceptions;
+using Edu.Surging.Models.SuperUser.Base;
 
-namespace SuperUser.Service.SuperUserInfo
+namespace Edu.Surging.EFServices.SuperUser.Service.SuperUserInfo
 {
     public class SuperUserInfoService: BaseService<SuperUserInfoEntity,long,ISuperUserInfoRepository, ISuperUserInfoChangeService>,  ISuperUserInfoService
 	{

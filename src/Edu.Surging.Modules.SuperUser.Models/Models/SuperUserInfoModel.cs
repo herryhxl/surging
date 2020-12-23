@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using SuperUser.Base;
-using EFRepository;
-namespace SuperUser.Models
+using Edu.Surging.Models.SuperUser.Base;
+using Edu.Surging.EntityFramework;
+namespace Edu.Surging.Models.SuperUser.Models
 {
 	public class SuperUserInfo_DataModel: BaseEntity<long>
 	{

@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EFRepository
+namespace Edu.Surging.EntityFramework
 {
     public class Service<TEntity, T, TRepository> : IService<TEntity, T> where TEntity : BaseEntity<T> where TRepository : IRepository<TEntity, T>
     {

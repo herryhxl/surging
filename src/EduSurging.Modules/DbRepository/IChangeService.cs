@@ -1,6 +1,6 @@
 ﻿
 
-namespace EFRepository
+namespace Edu.Surging.EntityFramework
 {
     /// <summary>
     /// 

@@ -1,14 +1,14 @@
 using System.Linq.Expressions;
 using System;
 using System.Linq;
-using SuperUser.Entity;
-using SuperUser.Base;
-using EFRepository;
+using Edu.Surging.EFServices.SuperUser.Entity;
+using Edu.Surging.EFServices.SuperUser.Base;
+using Edu.Surging.EntityFramework;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 
 
-namespace SuperUser.Repository.SuperUser
+namespace Edu.Surging.EFServices.SuperUser.Repository.SuperUser
 {
 	public class SuperUserRepository: EfRepository<SuperUserEntity, long>,  ISuperUserRepository
 	{

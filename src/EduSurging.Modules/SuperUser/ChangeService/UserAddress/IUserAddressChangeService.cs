@@ -1,7 +1,7 @@
-using SuperUser.Entity;
-using EFRepository;
+using Edu.Surging.EFServices.SuperUser.Entity;
+using Edu.Surging.EntityFramework;
 
-namespace SuperUser.ChangeService.UserAddress
+namespace Edu.Surging.EFServices.SuperUser.ChangeService.UserAddress
 {
     public interface IUserAddressChangeService:IChangeService<UserAddressEntity,long>
 	{

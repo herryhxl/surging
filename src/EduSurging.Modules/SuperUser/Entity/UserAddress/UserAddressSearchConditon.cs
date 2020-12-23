@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using EFRepository;
+using Edu.Surging.EntityFramework;
 
-namespace SuperUser.Entity
+namespace Edu.Surging.EFServices.SuperUser.Entity
 {   /// <summary>
     /// UserAddress搜索
     /// </summary>

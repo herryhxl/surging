@@ -1,7 +1,7 @@
-﻿using EFRepository.Extend;
+﻿using Edu.Surging.EntityFramework.Extend;
 using Microsoft.Extensions.Logging;
 
-namespace EFRepository
+namespace Edu.Surging.EntityFramework
 {
     public class ChangeService<TEntity, K> : IChangeService<TEntity,K> where TEntity : BaseEntity<K>
     {

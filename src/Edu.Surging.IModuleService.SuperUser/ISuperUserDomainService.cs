@@ -1,5 +1,5 @@
-﻿using SuperUser.Models;
-using SuperUser.ModelsCustom;
+﻿using Edu.Surging.Models.Common.Models;
+using Edu.Surging.Models.SuperUser.ModelsCustom;
 using Surging.Core.CPlatform.Ioc;
 using Surging.Core.CPlatform.Runtime.Client.Address.Resolvers.Implementation.Selectors.Implementation;
 using Surging.Core.CPlatform.Runtime.Server.Implementation.ServiceDiscovery.Attributes;
@@ -7,7 +7,7 @@ using Surging.Core.CPlatform.Support;
 using Surging.Core.CPlatform.Support.Attributes;
 using System.Threading.Tasks;
 
-namespace SuperUser.Domain
+namespace Edu.Surging.IModuleService.SuperUser
 {
     [ServiceBundle("api/{Service}")]
     public interface ISuperUserDomainService : IServiceKey

@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EFRepository
+namespace Edu.Surging.EntityFramework
 {
     public interface IBaseService<TEntity, K>: IService<TEntity, K> where TEntity : BaseEntity<K>
     {

@@ -1,10 +1,10 @@
-using SuperUser.Entity;
 using Microsoft.Extensions.Logging;
-using SuperUser.Repository.SuperUser;
-using EFRepository;
-using EFRepository.Extend;
+using Edu.Surging.EntityFramework;
+using Edu.Surging.EntityFramework.Extend;
+using Edu.Surging.EFServices.SuperUser.Entity;
+using Edu.Surging.EFServices.SuperUser.Repository.SuperUser;
 
-namespace SuperUser.ChangeService.SuperUser
+namespace Edu.Surging.EFServices.SuperUser.ChangeService.SuperUser
 {
     public class SuperUserChangeService : ChangeService<SuperUserEntity,long>,ISuperUserChangeService
     {

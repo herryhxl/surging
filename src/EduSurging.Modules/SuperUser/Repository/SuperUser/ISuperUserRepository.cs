@@ -1,9 +1,9 @@
 
-using SuperUser.Entity;
-using SuperUser.Base;
-using EFRepository;
+using Edu.Surging.EFServices.SuperUser.Entity;
+using Edu.Surging.EFServices.SuperUser.Base;
+using Edu.Surging.EntityFramework;
 
-namespace SuperUser.Repository.SuperUser
+namespace Edu.Surging.EFServices.SuperUser.Repository.SuperUser
 {
 	public interface ISuperUserRepository : IRepository<SuperUserEntity,long>
 	{

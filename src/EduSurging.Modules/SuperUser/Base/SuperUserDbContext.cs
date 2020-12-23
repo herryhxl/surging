@@ -1,4 +1,4 @@
-using EFRepository;
+using Edu.Surging.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Data;
@@ -6,7 +6,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 
-namespace SuperUser.Base
+namespace Edu.Surging.EFServices.SuperUser.Base
 {
     public partial class SuperUserDbContext : EfDbContext, IDbContext
     { 

@@ -1,9 +1,9 @@
-using EFRepository;
+using Edu.Surging.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SuperUser.Base;
+using Edu.Surging.EFServices.SuperUser.Base;
 
-namespace SuperUser.Entity.Mappings.SuperUserInfo
+namespace Edu.Surging.EFServices.SuperUser.Entity.Mappings.SuperUserInfo
 {
 	public partial class SuperUserInfoMapping : EfEntityTypeConfiguration<SuperUserInfoEntity,long>, ISuperUserMapping
 	{

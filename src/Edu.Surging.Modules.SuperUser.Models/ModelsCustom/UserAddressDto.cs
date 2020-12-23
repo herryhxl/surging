@@ -1,15 +1,9 @@
 using System;
-using System.Collections.Generic;
-using SuperUser.Base;
-using EFRepository;
-namespace SuperUser.Models
+using Edu.Surging.EntityFramework;
+namespace Edu.Surging.Models.SuperUser.ModelsCustom
 {
-	public class UserAddress_DataModel: BaseEntity<long>
+	public class UserAddressDto:BaseEntity<long>
 	{
-		/// <summary>
-		/// 编号
-		/// </summary>
-		public long Id { get; set; }
 		/// <summary>
 		/// 用户
 		/// </summary>
@@ -47,11 +41,28 @@ namespace SuperUser.Models
 		/// </summary>
 		public int? UpUser { get; set; }
 	}
-	public class UserAddressModel:UserAddress_DataModel
+
+	public class UserAddressViewModel:BaseEntity<long>
 	{
-		public string UserAddressText { get; set; }
-		public string UserText { get; set; }
-			public SuperUserModel User_SuperUser { get; set; }
-			public int User_SuperUserCount { get; set; }
-			}
+		/// <summary>
+		/// 用户
+		/// </summary>
+		public long User { get; set; }
+		/// <summary>
+		/// 区域编码
+		/// </summary>
+		public string AreaCode { get; set; }
+		/// <summary>
+		/// 详细地址
+		/// </summary>
+		public string Detail { get; set; }
+		/// <summary>
+		/// 联系电话
+		/// </summary>
+		public string Phone { get; set; }
+		/// <summary>
+		/// 邮政编码
+		/// </summary>
+		public string PostCode { get; set; }
+	}
 }

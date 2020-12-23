@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace EFRepository
+namespace Edu.Surging.EntityFramework
 {
     public interface IDependency
     {

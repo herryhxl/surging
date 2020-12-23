@@ -1,10 +1,10 @@
-﻿using EFRepository;
+﻿using Edu.Surging.EntityFramework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace SuperUser.Service
+namespace Edu.Surging.EFServices.SuperUser.Service
 {
     public class WorkContextService : IWorkContext
     {

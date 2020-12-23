@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace EFRepository
+namespace Edu.Surging.EntityFramework
 {
     public class PageList<T>
     {

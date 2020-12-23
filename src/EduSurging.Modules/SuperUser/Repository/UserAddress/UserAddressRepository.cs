@@ -1,12 +1,12 @@
 using System.Linq.Expressions;
 using System;
-using SuperUser.Entity;
-using SuperUser.Base;
+using Edu.Surging.EFServices.SuperUser.Entity;
+using Edu.Surging.EFServices.SuperUser.Base;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using EFRepository;
+using Edu.Surging.EntityFramework;
 
-namespace SuperUser.Repository.UserAddress
+namespace Edu.Surging.EFServices.SuperUser.Repository.UserAddress
 {
     public class UserAddressRepository: EfRepository<UserAddressEntity, long>,  IUserAddressRepository
 	{
