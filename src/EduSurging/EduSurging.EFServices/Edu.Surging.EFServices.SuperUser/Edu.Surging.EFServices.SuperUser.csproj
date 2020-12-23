@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Edu.Surging.Libs\Edu.Surging.EntityFrameWork\Edu.Surging.EntityFrameWork.csproj" />
+    <ProjectReference Include="..\..\Edu.Surging.Models\Edu.Surging.Modules.SuperUser.Models\Edu.Surging.Models.SuperUser.csproj" />
+  </ItemGroup>
+
+</Project>
