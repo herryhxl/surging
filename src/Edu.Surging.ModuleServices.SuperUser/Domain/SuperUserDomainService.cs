@@ -1,8 +1,8 @@
-﻿using Edu.Surging.EntityFramework;
+﻿using Edu.Surging.EFServices.SuperUser.Service.SuperUser;
+using Edu.Surging.EntityFramework;
 using Edu.Surging.IModuleService.SuperUser;
 using Edu.Surging.Models.Common.Models;
-using SuperUser.ModelsCustom;
-using SuperUser.Service.SuperUser;
+using Edu.Surging.Models.SuperUser.ModelsCustom;
 using Surging.Core.CPlatform.Exceptions;
 using Surging.Core.CPlatform.Transport.Implementation;
 using Surging.Core.ProxyGenerator;
