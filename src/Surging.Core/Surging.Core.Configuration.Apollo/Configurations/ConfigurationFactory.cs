@@ -16,8 +16,8 @@ namespace Surging.Core.Configuration.Apollo.Configurations
         {
             var builder = new ConfigurationBuilder();
             var environmentName = Environment.GetEnvironmentVariable("environmentname");
-          
 
+           
             builder.AddJsonFile("apollo.json", true)
                 .AddJsonFile($"apollo.{environmentName}.json", true);
 

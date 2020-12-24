@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Surging.Core.CPlatform;
 using Surging.Core.CPlatform.Module;
 using Surging.Core.CPlatform.Runtime.Server;
+using Surging.Core.CPlatform.Serialization;
 using Surging.Core.CPlatform.Transport.Codec;
 using Surging.Core.Protocol.Udp.Runtime;
 using Surging.Core.Protocol.Udp.Runtime.Implementation;
@@ -51,7 +52,8 @@ namespace Surging.Core.Protocol.Udp
             builder.Register(provider =>
             {
                 return new DotNettyUdpServerMessageListener(provider.Resolve<ILogger<DotNettyUdpServerMessageListener>>(),
-                      provider.Resolve<ITransportMessageCodecFactory>()
+                      provider.Resolve<ITransportMessageCodecFactory>(),
+                      provider.Resolve<ISerializer<string>>()
                       );
             }).SingleInstance();
             builder.Register(provider =>
@@ -73,7 +75,8 @@ namespace Surging.Core.Protocol.Udp
             builder.Register(provider =>
             {
                 return new DotNettyUdpServerMessageListener(provider.Resolve<ILogger<DotNettyUdpServerMessageListener>>(),
-                      provider.Resolve<ITransportMessageCodecFactory>()
+                      provider.Resolve<ITransportMessageCodecFactory>(),
+                      provider.Resolve<ISerializer<string>>()
                       );
             }).SingleInstance();
             builder.Register(provider =>

@@ -31,11 +31,12 @@ namespace Surging.Core.Protocol.Udp
 
         #region Constructor
         public DotNettyUdpServerMessageListener(ILogger<DotNettyUdpServerMessageListener> logger
-            , ITransportMessageCodecFactory codecFactory)
+            , ITransportMessageCodecFactory codecFactory, ISerializer<string> serializer)
         {
             _logger = logger;
             _transportMessageEncoder = codecFactory.GetEncoder();
             _transportMessageDecoder = codecFactory.GetDecoder();
+            _serializer = serializer;
         }
 
         public async Task StartAsync(EndPoint endPoint)

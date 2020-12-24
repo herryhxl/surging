@@ -141,9 +141,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Edu.Surging.ModuleServices.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Edu.Surging.Services.SuperUser", "EduSurging\Edu.Surging.Services\Edu.Surging.Services.SuperUser\Edu.Surging.Services.SuperUser.csproj", "{E4729853-0E0C-4584-94D3-35347883B356}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Edu.Surging.EntityFrameWork", "EduSurging\Edu.Surging.Libs\Edu.Surging.EntityFrameWork\Edu.Surging.EntityFrameWork.csproj", "{1CD781C7-0E21-4E62-9E5D-3309DFA866E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Edu.Surging.EntityFrameWork", "EduSurging\Edu.Surging.Libs\Edu.Surging.EntityFrameWork\Edu.Surging.EntityFrameWork.csproj", "{1CD781C7-0E21-4E62-9E5D-3309DFA866E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Edu.Surging.EFServices.SuperUser", "EduSurging\EduSurging.EFServices\Edu.Surging.EFServices.SuperUser\Edu.Surging.EFServices.SuperUser.csproj", "{8131F47D-AB0F-40E0-9365-5921D5E9C766}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Edu.Surging.EFServices.SuperUser", "EduSurging\EduSurging.EFServices\Edu.Surging.EFServices.SuperUser\Edu.Surging.EFServices.SuperUser.csproj", "{8131F47D-AB0F-40E0-9365-5921D5E9C766}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

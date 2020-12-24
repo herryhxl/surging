@@ -33,7 +33,6 @@
     <ProjectReference Include="..\..\..\Surging.Core\Surging.Core.Swagger\Surging.Core.Swagger.csproj" />
     <ProjectReference Include="..\..\Edu.Surging.IModuleServices\Edu.Surging.IModuleService.SuperUser\Edu.Surging.IModuleService.SuperUser.csproj" />
     <ProjectReference Include="..\..\Edu.Surging.ModuleServices\Edu.Surging.ModuleServices.SuperUser\Edu.Surging.ModuleServices.SuperUser.csproj" />
-    <ProjectReference Include="..\..\EduSurging.EFServices\Edu.Surging.EFServices.SuperUser\Edu.Surging.EFServices.SuperUser.csproj" />
   </ItemGroup>
 
   <ItemGroup>

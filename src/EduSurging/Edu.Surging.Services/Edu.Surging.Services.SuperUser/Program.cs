@@ -50,7 +50,7 @@ namespace Edu.Surging.Services.SuperUser
                 .ConfigureLogging(logger =>
                 {
                     logger.AddConfiguration(
-                        Core.CPlatform.AppConfig.GetSection("Logging"));
+                        Surging.Core.CPlatform.AppConfig.GetSection("Logging"));
                 })
                 .UseServer(options => { })
                 .SubscribeAt()

@@ -25,7 +25,7 @@ namespace Edu.Surging.EFServices.SuperUser.Base
             services.AddDbContext<SuperUserDbContext>(optionsBuilder =>
             {
                 var dbContextOptionsBuilder = optionsBuilder.UseLazyLoadingProxies();
-                var dataSource = Core.CPlatform.AppConfig.GetSection("DataSource");
+                var dataSource = Surging.Core.CPlatform.AppConfig.GetSection("DataSource");
                 var source = dataSource.Get<Dictionary<string, string>>();
                 var connection = source["SuperUserConnection"];
                 dbContextOptionsBuilder.UseMySql(connection, new MySqlServerVersion(new Version(8, 0, 21)),mig=>
