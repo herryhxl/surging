@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="IPNetwork2" Version="2.4.0.124" />
+    <PackageReference Include="IPNetwork2" Version="2.5.240" />
   </ItemGroup>
 
   <ItemGroup>

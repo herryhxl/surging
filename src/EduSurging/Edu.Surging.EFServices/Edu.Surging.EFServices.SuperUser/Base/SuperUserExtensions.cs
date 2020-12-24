@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Edu.Surging.EFServices.SuperUser.ChangeService.SuperUser;
 using Edu.Surging.EFServices.SuperUser.Repository.SuperUser;
@@ -16,6 +15,8 @@ using System.Collections.Generic;
 using Edu.Surging.EntityFramework;
 using Surging.Core.CPlatform;
 using Edu.Surging.EFServices.SuperUser.Service;
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Edu.Surging.EFServices.SuperUser.Base
 {
     public static class SuperUserExtensions
@@ -25,10 +26,10 @@ namespace Edu.Surging.EFServices.SuperUser.Base
             services.AddDbContext<SuperUserDbContext>(optionsBuilder =>
             {
                 var dbContextOptionsBuilder = optionsBuilder.UseLazyLoadingProxies();
-                var dataSource = Surging.Core.CPlatform.AppConfig.GetSection("DataSource");
-                var source = dataSource.Get<Dictionary<string, string>>();
-                var connection = source["SuperUserConnection"];
-                dbContextOptionsBuilder.UseMySql(connection, new MySqlServerVersion(new Version(8, 0, 21)),mig=>
+                //var dataSource = Surging.Core.CPlatform.AppConfig.GetSection("DataSource");
+                //var source = dataSource.Get<Dictionary<string, string>>();
+                //var connection = source["SuperUserConnection"];
+                dbContextOptionsBuilder.UseMySql("server=127.0.0.1;port=3306;database=superuser;user=root;password=password", new MySqlServerVersion(new Version(8, 0, 21)), mig =>//
                 {
                     mig.MigrationsAssembly("Edu.Surging.EFServices.SuperUser");
                 });

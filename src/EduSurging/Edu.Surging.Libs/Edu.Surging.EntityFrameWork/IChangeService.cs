@@ -1,6 +1,4 @@
-﻿
-
-using Edu.Surging.Models.Common.Models;
+﻿using Edu.Surging.Models.Common.Models;
 
 namespace Edu.Surging.EntityFramework
 {

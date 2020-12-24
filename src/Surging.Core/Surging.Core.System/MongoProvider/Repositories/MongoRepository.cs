@@ -216,13 +216,13 @@ namespace Surging.Core.System.MongoProvider.Repositories
 
         public long Count(FilterDefinition<T> filter)
         {
-            var result = _collection.Count(filter);
+            var result = _collection.CountDocuments(filter);
             return result;
         }
 
         public async Task<long> CountAsync(FilterDefinition<T> filter)
         {
-            var result = await _collection.CountAsync(filter);
+            var result = await _collection.CountDocumentsAsync(filter);
             return result;
         }
 

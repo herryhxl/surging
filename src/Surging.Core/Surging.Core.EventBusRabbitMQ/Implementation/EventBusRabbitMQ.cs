@@ -338,9 +338,9 @@ namespace Surging.Core.EventBusRabbitMQ.Implementation
             return channel;
         }
 
-        private async Task ProcessEvent(string eventName, byte[] body, QueueConsumerMode mode, IBasicProperties properties)
+        private async Task ProcessEvent(string eventName, ReadOnlyMemory<byte> body, QueueConsumerMode mode, IBasicProperties properties)
         {
-            var message = Encoding.UTF8.GetString(body);
+            var message = Encoding.UTF8.GetString(body.Span);
             if (_subsManager.HasSubscriptionsForEvent(eventName))
             {
                 var eventType = _subsManager.GetEventTypeByName(eventName);
@@ -414,19 +414,16 @@ namespace Surging.Core.EventBusRabbitMQ.Implementation
         private IBasicProperties CreateOverrideProperties(IBasicProperties properties,
     IDictionary<String, Object> headers)
         {
-            IBasicProperties newProperties = new BasicProperties();
-            newProperties.ContentType = properties.ContentType ?? "";
-            newProperties.ContentEncoding = properties.ContentEncoding ?? "";
-            newProperties.Headers = properties.Headers;
-            if (newProperties.Headers == null)
-                newProperties.Headers = new Dictionary<string, object>();
+            properties.ContentType = properties.ContentType ?? "";
+            properties.ContentEncoding = properties.ContentEncoding ?? "";
+            if (properties.Headers == null)
+                properties.Headers = new Dictionary<string, object>();
             foreach (var key in headers.Keys)
             {
-                if (!newProperties.Headers.ContainsKey(key))
-                    newProperties.Headers.Add(key, headers[key]);
+                if (!properties.Headers.ContainsKey(key))
+                    properties.Headers.Add(key, headers[key]);
             }
-            newProperties.DeliveryMode = properties.DeliveryMode;
-            return newProperties;
+            return properties;
         }
 
         private String GetOrigRoutingKey(IBasicProperties properties,

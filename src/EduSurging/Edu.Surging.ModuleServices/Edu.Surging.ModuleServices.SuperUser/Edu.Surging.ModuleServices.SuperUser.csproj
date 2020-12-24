@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Edu.Surging.EFServices\Edu.Surging.EFServices.SuperUser\Edu.Surging.EFServices.SuperUser.csproj" />
     <ProjectReference Include="..\..\Edu.Surging.IModuleServices\Edu.Surging.IModuleService.SuperUser\Edu.Surging.IModuleService.SuperUser.csproj" />
-    <ProjectReference Include="..\..\EduSurging.EFServices\Edu.Surging.EFServices.SuperUser\Edu.Surging.EFServices.SuperUser.csproj" />
   </ItemGroup>
 
 </Project>
