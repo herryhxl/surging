@@ -1,7 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using Surging.Core.CPlatform.Serialization.JsonConverters;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 
 namespace Surging.Core.CPlatform.Serialization.Implementation
@@ -21,7 +24,7 @@ namespace Surging.Core.CPlatform.Serialization.Implementation
             if (!_options.PropertyNameCaseInsensitive) _options.PropertyNameCaseInsensitive = true;
             _options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             _options.WriteIndented = true;
-            if (_options.Converters == null)
+            if (_options.Converters == null || !_options.Converters.Any())
             {
                 _options.Converters.Add(new DateTimeJsonConverter());
                 _options.Converters.Add(new DateTimeNullJsonConverter());

@@ -122,7 +122,7 @@ namespace Surging.Core.KestrelHttpServer
 
         private async Task<HttpResultMessage<object>> LocalExecuteAsync(ServiceEntry entry, HttpMessage httpMessage)
         {
-            HttpResultMessage<object> resultMessage = new HttpResultMessage<object>();
+            var resultMessage = new HttpResultMessage<object>();
             try
             {
                 var result = await entry.Func(httpMessage.ServiceKey, httpMessage.Parameters);

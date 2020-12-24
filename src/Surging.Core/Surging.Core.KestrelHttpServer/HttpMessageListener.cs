@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Surging.Core.CPlatform.Exceptions;
 using Surging.Core.CPlatform.Messages;
 using Surging.Core.CPlatform.Routing;
 using Surging.Core.CPlatform.Routing.Template;
@@ -55,6 +56,8 @@ namespace Surging.Core.KestrelHttpServer
             {
                 serviceRoute = await _serviceRouteProvider.GetRouteByPathRegex(path);
             }
+            if (serviceRoute == null)
+                throw new ValidateException("404 Not Found", 404);
             var parameters = context.Request.Query.ToDictionary(p => p.Key, p => (object)p.Value.ToString());
             object serviceKey = null;
             foreach (var key in _serviceKeys)

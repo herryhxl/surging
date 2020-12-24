@@ -1,4 +1,5 @@
-﻿using Surging.Core.CPlatform.Messages;
+﻿using Surging.Core.CPlatform.Exceptions;
+using Surging.Core.CPlatform.Messages;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,10 +11,17 @@ namespace Surging.Core.KestrelHttpServer.Filters.Implementation
     {
         public Task OnException(ExceptionContext context)
         {
+            object data = null;
+            int statusCode = 400;
+            if(context.Exception is ValidateException validate)
+            {
+                data = validate.ErrorData;
+                statusCode = validate.ErrorCode;
+            }
             context.Result = new HttpResultMessage<object>
             {
-                Data = null,
-                StatusCode = 400,
+                Data = data,
+                StatusCode = statusCode,
                 IsSucceed = false,
                 Message = context.Exception.Message
             };
