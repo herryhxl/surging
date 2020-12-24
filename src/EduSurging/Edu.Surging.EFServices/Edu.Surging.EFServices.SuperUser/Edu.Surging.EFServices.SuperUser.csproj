@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Surging.Core\Surging.Core.CPlatform\Surging.Core.CPlatform.csproj" />
+    <ProjectReference Include="..\..\..\Surging.Core\Surging.Core.ProxyGenerator\Surging.Core.ProxyGenerator.csproj" />
     <ProjectReference Include="..\..\Edu.Surging.Libs\Edu.Surging.EntityFrameWork\Edu.Surging.EntityFrameWork.csproj" />
     <ProjectReference Include="..\..\Edu.Surging.Models\Edu.Surging.Modules.SuperUser.Models\Edu.Surging.Models.SuperUser.csproj" />
   </ItemGroup>

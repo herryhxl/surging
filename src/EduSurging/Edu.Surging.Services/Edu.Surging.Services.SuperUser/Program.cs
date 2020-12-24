@@ -23,6 +23,7 @@ using System;
 //using Surging.Core.Zookeeper;
 //using Surging.Core.Zookeeper.Configurations;
 using System.Text;
+using AppConfig = Surging.Core.CPlatform.AppConfig;
 
 namespace Edu.Surging.Services.SuperUser
 {
@@ -49,8 +50,8 @@ namespace Edu.Surging.Services.SuperUser
                 })
                 .ConfigureLogging(logger =>
                 {
-                    //logger.AddConfiguration(
-                        //Surging.Core.CPlatform.AppConfig.GetSection("Logging"));
+                    logger.AddConfiguration(
+                        AppConfig.GetSection("Logging"));
                 })
                 .UseServer(options => { })
                 .SubscribeAt()
