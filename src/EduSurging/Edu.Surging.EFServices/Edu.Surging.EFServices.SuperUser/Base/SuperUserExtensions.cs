@@ -27,9 +27,9 @@ namespace Edu.Surging.EFServices.SuperUser.Base
             {
                 var dbContextOptionsBuilder = optionsBuilder.UseLazyLoadingProxies();
                 var dataSource = AppConfig.GetSection("DataSource");
-                //var source = dataSource.Get<Dictionary<string, string>>();
-                //var connection = source["SuperUserConnection"];
-                dbContextOptionsBuilder.UseMySql("server=127.0.0.1;port=3306;database=superuser;user=root;password=password", new MySqlServerVersion(new Version(8, 0, 21)), mig =>//
+                var source = dataSource.Get<Dictionary<string, string>>();
+                var connection = source["SuperUserConnection"];
+                dbContextOptionsBuilder.UseMySql(connection, new MySqlServerVersion(new Version(8, 0, 21)), mig =>//
                 {
                     mig.MigrationsAssembly("Edu.Surging.EFServices.SuperUser");
                 });
