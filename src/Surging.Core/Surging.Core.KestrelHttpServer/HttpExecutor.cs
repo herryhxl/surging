@@ -115,7 +115,12 @@ namespace Surging.Core.KestrelHttpServer
             {
                 if (_logger.IsEnabled(LogLevel.Error))
                     _logger.LogError(ex, "执行远程调用逻辑时候发生了错误。");
-                resultMessage = new HttpResultMessage<object> { Data = null, Message = "执行发生了错误。", StatusCode = (int)StatusCode.RequestError };
+                var message = new HttpResultMessage<object> { Data = null, Message = "执行发生了错误。", StatusCode = (int)StatusCode.RequestError };
+                if(ex is ValidateException validate)
+                {
+                    message.Message = validate.Message;
+                }
+                resultMessage = message;
             }
             return resultMessage;
         }

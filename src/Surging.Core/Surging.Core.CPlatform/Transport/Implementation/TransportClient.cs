@@ -87,6 +87,10 @@ namespace Surging.Core.CPlatform.Transport.Implementation
             {
                 if (_logger.IsEnabled(LogLevel.Error))
                     _logger.LogError(exception, "消息发送失败。");
+                //if (exception.HResult == 200)
+                //{
+                //    throw new ValidateException(exception.Message);
+                //}
                 throw;
             }
         }

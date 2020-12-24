@@ -23,6 +23,7 @@ namespace Edu.Surging.ModuleServices.SuperUser.Domain
         {
             throw new ValidateException("你错了", 999);
             return Task.FromResult($"你好！{name}");
+
         }
 
         public Task<SuperUserViewModel> Info(RequestLongModel request)
