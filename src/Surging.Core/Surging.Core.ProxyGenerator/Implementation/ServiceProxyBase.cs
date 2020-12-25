@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using Surging.Core.CPlatform;
+﻿using Surging.Core.CPlatform;
 using Surging.Core.CPlatform.Convertibles;
 using Surging.Core.CPlatform.Messages;
 using Surging.Core.CPlatform.Runtime.Client;
@@ -69,7 +68,7 @@ namespace Surging.Core.ProxyGenerator.Implementation
             var decodeJOject = typeof(T) == UtilityType.ObjectType;
             IInvocation invocation = null;
             var serviceRoute =await _serviceRouteProvider.Locate(serviceId);
-            if ((serviceRoute ==null || !serviceRoute.ServiceDescriptor.ExistIntercept()) ||decodeJOject)
+            if (serviceRoute ==null || !serviceRoute.ServiceDescriptor.ExistIntercept() ||decodeJOject)
             {
                 message = await _breakeRemoteInvokeService.InvokeAsync(parameters, serviceId, _serviceKey, decodeJOject);
                 if (message == null)

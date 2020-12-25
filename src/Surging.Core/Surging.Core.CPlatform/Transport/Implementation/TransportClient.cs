@@ -38,7 +38,7 @@ namespace Surging.Core.CPlatform.Transport.Implementation
             IServiceExecutor serviceExecutor)
         {
 
-           _diagnosticListener =new DiagnosticListener(DiagnosticListenerExtensions.DiagnosticListenerName); 
+            _diagnosticListener = new DiagnosticListener(DiagnosticListenerExtensions.DiagnosticListenerName);
             _messageSender = messageSender;
             _messageListener = messageListener;
             _logger = logger;
@@ -66,7 +66,7 @@ namespace Surging.Core.CPlatform.Transport.Implementation
                 var transportMessage = TransportMessage.CreateInvokeMessage(message);
                 WirteDiagnosticBefore(transportMessage);
                 //注册结果回调
-                var callbackTask = RegisterResultCallbackAsync(transportMessage.Id,cancellationToken);
+                var callbackTask = RegisterResultCallbackAsync(transportMessage.Id, cancellationToken);
 
                 try
                 {
@@ -153,10 +153,10 @@ namespace Surging.Core.CPlatform.Transport.Implementation
             if (message.IsInvokeResultMessage())
             {
                 var content = message.GetContent<RemoteInvokeResultMessage>();
-                if (!string.IsNullOrEmpty(content.ExceptionMessage))
+                if (!string.IsNullOrEmpty(content.ExceptionMessage) && (content.StatusCode == 0 || content.StatusCode == 404))
                 {
                     WirteDiagnosticError(message);
-                    task.SetException(new CPlatformCommunicationException(content.ExceptionMessage,content.StatusCode));
+                    task.SetException(new CPlatformCommunicationException(content.ExceptionMessage, content.StatusCode));
                 }
                 else
                 {

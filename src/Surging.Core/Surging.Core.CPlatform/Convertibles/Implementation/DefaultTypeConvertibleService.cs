@@ -51,7 +51,10 @@ namespace Surging.Core.CPlatform.Convertibles.Implementation
                 return instance;
             if (_logger.IsEnabled(LogLevel.Debug))
                 _logger.LogDebug($"准备将 {instance.GetType()} 转换为：{conversionType}。");
-
+            if (conversionType == typeof(string))
+            {
+                return instance.ToString();
+            }
             object result = null;
             foreach (var converter in _converters)
             {

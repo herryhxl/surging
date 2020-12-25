@@ -99,7 +99,7 @@ namespace Surging.Core.KestrelHttpServer
             }
             else
             {
-                StreamReader streamReader = new StreamReader(context.Request.Body);
+                var streamReader = new StreamReader(context.Request.Body);
                 var data = await streamReader.ReadToEndAsync();
                 if (context.Request.Method == "POST")
                 {

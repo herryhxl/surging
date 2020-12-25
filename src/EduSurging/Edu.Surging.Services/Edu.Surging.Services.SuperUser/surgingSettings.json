@@ -13,7 +13,7 @@
     "Weight": 20,
     "MaxConcurrentRequests": 20,
     "DisconnTimeInterval": 30,
-    "ExecutionTimeoutInMilliseconds": 10000,
+    "ExecutionTimeoutInMilliseconds": 60000,
     "Protocol": "${Protocol}|None", //Http、Tcp、None
     "RootPath": "${RootPath}|D:\\userapp",
     "WebRootPath": "${WebRootPath}|D:\\UserApp\\wwwroot",
@@ -123,8 +123,8 @@
   },
   "EventBus": {
     "EventBusConnection": "${EventBusConnection}|localhost",
-    "EventBusUserName": "${EventBusUserName}|herry",
-    "EventBusPassword": "${EventBusPassword}|562321",
+    "EventBusUserName": "${EventBusUserName}|guest",
+    "EventBusPassword": "${EventBusPassword}|guest",
     "VirtualHost": "${VirtualHost}|/",
     "MessageTTL": "${MessageTTL}|30000",
     "RetryCount": "${RetryCount}|1",

@@ -2,6 +2,7 @@
 using Edu.Surging.IModuleService.SuperUser;
 using Edu.Surging.Models.Common.Models;
 using Edu.Surging.Models.SuperUser.ModelsCustom;
+using Microsoft.EntityFrameworkCore;
 using Surging.Core.CPlatform.Exceptions;
 using Surging.Core.CPlatform.Transport.Implementation;
 using Surging.Core.ProxyGenerator;
@@ -30,6 +31,16 @@ namespace Edu.Surging.ModuleServices.SuperUser.Domain
         {
             //RpcContext.GetContext().GetContextParameters()
             return _superUserService.InfoAsync<SuperUserViewModel>(new RequestModel<long> { Id = request.Id });
+        }
+
+        public async Task<bool> ValidatePhone(string phone)
+        {
+            return await _superUserService.Where(t=>t.Phone==phone).AnyAsync();
+        }
+
+        public async Task<bool> ValidateAccount(string account)
+        {
+            return await _superUserService.Where(t => t.UserName == account).AnyAsync(); 
         }
     }
 }

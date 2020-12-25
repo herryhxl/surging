@@ -6,7 +6,8 @@ namespace Surging.Core.Protocol.Http
 {
    public enum StatusCode
     {
-        Success=200,
+        SystemError = 0,
+        Success =200,
         RequestError =400,
         AuthorizationFailed=401,
     }
