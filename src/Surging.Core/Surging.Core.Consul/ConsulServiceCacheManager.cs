@@ -110,10 +110,8 @@ namespace Surging.Core.Consul
 
         private async Task<ServiceCache[]> GetCaches(IEnumerable<string> childrens)
         {
-
             childrens = childrens.ToArray();
             var caches = new List<ServiceCache>(childrens.Count());
-
             foreach (var children in childrens)
             {
                 if (_logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Debug))

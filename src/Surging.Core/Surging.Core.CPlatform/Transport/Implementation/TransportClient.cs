@@ -85,12 +85,8 @@ namespace Surging.Core.CPlatform.Transport.Implementation
             }
             catch (Exception exception)
             {
-                if (_logger.IsEnabled(LogLevel.Error))
+                if (_logger.IsEnabled(LogLevel.Error) && !(exception is ValidateException))
                     _logger.LogError(exception, "消息发送失败。");
-                //if (exception.HResult == 200)
-                //{
-                //    throw new ValidateException(exception.Message);
-                //}
                 throw;
             }
         }
@@ -156,7 +152,7 @@ namespace Surging.Core.CPlatform.Transport.Implementation
                 if (!string.IsNullOrEmpty(content.ExceptionMessage))
                 {
                     //系统错误
-                    if (content.StatusCode==0|| content.StatusCode == 404)
+                    if (content.StatusCode == 0 || content.StatusCode == 404)
                     {
                         var exception = new CPlatformCommunicationException(content.ExceptionMessage, content.StatusCode);
                         WirteDiagnosticError(message, exception);
@@ -215,7 +211,7 @@ namespace Surging.Core.CPlatform.Transport.Implementation
             }
         }
 
-        private void WirteDiagnosticError(TransportMessage message,Exception exception)
+        private void WirteDiagnosticError(TransportMessage message, Exception exception)
         {
             if (!AppConfig.ServerOptions.DisableDiagnostic)
             {
