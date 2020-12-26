@@ -262,7 +262,7 @@ namespace Surging.Core.Consul
             if (_configInfo.EnableChildrenMonitor)
             {
                 var watcher = new ChildrenMonitorWatcher(GetConsulClient, _manager, _configInfo.MqttRoutePath,
-             async (oldChildrens, newChildrens) => await ChildrenChange(oldChildrens, newChildrens),
+                async (oldChildrens, newChildrens) => await ChildrenChange(oldChildrens, newChildrens),
                (result) => ConvertPaths(result).Result);
                 action = currentData => watcher.SetCurrentData(currentData);
             }

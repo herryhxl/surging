@@ -297,7 +297,7 @@ namespace Surging.Core.Consul
             {
                 //创建子监控类
                 var watcher = new ChildrenMonitorWatcher(GetConsulClient, _manager, _configInfo.RoutePath,
-             async (oldChildrens, newChildrens) => await ChildrenChange(oldChildrens, newChildrens),
+                async (oldChildrens, newChildrens) => await ChildrenChange(oldChildrens, newChildrens),
                (result) => ConvertPaths(result).Result);
                 //对委托绑定方法
                 action = currentData => watcher.SetCurrentData(currentData);
