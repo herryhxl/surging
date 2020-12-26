@@ -22,9 +22,8 @@ namespace Edu.Surging.ModuleServices.SuperUser.Domain
         }
         public Task<string> SayHello(string name)
         {
-            throw new ValidateException("你错了", 999);
+            throw new ValidateException("你错了", 999,new { rr="111111",ret=100});
             return Task.FromResult($"你好！{name}");
-
         }
 
         public Task<SuperUserViewModel> Info(RequestLongModel request)

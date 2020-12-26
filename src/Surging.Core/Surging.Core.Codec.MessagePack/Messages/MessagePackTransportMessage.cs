@@ -68,14 +68,11 @@ namespace Surging.Core.Codec.MessagePack.Messages
             object contentObject;
             if (IsInvokeMessage())
             {
-                contentObject =
-                    SerializerUtilitys.Deserialize<MessagePackRemoteInvokeMessage>(Content).GetRemoteInvokeMessage();
+                contentObject = SerializerUtilitys.Deserialize<MessagePackRemoteInvokeMessage>(Content).GetRemoteInvokeMessage();
             }
             else if (IsInvokeResultMessage())
             {
-                contentObject =
-                    SerializerUtilitys.Deserialize<MessagePackRemoteInvokeResultMessage>(Content)
-                        .GetRemoteInvokeResultMessage();
+                contentObject = SerializerUtilitys.Deserialize<MessagePackRemoteInvokeResultMessage>(Content).GetRemoteInvokeResultMessage();
             }
             else
             {

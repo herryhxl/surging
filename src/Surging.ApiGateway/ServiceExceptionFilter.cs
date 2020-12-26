@@ -11,6 +11,8 @@ namespace Surging.ApiGateway
     {
         public override void OnException(RpcActionExecutedContext context)
         {
+            if (context.Exception is ValidateException exception)
+                throw exception;
             if (context.Exception is CPlatformCommunicationException)
                 throw new Exception(context.Exception.Message,context.Exception);
         }

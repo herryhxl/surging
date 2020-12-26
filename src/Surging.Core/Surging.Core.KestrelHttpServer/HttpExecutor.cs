@@ -108,18 +108,21 @@ namespace Surging.Core.KestrelHttpServer
             HttpResultMessage<object> resultMessage = new HttpResultMessage<object>();
             try {
                 resultMessage.Data=await _serviceProxyProvider.Invoke<object>(httpMessage.Parameters, httpMessage.RoutePath, httpMessage.ServiceKey);
-                resultMessage.IsSucceed = resultMessage.Data != default;
+                resultMessage.IsSucceed = true;
                 resultMessage.StatusCode = resultMessage.IsSucceed ? (int)StatusCode.Success : (int)StatusCode.RequestError;
+            }
+            catch(ValidateException validate)
+            {
+                resultMessage.Data = validate.ErrorData;
+                resultMessage.IsSucceed = false;
+                resultMessage.Message = validate.Message;
+                resultMessage.StatusCode = validate.ErrorCode;
             }
             catch (Exception ex)
             {
                if (_logger.IsEnabled(LogLevel.Error))
                     _logger.LogError(ex, "执行远程调用逻辑时候发生了错误。");
                 var message = new HttpResultMessage<object> { Data = null, Message = "执行发生了错误。", StatusCode = (int)StatusCode.RequestError };
-                if(ex is ValidateException validate)
-                {
-                    message.Message = validate.Message;
-                }
                 resultMessage = message;
             }
             return resultMessage;

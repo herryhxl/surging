@@ -24,7 +24,7 @@ namespace Surging.Core.CPlatform.Runtime.Client.Implementation
         private readonly ILogger<RemoteInvokeService> _logger;
         private readonly IHealthCheckService _healthCheckService;
 
-        public RemoteInvokeService(IHashAlgorithm hashAlgorithm,IAddressResolver addressResolver, ITransportClientFactory transportClientFactory, ILogger<RemoteInvokeService> logger, IHealthCheckService healthCheckService)
+        public RemoteInvokeService(IAddressResolver addressResolver, ITransportClientFactory transportClientFactory, ILogger<RemoteInvokeService> logger, IHealthCheckService healthCheckService)
         {
             _addressResolver = addressResolver;
             _transportClientFactory = transportClientFactory;
@@ -53,6 +53,10 @@ namespace Surging.Core.CPlatform.Runtime.Client.Implementation
                 var client =await _transportClientFactory.CreateClientAsync(endPoint);
                 RpcContext.GetContext().SetAttachment("RemoteAddress", address.ToString());
                 return await client.SendAsync(invokeMessage,cancellationToken).WithCancellation(cancellationToken);
+            }
+            catch (ValidateException)
+            {
+                throw;
             }
             catch (CommunicationException)
             {
@@ -85,10 +89,14 @@ namespace Surging.Core.CPlatform.Runtime.Client.Implementation
                     return await client.SendAsync(invokeMessage, cts.Token).WithCancellation(cts, requestTimeout);
                 }
             }
-            catch (CommunicationException e)
+            catch (ValidateException)
+            {
+                throw;
+            }
+            catch (CommunicationException)
             {
                 await _healthCheckService.MarkFailure(address);
-                throw e;
+                throw;
             }
             catch (Exception exception)
             {

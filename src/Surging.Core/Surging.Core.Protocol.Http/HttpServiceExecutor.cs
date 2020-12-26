@@ -108,7 +108,7 @@ namespace Surging.Core.Protocol.Http
             if (provider.Item1 == null)
             {
                 provider.Item2 = ServiceLocator.GetService<IServiceProxyFactory>().CreateProxy(httpMessage.ServiceKey, entry.Type);
-                provider.Item3 = provider.Item2.GetType().GetTypeInfo().DeclaredMethods.Where(p => p.Name == entry.MethodName).FirstOrDefault(); ;
+                provider.Item3 = provider.Item2.GetType().GetTypeInfo().DeclaredMethods.Where(p => p.Name == entry.MethodName).FirstOrDefault(); 
                 provider.Item1 = FastInvoke.GetMethodInvoker(provider.Item3);
                 _concurrent.GetOrAdd(httpMessage.RoutePath, ValueTuple.Create<FastInvokeHandler, object, MethodInfo>(provider.Item1, provider.Item2, provider.Item3));
             }
@@ -137,16 +137,16 @@ namespace Surging.Core.Protocol.Http
                     if (taskType.IsGenericType)
                         resultMessage.Data = taskType.GetProperty("Result").GetValue(task);
                 }
-                resultMessage.IsSucceed = resultMessage.Data != null;
-                resultMessage.StatusCode = resultMessage.IsSucceed ? (int)StatusCode.Success : (int)StatusCode.RequestError;
+                resultMessage.IsSucceed = true;
+                resultMessage.StatusCode = resultMessage.StatusCode;
             }
             catch (ValidateException validateException)
             {
-                if (_logger.IsEnabled(LogLevel.Error))
-                    _logger.LogError(validateException, "执行本地逻辑时候发生了错误。", validateException);
-
+                //if (_logger.IsEnabled(LogLevel.Error))
+                //  _logger.LogError(validateException, "执行远程调用逻辑时候发生了错误。", validateException);
                 resultMessage.Message = validateException.Message;
-                resultMessage.StatusCode = validateException.HResult;
+                resultMessage.StatusCode = validateException.ErrorCode;
+                resultMessage.Data = validateException.Data;
             }
             catch (Exception ex)
             {
@@ -185,7 +185,8 @@ namespace Surging.Core.Protocol.Http
                     _logger.LogError(validateException, "执行本地逻辑时候发生了错误。", validateException);
 
                 resultMessage.Message = validateException.Message;
-                resultMessage.StatusCode = validateException.HResult;
+                resultMessage.StatusCode = validateException.ErrorCode;
+                resultMessage.Data = validateException.ErrorData;
             }
             catch (Exception exception)
             {

@@ -14,6 +14,7 @@ using Autofac;
 using System.Threading;
 using Surging.Core.CPlatform.Filters.Implementation;
 using System.Runtime.CompilerServices;
+using Surging.Core.CPlatform.Exceptions;
 
 namespace Surging.Core.CPlatform.Support.Implementation
 {
@@ -116,13 +117,24 @@ namespace Surging.Core.CPlatform.Support.Implementation
             }
             catch (Exception ex)
             {
-                _serviceInvokeListenInfo.AddOrUpdate(serviceId, new ServiceInvokeListenInfo(), (k, v) =>
+                if(ex is ValidateException)
                 {
-                    ++v.FaultRemoteServiceRequests;
-                    ++v.SinceFaultRemoteServiceRequests;
-                    --v.ConcurrentRequests;
-                    return v;
-                });
+                    _serviceInvokeListenInfo.AddOrUpdate(serviceId, new ServiceInvokeListenInfo(), (k, v) =>
+                    {
+                        v.SinceFaultRemoteServiceRequests = 0;
+                        --v.ConcurrentRequests; return v;
+                    });
+                }
+                else
+                {
+                    _serviceInvokeListenInfo.AddOrUpdate(serviceId, new ServiceInvokeListenInfo(), (k, v) =>
+                    {
+                        ++v.FaultRemoteServiceRequests;
+                        ++v.SinceFaultRemoteServiceRequests;
+                        --v.ConcurrentRequests;
+                        return v;
+                    });
+                }
                 await ExecuteExceptionFilter(ex, invokeMessage, token);
                 return null;
             }

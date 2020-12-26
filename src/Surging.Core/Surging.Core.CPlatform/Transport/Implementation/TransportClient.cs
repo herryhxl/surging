@@ -153,10 +153,21 @@ namespace Surging.Core.CPlatform.Transport.Implementation
             if (message.IsInvokeResultMessage())
             {
                 var content = message.GetContent<RemoteInvokeResultMessage>();
-                if (!string.IsNullOrEmpty(content.ExceptionMessage) && (content.StatusCode == 0 || content.StatusCode == 404))
+                if (!string.IsNullOrEmpty(content.ExceptionMessage))
                 {
-                    WirteDiagnosticError(message);
-                    task.SetException(new CPlatformCommunicationException(content.ExceptionMessage, content.StatusCode));
+                    //系统错误
+                    if (content.StatusCode==0|| content.StatusCode == 404)
+                    {
+                        var exception = new CPlatformCommunicationException(content.ExceptionMessage, content.StatusCode);
+                        WirteDiagnosticError(message, exception);
+                        task.SetException(exception);
+                    }
+                    else
+                    {
+                        var exception = new ValidateException(content.ExceptionMessage, content.StatusCode, content.Result);
+                        WirteDiagnosticError(message, exception);
+                        task.SetException(exception);
+                    }
                 }
                 else
                 {
@@ -204,7 +215,7 @@ namespace Surging.Core.CPlatform.Transport.Implementation
             }
         }
 
-        private void WirteDiagnosticError(TransportMessage message)
+        private void WirteDiagnosticError(TransportMessage message,Exception exception)
         {
             if (!AppConfig.ServerOptions.DisableDiagnostic)
             {
@@ -214,7 +225,7 @@ namespace Surging.Core.CPlatform.Transport.Implementation
                     Content = message.Content,
                     ContentType = message.ContentType,
                     Id = message.Id
-                }, new CPlatformCommunicationException(remoteInvokeResultMessage.ExceptionMessage)));
+                }, exception));//new CPlatformCommunicationException(remoteInvokeResultMessage.ExceptionMessage)
             }
         }
 

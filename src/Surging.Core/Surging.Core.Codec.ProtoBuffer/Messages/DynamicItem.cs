@@ -49,7 +49,11 @@ namespace Surging.Core.Codec.ProtoBuffer.Messages
             if (Content == null || TypeName == null)
                 return null;
             var typeName = Type.GetType(TypeName);
-            if (typeName == UtilityType.JObjectType || typeName == UtilityType.JArrayType)
+            if (typeName == null)
+            {
+                return SerializerUtilitys.Deserialize<object>(Content);
+            }
+            else if (typeName == UtilityType.JObjectType || typeName == UtilityType.JArrayType)
             {
                 var content = SerializerUtilitys.Deserialize<string>(Content);
                 return JsonSerializer.Deserialize(content, typeName);

@@ -58,6 +58,10 @@ namespace Surging.Core.Protocol.Mqtt.Internal.Runtime.Implementation
                         var client =await _transportClientFactory.CreateClientAsync(endPoint);
                         await client.SendAsync(invokeMessage, cancellationToken).WithCancellation(cancellationToken);
                     }
+                    catch (ValidateException)
+                    {
+                        
+                    }
                     catch (CommunicationException)
                     {
                         await _healthCheckService.MarkFailure(address);
@@ -93,6 +97,10 @@ namespace Surging.Core.Protocol.Mqtt.Internal.Runtime.Implementation
                             {
                                 await client.SendAsync(invokeMessage,cts.Token).WithCancellation(cts,requestTimeout);
                             }
+                        }
+                        catch (ValidateException)
+                        {
+                            
                         }
                         catch (CommunicationException)
                         {
